@@ -24,6 +24,7 @@ const POS = () => {
   const [customerId, setCustomerId] = useState<string>("walk-in");
   const [paymentMode, setPaymentMode] = useState<"cash" | "credit">("cash");
   const [amountPaid, setAmountPaid] = useState<string>("");
+  const [tendered, setTendered] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
@@ -70,7 +71,9 @@ const POS = () => {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(`Sale complete — ${fmt(total)}`);
-    setCart([]); setAmountPaid(""); setCustomerId("walk-in"); setPaymentMode("cash");
+    const change = Number(tendered || 0) - paid;
+    if (paymentMode === "cash" && change > 0) toast.success(`Return change: ${fmt(change)}`);
+    setCart([]); setAmountPaid(""); setTendered(""); setCustomerId("walk-in"); setPaymentMode("cash");
     load();
   };
 
@@ -149,12 +152,35 @@ const POS = () => {
                 <Input type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} />
               </div>
             </div>
+            {paymentMode === "cash" && (
+              <div>
+                <Label className="text-xs">Cash Received from Customer</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 500"
+                  value={tendered}
+                  onChange={(e) => setTendered(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between bg-gradient-primary text-primary-foreground rounded-xl p-3 mb-3">
             <span className="font-medium">Total</span>
             <span className="font-display text-2xl">{fmt(total)}</span>
           </div>
+
+          {paymentMode === "cash" && Number(tendered || 0) > 0 && (
+            <div className="flex items-center justify-between bg-accent/20 border border-accent rounded-xl p-3 mb-3">
+              <span className="font-medium text-sm">
+                {Number(tendered) >= total ? "Change to Return" : "Short by"}
+              </span>
+              <span className="font-display text-xl text-accent-foreground">
+                {fmt(Math.abs(Number(tendered) - total))}
+              </span>
+            </div>
+          )}
 
           <Button disabled={busy || cart.length === 0} onClick={checkout}
             className="w-full bg-accent text-accent-foreground hover:opacity-90 shadow-soft h-12 text-base font-semibold">
