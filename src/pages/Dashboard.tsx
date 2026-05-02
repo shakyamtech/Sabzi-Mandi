@@ -1,0 +1,119 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { PageHeader } from "@/components/PageHeader";
+import { Card } from "@/components/ui/card";
+import { fmt } from "@/lib/format";
+import { TrendingUp, Wallet, Package, AlertTriangle, ShoppingCart, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    todaySales: 0, todayProfit: 0, cashBalance: 0,
+    stockValue: 0, lowStock: 0, customerDues: 0, supplierDues: 0, productCount: 0,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const iso = today.toISOString();
+
+    (async () => {
+      const [{ data: sales }, { data: products }, { data: cash }, { data: customers }, { data: suppliers }] = await Promise.all([
+        supabase.from("sales").select("total, cost_total, created_at").gte("created_at", iso),
+        supabase.from("products").select("stock_qty, cost_price, low_stock_threshold"),
+        supabase.from("cash_transactions").select("direction, amount"),
+        supabase.from("customers").select("balance"),
+        supabase.from("suppliers").select("balance"),
+      ]);
+
+      const todaySales = (sales ?? []).reduce((s, r: any) => s + Number(r.total), 0);
+      const todayProfit = (sales ?? []).reduce((s, r: any) => s + (Number(r.total) - Number(r.cost_total)), 0);
+      const cashBalance = (cash ?? []).reduce((s, r: any) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0);
+      const stockValue = (products ?? []).reduce((s, r: any) => s + Number(r.stock_qty) * Number(r.cost_price), 0);
+      const lowStock = (products ?? []).filter((r: any) => Number(r.stock_qty) <= Number(r.low_stock_threshold)).length;
+      const customerDues = (customers ?? []).reduce((s, r: any) => s + Math.max(0, Number(r.balance)), 0);
+      const supplierDues = (suppliers ?? []).reduce((s, r: any) => s + Math.max(0, Number(r.balance)), 0);
+
+      setStats({
+        todaySales, todayProfit, cashBalance, stockValue, lowStock,
+        customerDues, supplierDues, productCount: products?.length ?? 0,
+      });
+    })();
+  }, [user]);
+
+  const cards = [
+    { label: "Today's Sales", value: fmt(stats.todaySales), icon: ShoppingCart, accent: "bg-gradient-primary text-primary-foreground" },
+    { label: "Today's Profit", value: fmt(stats.todayProfit), icon: TrendingUp, accent: "bg-gradient-warm text-accent-foreground" },
+    { label: "Cash in Hand", value: fmt(stats.cashBalance), icon: Wallet, accent: "bg-secondary text-secondary-foreground" },
+    { label: "Stock Value", value: fmt(stats.stockValue), icon: Package, accent: "bg-secondary text-secondary-foreground" },
+  ];
+
+  return (
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <PageHeader title="Dashboard" subtitle="Today at a glance" />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {cards.map((c) => (
+          <Card key={c.label} className="p-4 md:p-5 shadow-card border-0 overflow-hidden relative">
+            <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${c.accent} shadow-soft`}>
+              <c.icon className="h-5 w-5" />
+            </div>
+            <div className="mt-3 text-xs uppercase tracking-wide text-muted-foreground font-medium">{c.label}</div>
+            <div className="mt-1 text-xl md:text-2xl font-display text-foreground">{c.value}</div>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-4 mt-6">
+        <Link to="/products" className="block">
+          <Card className="p-5 shadow-card border-0 hover:shadow-elegant transition-smooth h-full">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              <div className="text-sm font-medium">Low Stock Items</div>
+            </div>
+            <div className="font-display text-3xl mt-2">{stats.lowStock}</div>
+            <div className="text-xs text-muted-foreground mt-1">of {stats.productCount} products</div>
+          </Card>
+        </Link>
+        <Link to="/customers" className="block">
+          <Card className="p-5 shadow-card border-0 hover:shadow-elegant transition-smooth h-full">
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 text-primary" />
+              <div className="text-sm font-medium">Customer Udhaar</div>
+            </div>
+            <div className="font-display text-3xl mt-2">{fmt(stats.customerDues)}</div>
+            <div className="text-xs text-muted-foreground mt-1">Receivable</div>
+          </Card>
+        </Link>
+        <Link to="/suppliers" className="block">
+          <Card className="p-5 shadow-card border-0 hover:shadow-elegant transition-smooth h-full">
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 text-accent" />
+              <div className="text-sm font-medium">Supplier Dues</div>
+            </div>
+            <div className="font-display text-3xl mt-2">{fmt(stats.supplierDues)}</div>
+            <div className="text-xs text-muted-foreground mt-1">Payable</div>
+          </Card>
+        </Link>
+      </div>
+
+      <div className="mt-6">
+        <Link to="/pos">
+          <Card className="p-6 shadow-elegant border-0 bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-display text-2xl">Start Billing</div>
+                <div className="text-primary-foreground/80 text-sm mt-1">Open the POS to make a quick sale</div>
+              </div>
+              <ShoppingCart className="h-10 w-10" />
+            </div>
+          </Card>
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
