@@ -50,7 +50,9 @@ const POS = () => {
   const setPrice = (id: string, sell_price: number) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, sell_price } : i));
   const removeItem = (id: string) => setCart((c) => c.filter((i) => i.product_id !== id));
 
-  const total = cart.reduce((s, i) => s + i.qty * i.sell_price, 0);
+  const subtotal = cart.reduce((s, i) => s + i.qty * i.sell_price, 0);
+  const discountNum = Math.max(0, Math.min(Number(discount || 0), subtotal));
+  const total = +(subtotal - discountNum).toFixed(2);
 
   useEffect(() => {
     if (paymentMode === "cash") setAmountPaid(total.toFixed(2));
