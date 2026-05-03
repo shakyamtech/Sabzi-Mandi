@@ -25,6 +25,7 @@ const POS = () => {
   const [paymentMode, setPaymentMode] = useState<"cash" | "credit">("cash");
   const [amountPaid, setAmountPaid] = useState<string>("");
   const [tendered, setTendered] = useState<string>("");
+  const [discount, setDiscount] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
@@ -49,7 +50,9 @@ const POS = () => {
   const setPrice = (id: string, sell_price: number) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, sell_price } : i));
   const removeItem = (id: string) => setCart((c) => c.filter((i) => i.product_id !== id));
 
-  const total = cart.reduce((s, i) => s + i.qty * i.sell_price, 0);
+  const subtotal = cart.reduce((s, i) => s + i.qty * i.sell_price, 0);
+  const discountNum = Math.max(0, Math.min(Number(discount || 0), subtotal));
+  const total = +(subtotal - discountNum).toFixed(2);
 
   useEffect(() => {
     if (paymentMode === "cash") setAmountPaid(total.toFixed(2));
@@ -61,19 +64,22 @@ const POS = () => {
     const paid = Number(amountPaid || 0);
     if (paymentMode === "credit" && customerId === "walk-in") return toast.error("Pick a customer for credit sale");
     setBusy(true);
+    const ratio = subtotal > 0 ? total / subtotal : 1;
+    const itemsToSend = cart.map((i) => ({ ...i, sell_price: +(i.sell_price * ratio).toFixed(4) }));
+    const noteWithDiscount = discountNum > 0 ? `Discount: ${fmt(discountNum)}` : null;
     const { error } = await supabase.rpc("checkout_sale", {
       p_customer_id: customerId === "walk-in" ? null : customerId,
       p_payment_mode: paymentMode,
       p_amount_paid: paid,
-      p_note: null,
-      p_items: cart as any,
+      p_note: noteWithDiscount,
+      p_items: itemsToSend as any,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(`Sale complete — ${fmt(total)}`);
     const change = Number(tendered || 0) - paid;
     if (paymentMode === "cash" && change > 0) toast.success(`Return change: ${fmt(change)}`);
-    setCart([]); setAmountPaid(""); setTendered(""); setCustomerId("walk-in"); setPaymentMode("cash");
+    setCart([]); setAmountPaid(""); setTendered(""); setDiscount(""); setCustomerId("walk-in"); setPaymentMode("cash");
     load();
   };
 
@@ -164,7 +170,24 @@ const POS = () => {
                 />
               </div>
             )}
+            <div>
+              <Label className="text-xs">Discount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="0"
+                value={discount}
+                onChange={(e) => setDiscount(e.target.value)}
+              />
+            </div>
           </div>
+
+          {discountNum > 0 && (
+            <div className="space-y-1 mb-2 text-sm">
+              <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Discount</span><span>− {fmt(discountNum)}</span></div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between bg-gradient-primary text-primary-foreground rounded-xl p-3 mb-3">
             <span className="font-medium">Total</span>
