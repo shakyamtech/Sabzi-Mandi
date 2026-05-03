@@ -25,6 +25,7 @@ const POS = () => {
   const [paymentMode, setPaymentMode] = useState<"cash" | "credit">("cash");
   const [amountPaid, setAmountPaid] = useState<string>("");
   const [tendered, setTendered] = useState<string>("");
+  const [discount, setDiscount] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
