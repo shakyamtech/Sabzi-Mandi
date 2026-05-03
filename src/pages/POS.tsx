@@ -170,7 +170,24 @@ const POS = () => {
                 />
               </div>
             )}
+            <div>
+              <Label className="text-xs">Discount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="0"
+                value={discount}
+                onChange={(e) => setDiscount(e.target.value)}
+              />
+            </div>
           </div>
+
+          {discountNum > 0 && (
+            <div className="space-y-1 mb-2 text-sm">
+              <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Discount</span><span>− {fmt(discountNum)}</span></div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between bg-gradient-primary text-primary-foreground rounded-xl p-3 mb-3">
             <span className="font-medium">Total</span>
