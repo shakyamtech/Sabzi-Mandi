@@ -64,19 +64,22 @@ const POS = () => {
     const paid = Number(amountPaid || 0);
     if (paymentMode === "credit" && customerId === "walk-in") return toast.error("Pick a customer for credit sale");
     setBusy(true);
+    const ratio = subtotal > 0 ? total / subtotal : 1;
+    const itemsToSend = cart.map((i) => ({ ...i, sell_price: +(i.sell_price * ratio).toFixed(4) }));
+    const noteWithDiscount = discountNum > 0 ? `Discount: ${fmt(discountNum)}` : null;
     const { error } = await supabase.rpc("checkout_sale", {
       p_customer_id: customerId === "walk-in" ? null : customerId,
       p_payment_mode: paymentMode,
       p_amount_paid: paid,
-      p_note: null,
-      p_items: cart as any,
+      p_note: noteWithDiscount,
+      p_items: itemsToSend as any,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(`Sale complete — ${fmt(total)}`);
     const change = Number(tendered || 0) - paid;
     if (paymentMode === "cash" && change > 0) toast.success(`Return change: ${fmt(change)}`);
-    setCart([]); setAmountPaid(""); setTendered(""); setCustomerId("walk-in"); setPaymentMode("cash");
+    setCart([]); setAmountPaid(""); setTendered(""); setDiscount(""); setCustomerId("walk-in"); setPaymentMode("cash");
     load();
   };
 
