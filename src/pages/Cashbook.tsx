@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmt } from "@/lib/format";
-import { Plus, ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react";
+import { Plus, ArrowDownCircle, ArrowUpCircle, Wallet, Pencil, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -20,6 +21,7 @@ const Cashbook = () => {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [direction, setDirection] = useState<"in" | "out">("in");
   const [amount, setAmount] = useState(""); const [note, setNote] = useState("");
   const [category, setCategory] = useState("other");
@@ -36,26 +38,47 @@ const Cashbook = () => {
   const totalOut = rows.filter((r) => r.direction === "out").reduce((s, r) => s + Number(r.amount), 0);
   const filtered = rows.filter((r) => filter === "all" || r.direction === filter);
 
-  const add = async () => {
+  const resetForm = () => { setEditId(null); setAmount(""); setNote(""); setCategory("other"); setDirection("in"); };
+
+  const openEdit = (r: any) => {
+    setEditId(r.id); setDirection(r.direction); setAmount(String(r.amount));
+    setCategory(r.category); setNote(r.note ?? ""); setOpen(true);
+  };
+
+  const save = async () => {
     if (!amount) return toast.error("Amount required");
-    const { error } = await supabase.from("cash_transactions").insert({
-      user_id: user!.id, direction, amount: Number(amount), category, note: note || null,
-    });
-    if (error) return toast.error(error.message);
-    if (Number(amount) > 0 && (category === "expense")) {
-      await supabase.from("expenses").insert({ user_id: user!.id, amount: Number(amount), category: note || "general", note });
+    if (editId) {
+      const { error } = await supabase.from("cash_transactions").update({
+        direction, amount: Number(amount), category, note: note || null,
+      }).eq("id", editId);
+      if (error) return toast.error(error.message);
+      toast.success("Entry updated");
+    } else {
+      const { error } = await supabase.from("cash_transactions").insert({
+        user_id: user!.id, direction, amount: Number(amount), category, note: note || null,
+      });
+      if (error) return toast.error(error.message);
+      if (Number(amount) > 0 && (category === "expense")) {
+        await supabase.from("expenses").insert({ user_id: user!.id, amount: Number(amount), category: note || "general", note });
+      }
+      toast.success("Entry added");
     }
-    toast.success("Entry added");
-    setOpen(false); setAmount(""); setNote(""); setCategory("other"); load();
+    setOpen(false); resetForm(); load();
+  };
+
+  const remove = async (id: string) => {
+    const { error } = await supabase.from("cash_transactions").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Entry deleted"); load();
   };
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <PageHeader title="Cashbook" subtitle="All cash in & out" actions={
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button className="bg-gradient-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />New Entry</Button></DialogTrigger>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
+          <DialogTrigger asChild><Button onClick={resetForm} className="bg-gradient-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />New Entry</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Cash Entry</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? "Edit Entry" : "Cash Entry"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label>Type</Label>
@@ -73,7 +96,7 @@ const Cashbook = () => {
                 </Select>
               </div>
               <div><Label>Note</Label><Input value={note} onChange={(e) => setNote(e.target.value)} /></div>
-              <Button onClick={add} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
+              <Button onClick={save} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -93,11 +116,33 @@ const Cashbook = () => {
         {filtered.map((r) => (
           <div key={r.id} className="p-3 flex items-center gap-3">
             {r.direction === "in" ? <ArrowDownCircle className="h-5 w-5 text-success" /> : <ArrowUpCircle className="h-5 w-5 text-destructive" />}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="font-medium capitalize">{r.category.replace("_", " ")}</div>
               <div className="text-xs text-muted-foreground">{format(new Date(r.created_at), "dd MMM yyyy, hh:mm a")}{r.note ? ` · ${r.note}` : ""}</div>
             </div>
             <div className={`font-medium ${r.direction === "in" ? "text-success" : "text-destructive"}`}>{r.direction === "in" ? "+" : "-"}{fmt(r.amount)}</div>
+            {r.reference_id ? (
+              <span className="text-[10px] text-muted-foreground italic px-1">auto</span>
+            ) : (
+              <div className="flex gap-1">
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(r)}><Pencil className="h-3.5 w-3.5" /></Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete entry?</AlertDialogTitle>
+                      <AlertDialogDescription>This cash entry will be permanently removed.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => remove(r.id)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </div>
         ))}
         {filtered.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No entries</div>}
