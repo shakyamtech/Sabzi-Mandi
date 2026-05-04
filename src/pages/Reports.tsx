@@ -94,6 +94,41 @@ const Reports = () => {
         <div className="font-display text-3xl text-destructive mt-1">{fmt(totals.exp)}</div>
         <div className="text-xs text-muted-foreground">Recorded via Cashbook (category: expense)</div>
       </Card>
+
+      <Card className="mt-4 shadow-card border-0">
+        <div className="p-4 border-b font-display text-lg">Recent Sales</div>
+        <div className="divide-y">
+          {recentSales.map((s: any) => (
+            <div key={s.id} className="p-3 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-medium truncate">{s.customers?.name ?? "Walk-in"}</div>
+                <div className="text-xs text-muted-foreground">{format(new Date(s.created_at), "dd MMM yyyy, hh:mm a")} · {s.payment_mode}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="font-medium">{fmt(s.total)}</div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this sale?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Stock will be restored, the cash entry removed, and any customer credit reversed.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteSale(s.id)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          ))}
+          {recentSales.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No sales yet</div>}
+        </div>
+      </Card>
     </div>
   );
 };
