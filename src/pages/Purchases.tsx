@@ -11,6 +11,7 @@ import { fmt, fmtQty } from "@/lib/format";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 type Product = { id: string; name: string; unit: string; cost_price: number; stock_qty: number };
 type Supplier = { id: string; name: string };
