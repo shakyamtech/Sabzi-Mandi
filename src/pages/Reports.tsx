@@ -3,25 +3,38 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { fmt } from "@/lib/format";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { format, startOfDay, subDays } from "date-fns";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const Reports = () => {
   const { user } = useAuth();
   const [range, setRange] = useState<"7" | "30" | "90">("30");
   const [sales, setSales] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [recentSales, setRecentSales] = useState<any[]>([]);
 
-  useEffect(() => {
+  const loadData = () => {
     if (!user) return;
     const since = startOfDay(subDays(new Date(), Number(range))).toISOString();
     Promise.all([
       supabase.from("sales").select("created_at,total,cost_total").gte("created_at", since),
       supabase.from("expenses").select("created_at,amount").gte("created_at", since),
-    ]).then(([s, e]) => { setSales(s.data ?? []); setExpenses(e.data ?? []); });
-  }, [user, range]);
+      supabase.from("sales").select("id,total,payment_mode,created_at,customers(name)").order("created_at", { ascending: false }).limit(30),
+    ]).then(([s, e, r]) => { setSales(s.data ?? []); setExpenses(e.data ?? []); setRecentSales(r.data ?? []); });
+  };
+  useEffect(loadData, [user, range]);
+
+  const deleteSale = async (id: string) => {
+    const { error } = await supabase.rpc("delete_sale", { p_sale_id: id });
+    if (error) return toast.error(error.message);
+    toast.success("Sale deleted"); loadData();
+  };
 
   const totals = useMemo(() => {
     const revenue = sales.reduce((s, r) => s + Number(r.total), 0);
