@@ -78,7 +78,7 @@ const Cashbook = () => {
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger asChild><Button onClick={resetForm} className="bg-gradient-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />New Entry</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Cash Entry</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? "Edit Entry" : "Cash Entry"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label>Type</Label>
