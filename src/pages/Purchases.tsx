@@ -65,6 +65,12 @@ const Purchases = () => {
     setItems([]); setSupplierId("none"); setPaymentMode("cash"); setShowForm(false); load();
   };
 
+  const removePurchase = async (id: string) => {
+    const { error } = await supabase.rpc("delete_purchase", { p_purchase_id: id });
+    if (error) return toast.error(error.message);
+    toast.success("Purchase deleted"); load();
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <PageHeader title="Purchases" subtitle="Stock-in from suppliers" actions={
