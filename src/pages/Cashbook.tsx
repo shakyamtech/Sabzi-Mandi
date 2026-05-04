@@ -21,6 +21,7 @@ const Cashbook = () => {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [direction, setDirection] = useState<"in" | "out">("in");
   const [amount, setAmount] = useState(""); const [note, setNote] = useState("");
   const [category, setCategory] = useState("other");
