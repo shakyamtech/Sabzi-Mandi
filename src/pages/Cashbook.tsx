@@ -38,17 +38,38 @@ const Cashbook = () => {
   const totalOut = rows.filter((r) => r.direction === "out").reduce((s, r) => s + Number(r.amount), 0);
   const filtered = rows.filter((r) => filter === "all" || r.direction === filter);
 
-  const add = async () => {
+  const resetForm = () => { setEditId(null); setAmount(""); setNote(""); setCategory("other"); setDirection("in"); };
+
+  const openEdit = (r: any) => {
+    setEditId(r.id); setDirection(r.direction); setAmount(String(r.amount));
+    setCategory(r.category); setNote(r.note ?? ""); setOpen(true);
+  };
+
+  const save = async () => {
     if (!amount) return toast.error("Amount required");
-    const { error } = await supabase.from("cash_transactions").insert({
-      user_id: user!.id, direction, amount: Number(amount), category, note: note || null,
-    });
-    if (error) return toast.error(error.message);
-    if (Number(amount) > 0 && (category === "expense")) {
-      await supabase.from("expenses").insert({ user_id: user!.id, amount: Number(amount), category: note || "general", note });
+    if (editId) {
+      const { error } = await supabase.from("cash_transactions").update({
+        direction, amount: Number(amount), category, note: note || null,
+      }).eq("id", editId);
+      if (error) return toast.error(error.message);
+      toast.success("Entry updated");
+    } else {
+      const { error } = await supabase.from("cash_transactions").insert({
+        user_id: user!.id, direction, amount: Number(amount), category, note: note || null,
+      });
+      if (error) return toast.error(error.message);
+      if (Number(amount) > 0 && (category === "expense")) {
+        await supabase.from("expenses").insert({ user_id: user!.id, amount: Number(amount), category: note || "general", note });
+      }
+      toast.success("Entry added");
     }
-    toast.success("Entry added");
-    setOpen(false); setAmount(""); setNote(""); setCategory("other"); load();
+    setOpen(false); resetForm(); load();
+  };
+
+  const remove = async (id: string) => {
+    const { error } = await supabase.from("cash_transactions").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Entry deleted"); load();
   };
 
   return (
