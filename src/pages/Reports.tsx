@@ -3,25 +3,38 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { fmt } from "@/lib/format";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { format, startOfDay, subDays } from "date-fns";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const Reports = () => {
   const { user } = useAuth();
   const [range, setRange] = useState<"7" | "30" | "90">("30");
   const [sales, setSales] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [recentSales, setRecentSales] = useState<any[]>([]);
 
-  useEffect(() => {
+  const loadData = () => {
     if (!user) return;
     const since = startOfDay(subDays(new Date(), Number(range))).toISOString();
     Promise.all([
       supabase.from("sales").select("created_at,total,cost_total").gte("created_at", since),
       supabase.from("expenses").select("created_at,amount").gte("created_at", since),
-    ]).then(([s, e]) => { setSales(s.data ?? []); setExpenses(e.data ?? []); });
-  }, [user, range]);
+      supabase.from("sales").select("id,total,payment_mode,created_at,customers(name)").order("created_at", { ascending: false }).limit(30),
+    ]).then(([s, e, r]) => { setSales(s.data ?? []); setExpenses(e.data ?? []); setRecentSales(r.data ?? []); });
+  };
+  useEffect(loadData, [user, range]);
+
+  const deleteSale = async (id: string) => {
+    const { error } = await supabase.rpc("delete_sale", { p_sale_id: id });
+    if (error) return toast.error(error.message);
+    toast.success("Sale deleted"); loadData();
+  };
 
   const totals = useMemo(() => {
     const revenue = sales.reduce((s, r) => s + Number(r.total), 0);
@@ -80,6 +93,41 @@ const Reports = () => {
         <div className="font-display text-lg">Total Expenses</div>
         <div className="font-display text-3xl text-destructive mt-1">{fmt(totals.exp)}</div>
         <div className="text-xs text-muted-foreground">Recorded via Cashbook (category: expense)</div>
+      </Card>
+
+      <Card className="mt-4 shadow-card border-0">
+        <div className="p-4 border-b font-display text-lg">Recent Sales</div>
+        <div className="divide-y">
+          {recentSales.map((s: any) => (
+            <div key={s.id} className="p-3 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-medium truncate">{s.customers?.name ?? "Walk-in"}</div>
+                <div className="text-xs text-muted-foreground">{format(new Date(s.created_at), "dd MMM yyyy, hh:mm a")} · {s.payment_mode}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="font-medium">{fmt(s.total)}</div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this sale?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Stock will be restored, the cash entry removed, and any customer credit reversed.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteSale(s.id)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          ))}
+          {recentSales.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No sales yet</div>}
+        </div>
       </Card>
     </div>
   );
