@@ -432,6 +432,8 @@ export type Database = {
         }
         Returns: string
       }
+      delete_purchase: { Args: { p_purchase_id: string }; Returns: undefined }
+      delete_sale: { Args: { p_sale_id: string }; Returns: undefined }
       record_party_payment: {
         Args: {
           p_amount: number
