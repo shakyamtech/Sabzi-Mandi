@@ -116,11 +116,33 @@ const Cashbook = () => {
         {filtered.map((r) => (
           <div key={r.id} className="p-3 flex items-center gap-3">
             {r.direction === "in" ? <ArrowDownCircle className="h-5 w-5 text-success" /> : <ArrowUpCircle className="h-5 w-5 text-destructive" />}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="font-medium capitalize">{r.category.replace("_", " ")}</div>
               <div className="text-xs text-muted-foreground">{format(new Date(r.created_at), "dd MMM yyyy, hh:mm a")}{r.note ? ` · ${r.note}` : ""}</div>
             </div>
             <div className={`font-medium ${r.direction === "in" ? "text-success" : "text-destructive"}`}>{r.direction === "in" ? "+" : "-"}{fmt(r.amount)}</div>
+            {r.reference_id ? (
+              <span className="text-[10px] text-muted-foreground italic px-1">auto</span>
+            ) : (
+              <div className="flex gap-1">
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(r)}><Pencil className="h-3.5 w-3.5" /></Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete entry?</AlertDialogTitle>
+                      <AlertDialogDescription>This cash entry will be permanently removed.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => remove(r.id)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </div>
         ))}
         {filtered.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No entries</div>}
