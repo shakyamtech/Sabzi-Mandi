@@ -137,12 +137,31 @@ const Purchases = () => {
         <div className="p-4 border-b font-display text-lg">Recent Purchases</div>
         <div className="divide-y">
           {history.map((h: any) => (
-            <div key={h.id} className="p-3 flex items-center justify-between">
-              <div>
-                <div className="font-medium">{h.suppliers?.name ?? "—"}</div>
+            <div key={h.id} className="p-3 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-medium truncate">{h.suppliers?.name ?? "—"}</div>
                 <div className="text-xs text-muted-foreground">{format(new Date(h.created_at), "dd MMM yyyy, hh:mm a")} · {h.payment_mode}</div>
               </div>
-              <div className="font-medium">{fmt(h.total)}</div>
+              <div className="flex items-center gap-2">
+                <div className="font-medium">{fmt(h.total)}</div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this purchase?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Stock will be reduced back, the cash entry removed, and any supplier credit reversed.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => removePurchase(h.id)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           ))}
           {history.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No purchases yet</div>}
