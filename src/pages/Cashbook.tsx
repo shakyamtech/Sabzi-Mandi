@@ -96,7 +96,7 @@ const Cashbook = () => {
                 </Select>
               </div>
               <div><Label>Note</Label><Input value={note} onChange={(e) => setNote(e.target.value)} /></div>
-              <Button onClick={add} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
+              <Button onClick={save} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
             </div>
           </DialogContent>
         </Dialog>
