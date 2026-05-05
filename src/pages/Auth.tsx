@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Sprout } from "lucide-react";
+import { Sprout, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 
@@ -23,6 +23,31 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [shopName, setShopName] = useState("");
   const [fullName, setFullName] = useState("");
+  const [showPw, setShowPw] = useState(false);
+
+  const PasswordField = (
+    <div>
+      <Label>Password</Label>
+      <div className="relative">
+        <Input
+          type={showPw ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={6}
+          className="pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPw((v) => !v)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+          aria-label={showPw ? "Hide password" : "Show password"}
+        >
+          {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+    </div>
+  );
 
   useEffect(() => { if (user) navigate("/", { replace: true }); }, [user, navigate]);
 
@@ -79,7 +104,7 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-3">
                 <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-                <div><Label>Password</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
+                {PasswordField}
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">
                   {loading ? "Signing in..." : "Sign in"}
                 </Button>
@@ -91,7 +116,7 @@ const Auth = () => {
                 <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ramesh Kumar" /></div>
                 <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Sharma Vegetable Mart" /></div>
                 <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-                <div><Label>Password</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /></div>
+                {PasswordField}
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">
                   {loading ? "Creating..." : "Create account"}
                 </Button>
