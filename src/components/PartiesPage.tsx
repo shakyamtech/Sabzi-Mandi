@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { fmt } from "@/lib/format";
-import { Plus, Trash2, BookOpen, ArrowLeft, Wallet } from "lucide-react";
+import { Plus, Trash2, BookOpen, ArrowLeft, Wallet, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { printHTML, escapeHtml } from "@/lib/print";
+
 
 type Party = { id: string; name: string; phone: string | null; balance: number };
 type Entry = { id: string; entry_type: string; amount: number; note: string | null; created_at: string };
@@ -69,6 +71,21 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
       <div className="p-4 md:p-8 max-w-4xl mx-auto">
         <Button variant="ghost" onClick={() => setSelected(null)} className="mb-3"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
         <PageHeader title={selected.name} subtitle={selected.phone ?? ""} actions={
+          <div className="flex gap-2">
+          <Button variant="outline" onClick={() => {
+            const rowsHtml = entries.map((e) => `<tr>
+              <td>${format(new Date(e.created_at), "dd MMM, hh:mm a")}</td>
+              <td style="text-transform:capitalize">${escapeHtml(e.entry_type.replace("_", " "))}${e.note ? ` — ${escapeHtml(e.note)}` : ""}</td>
+              <td>${fmt(e.amount)}</td>
+            </tr>`).join("");
+            const body = `
+              <div class="center"><h2>${escapeHtml(selected.name)}</h2>
+                <div class="muted">${type === "customer" ? "Customer" : "Supplier"} Ledger · ${format(new Date(), "dd MMM yyyy")}</div></div>
+              <hr/>
+              <div class="row total"><span>Outstanding ${dueLabel}</span><span>${fmt(Math.abs(Number(selected.balance)))}</span></div>
+              <table><thead><tr><th>Date</th><th>Detail</th><th>Amount</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
+            printHTML(`${selected.name} — Ledger`, body);
+          }}><Printer className="h-4 w-4 mr-1" />Print</Button>
           <Dialog open={payOpen} onOpenChange={setPayOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-primary text-primary-foreground"><Wallet className="h-4 w-4 mr-1" /> Record Payment</Button>
@@ -82,6 +99,7 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         } />
         <Card className="p-5 mb-4 shadow-card border-0">
           <div className="text-xs uppercase text-muted-foreground tracking-wide">Outstanding {dueLabel}</div>
