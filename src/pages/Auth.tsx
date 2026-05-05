@@ -116,7 +116,7 @@ const Auth = () => {
                 <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ramesh Kumar" /></div>
                 <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Sharma Vegetable Mart" /></div>
                 <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-                <div><Label>Password</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} /></div>
+                {PasswordField}
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">
                   {loading ? "Creating..." : "Create account"}
                 </Button>
