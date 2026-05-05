@@ -12,7 +12,7 @@ import { Plus, Trash2, BookOpen, ArrowLeft, Wallet, Printer } from "lucide-react
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { printHTML, escapeHtml } from "@/lib/print";
-import { fmtQty } from "@/lib/format";
+
 
 type Party = { id: string; name: string; phone: string | null; balance: number };
 type Entry = { id: string; entry_type: string; amount: number; note: string | null; created_at: string };
