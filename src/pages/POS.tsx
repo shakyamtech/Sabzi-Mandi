@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { fmt, fmtQty } from "@/lib/format";
 import { Plus, Minus, Trash2, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import { printHTML, escapeHtml } from "@/lib/print";
+import { format } from "date-fns";
 
 type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number };
 type Customer = { id: string; name: string };
