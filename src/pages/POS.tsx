@@ -81,6 +81,26 @@ const POS = () => {
     toast.success(`Sale complete — ${fmt(total)}`);
     const change = Number(tendered || 0) - paid;
     if (paymentMode === "cash" && change > 0) toast.success(`Return change: ${fmt(change)}`);
+
+    // Build & print receipt
+    const customerName = customerId === "walk-in" ? "Walk-in" : (customers.find((c) => c.id === customerId)?.name ?? "Walk-in");
+    const rows = cart.map((i) => `<tr><td>${escapeHtml(i.product_name)}</td><td>${fmtQty(i.qty)} ${escapeHtml(i.unit)}</td><td>${fmt(i.sell_price)}</td><td>${fmt(i.qty * i.sell_price)}</td></tr>`).join("");
+    const changeLine = paymentMode === "cash" && Number(tendered || 0) >= total
+      ? `<div class="row"><span>Tendered</span><span>${fmt(Number(tendered))}</span></div><div class="row"><span>Change</span><span>${fmt(Number(tendered) - total)}</span></div>` : "";
+    const body = `
+      <div class="center"><h2>Sale Receipt</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
+      <hr/>
+      <div class="row"><span>Customer</span><span>${escapeHtml(customerName)}</span></div>
+      <div class="row"><span>Payment</span><span>${paymentMode}</span></div>
+      <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>
+      ${discountNum > 0 ? `<div class="row sub" style="margin-top:8px"><span>Subtotal</span><span>${fmt(subtotal)}</span></div><div class="row sub"><span>Discount</span><span>− ${fmt(discountNum)}</span></div>` : ""}
+      <div class="row total"><span>TOTAL</span><span>${fmt(total)}</span></div>
+      <div class="row sub"><span>Paid</span><span>${fmt(paid)}</span></div>
+      ${changeLine}
+      <hr/><div class="center muted">Thank you!</div>
+    `;
+    printHTML("Receipt", body);
+
     setCart([]); setAmountPaid(""); setTendered(""); setDiscount(""); setCustomerId("walk-in"); setPaymentMode("cash");
     load();
   };
