@@ -14,6 +14,7 @@ import { Plus, ArrowDownCircle, ArrowUpCircle, Wallet, Pencil, Trash2, Printer }
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
+import { getShopName } from "@/lib/shop";
 import { format } from "date-fns";
 
 const categories = ["sale", "purchase", "expense", "customer_payment", "supplier_payment", "opening", "drawing", "other"];
@@ -73,14 +74,15 @@ const Cashbook = () => {
     toast.success("Entry deleted"); load();
   };
 
-  const printBook = () => {
+  const printBook = async () => {
+    const shopName = await getShopName();
     const rowsHtml = filtered.map((r) => `<tr>
       <td>${format(new Date(r.created_at), "dd MMM, hh:mm a")}</td>
       <td style="text-transform:capitalize">${escapeHtml(r.category.replace("_", " "))}${r.note ? ` — ${escapeHtml(r.note)}` : ""}</td>
       <td style="color:${r.direction === "in" ? "#0a7d3a" : "#b91c1c"}">${r.direction === "in" ? "+" : "−"}${fmt(r.amount)}</td>
     </tr>`).join("");
     const body = `
-      <div class="center"><h2>Cashbook</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
+      <div class="center"><h1 style="font-size:22px">${escapeHtml(shopName)}</h1><h2 style="font-size:16px;font-weight:600">Cashbook</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
       <hr/>
       <div class="row"><span>Cash In</span><span>${fmt(totalIn)}</span></div>
       <div class="row"><span>Cash Out</span><span>${fmt(totalOut)}</span></div>
