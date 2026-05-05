@@ -120,6 +120,7 @@ const Cashbook = () => {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       } />
 
       <div className="grid grid-cols-3 gap-3 mb-4">
