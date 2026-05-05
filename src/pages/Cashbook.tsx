@@ -73,9 +73,28 @@ const Cashbook = () => {
     toast.success("Entry deleted"); load();
   };
 
+  const printBook = () => {
+    const rowsHtml = filtered.map((r) => `<tr>
+      <td>${format(new Date(r.created_at), "dd MMM, hh:mm a")}</td>
+      <td style="text-transform:capitalize">${escapeHtml(r.category.replace("_", " "))}${r.note ? ` — ${escapeHtml(r.note)}` : ""}</td>
+      <td style="color:${r.direction === "in" ? "#0a7d3a" : "#b91c1c"}">${r.direction === "in" ? "+" : "−"}${fmt(r.amount)}</td>
+    </tr>`).join("");
+    const body = `
+      <div class="center"><h2>Cashbook</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
+      <hr/>
+      <div class="row"><span>Cash In</span><span>${fmt(totalIn)}</span></div>
+      <div class="row"><span>Cash Out</span><span>${fmt(totalOut)}</span></div>
+      <div class="row total"><span>Balance</span><span>${fmt(balance)}</span></div>
+      <table><thead><tr><th>Date</th><th>Detail</th><th>Amount</th></tr></thead><tbody>${rowsHtml}</tbody></table>
+    `;
+    printHTML("Cashbook", body);
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <PageHeader title="Cashbook" subtitle="All cash in & out" actions={
+        <div className="flex gap-2">
+        <Button variant="outline" onClick={printBook}><Printer className="h-4 w-4 mr-1" />Print</Button>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger asChild><Button onClick={resetForm} className="bg-gradient-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />New Entry</Button></DialogTrigger>
           <DialogContent>
