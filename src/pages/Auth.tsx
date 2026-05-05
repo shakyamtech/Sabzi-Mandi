@@ -23,6 +23,31 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [shopName, setShopName] = useState("");
   const [fullName, setFullName] = useState("");
+  const [showPw, setShowPw] = useState(false);
+
+  const PasswordField = (
+    <div>
+      <Label>Password</Label>
+      <div className="relative">
+        <Input
+          type={showPw ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={6}
+          className="pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPw((v) => !v)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+          aria-label={showPw ? "Hide password" : "Show password"}
+        >
+          {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+    </div>
+  );
 
   useEffect(() => { if (user) navigate("/", { replace: true }); }, [user, navigate]);
 
