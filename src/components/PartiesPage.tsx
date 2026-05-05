@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { fmt } from "@/lib/format";
-import { Plus, Trash2, BookOpen, ArrowLeft, Wallet } from "lucide-react";
+import { Plus, Trash2, BookOpen, ArrowLeft, Wallet, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { printHTML, escapeHtml } from "@/lib/print";
+import { fmtQty } from "@/lib/format";
 
 type Party = { id: string; name: string; phone: string | null; balance: number };
 type Entry = { id: string; entry_type: string; amount: number; note: string | null; created_at: string };
