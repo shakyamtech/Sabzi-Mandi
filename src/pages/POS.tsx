@@ -88,8 +88,9 @@ const POS = () => {
     const rows = cart.map((i) => `<tr><td>${escapeHtml(i.product_name)}</td><td>${fmtQty(i.qty)} ${escapeHtml(i.unit)}</td><td>${fmt(i.sell_price)}</td><td>${fmt(i.qty * i.sell_price)}</td></tr>`).join("");
     const changeLine = paymentMode === "cash" && Number(tendered || 0) >= total
       ? `<div class="row"><span>Tendered</span><span>${fmt(Number(tendered))}</span></div><div class="row"><span>Change</span><span>${fmt(Number(tendered) - total)}</span></div>` : "";
+    const shopName = await getShopName();
     const body = `
-      <div class="center"><h2>Sale Receipt</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
+      <div class="center"><h1 style="font-size:22px">${escapeHtml(shopName)}</h1><h2 style="font-size:16px;font-weight:600">Sale Receipt</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
       <hr/>
       <div class="row"><span>Customer</span><span>${escapeHtml(customerName)}</span></div>
       <div class="row"><span>Payment</span><span>${paymentMode}</span></div>
