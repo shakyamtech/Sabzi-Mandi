@@ -73,14 +73,15 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
         <Button variant="ghost" onClick={() => setSelected(null)} className="mb-3"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
         <PageHeader title={selected.name} subtitle={selected.phone ?? ""} actions={
           <div className="flex gap-2">
-          <Button variant="outline" onClick={() => {
+          <Button variant="outline" onClick={async () => {
+            const shopName = await getShopName();
             const rowsHtml = entries.map((e) => `<tr>
               <td>${format(new Date(e.created_at), "dd MMM, hh:mm a")}</td>
               <td style="text-transform:capitalize">${escapeHtml(e.entry_type.replace("_", " "))}${e.note ? ` — ${escapeHtml(e.note)}` : ""}</td>
               <td>${fmt(e.amount)}</td>
             </tr>`).join("");
             const body = `
-              <div class="center"><h2>${escapeHtml(selected.name)}</h2>
+              <div class="center"><h1 style="font-size:22px">${escapeHtml(shopName)}</h1><h2 style="font-size:18px">${escapeHtml(selected.name)}</h2>
                 <div class="muted">${type === "customer" ? "Customer" : "Supplier"} Ledger · ${format(new Date(), "dd MMM yyyy")}</div></div>
               <hr/>
               <div class="row total"><span>Outstanding ${dueLabel}</span><span>${fmt(Math.abs(Number(selected.balance)))}</span></div>
