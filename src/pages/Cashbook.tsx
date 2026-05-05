@@ -14,6 +14,7 @@ import { Plus, ArrowDownCircle, ArrowUpCircle, Wallet, Pencil, Trash2, Printer }
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
+import { getShopName } from "@/lib/shop";
 import { format } from "date-fns";
 
 const categories = ["sale", "purchase", "expense", "customer_payment", "supplier_payment", "opening", "drawing", "other"];
