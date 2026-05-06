@@ -21,10 +21,10 @@ Deno.serve(async (req) => {
     const userClient = createClient(SUPABASE_URL, ANON, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: claims, error: cErr } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (cErr || !claims?.claims) return json({ error: "Unauthorized" }, 401);
+    const { data: userData, error: cErr } = await userClient.auth.getUser();
+    if (cErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
 
-    const callerId = claims.claims.sub as string;
+    const callerId = userData.user.id;
 
     const admin = createClient(SUPABASE_URL, SERVICE);
 
