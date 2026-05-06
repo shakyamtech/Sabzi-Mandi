@@ -49,7 +49,7 @@ export const AppShell = () => {
           </div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {nav.map((n) => (
+          {navItems.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -90,7 +90,7 @@ export const AppShell = () => {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5">
-        {nav.slice(0, 5).map((n) => (
+        {navItems.slice(0, 5).map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end}
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 py-2 text-[10px] ${isActive ? "text-sidebar-primary" : "text-sidebar-foreground/70"}`}>
