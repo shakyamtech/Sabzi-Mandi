@@ -94,6 +94,12 @@ Deno.serve(async (req) => {
       const { user_id } = body;
       if (!user_id) return json({ error: "user_id required" }, 400);
       if (user_id === callerId) return json({ error: "Cannot delete yourself" }, 400);
+      // Wipe app data (no FK cascade from auth.users)
+      const tables = ["sale_items","sales","purchase_items","purchases","cash_transactions","ledger_entries","expenses","customers","suppliers","products","profiles"];
+      for (const t of tables) {
+        const col = t === "profiles" ? "id" : "user_id";
+        await admin.from(t).delete().eq(col, user_id);
+      }
       const { error } = await admin.auth.admin.deleteUser(user_id);
       if (error) throw error;
       return json({ ok: true });

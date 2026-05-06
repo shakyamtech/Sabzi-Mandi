@@ -16,6 +16,7 @@ import Purchases from "./pages/Purchases";
 import Cashbook from "./pages/Cashbook";
 import Reports from "./pages/Reports";
 import BalanceSheet from "./pages/BalanceSheet";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/cashbook" element={<Cashbook />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/balance-sheet" element={<BalanceSheet />} />
+              <Route path="/admin" element={<Admin />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

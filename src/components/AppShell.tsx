@@ -2,11 +2,12 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck,
-  BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout,
+  BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -23,7 +24,9 @@ const nav = [
 export const AppShell = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
   const [shopName, setShopName] = useState("My Shop");
+  const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
 
   useEffect(() => {
     if (!user) return;
