@@ -2,11 +2,12 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck,
-  BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout,
+  BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -23,7 +24,9 @@ const nav = [
 export const AppShell = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
   const [shopName, setShopName] = useState("My Shop");
+  const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
 
   useEffect(() => {
     if (!user) return;
@@ -46,7 +49,7 @@ export const AppShell = () => {
           </div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {nav.map((n) => (
+          {navItems.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -87,7 +90,7 @@ export const AppShell = () => {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5">
-        {nav.slice(0, 5).map((n) => (
+        {navItems.slice(0, 5).map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end}
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 py-2 text-[10px] ${isActive ? "text-sidebar-primary" : "text-sidebar-foreground/70"}`}>
