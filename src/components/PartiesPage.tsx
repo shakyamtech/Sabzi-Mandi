@@ -153,6 +153,18 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
             {entries.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No entries yet</div>}
           </div>
         </Card>
+
+        {/* Payment Dialog for Ledger View */}
+        <Dialog open={payOpen} onOpenChange={setPayOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Record {type === "customer" ? "Payment Received" : "Payment Made"} — {selected.name}</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div><Label>Amount</Label><Input type="number" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} autoFocus /></div>
+              <div><Label>Note</Label><Input value={payNote} placeholder="Optional note" onChange={(e) => setPayNote(e.target.value)} /></div>
+              <Button onClick={recordPayment} className="w-full bg-gradient-primary text-primary-foreground">Save Payment</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
