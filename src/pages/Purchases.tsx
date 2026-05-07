@@ -57,17 +57,20 @@ const Purchases = () => {
     console.log("Editing purchase:", p.id);
     toast.loading(`Searching for items (ID: ${p.id.slice(0,5)})...`, { id: "load-items" });
     
-    // Diagnostic: Fetch all columns that PostgREST knows about to see the real schema
-    const { data: pi, error } = await supabase
-      .from("purchase_items")
-      .select()
-      .eq("purchase_id", p.id);
+    // Ultimate Diagnostic: Fetch through the parent 'purchases' table using the foreign key
+    const { data: purchaseData, error } = await supabase
+      .from("purchases")
+      .select("*, purchase_items(*)")
+      .eq("id", p.id)
+      .single();
     
     if (error) {
       console.error("DB Error:", error);
       toast.error("Database error: " + error.message, { id: "load-items" });
       return;
     }
+
+    const pi = purchaseData?.purchase_items || [];
     
     if (!pi || pi.length === 0) {
       console.warn("No items found for ID:", p.id);
