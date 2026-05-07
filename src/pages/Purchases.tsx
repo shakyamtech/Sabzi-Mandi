@@ -54,16 +54,24 @@ const Purchases = () => {
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
   const editPurchase = async (p: any) => {
-    toast.loading("Loading items...", { id: "load-items" });
-    const { data: pi, error } = await supabase.from("purchase_items").select("*").eq("purchase_id", p.id);
+    console.log("Editing purchase:", p.id);
+    toast.loading(`Searching for items (ID: ${p.id.slice(0,5)})...`, { id: "load-items" });
+    
+    // Using a more direct query
+    const { data: pi, error } = await supabase
+      .from("purchase_items")
+      .select("product_id, product_name, unit, cost_price, qty")
+      .eq("purchase_id", p.id);
     
     if (error) {
-      toast.error("Failed to load: " + error.message, { id: "load-items" });
+      console.error("DB Error:", error);
+      toast.error("Database error: " + error.message, { id: "load-items" });
       return;
     }
     
     if (!pi || pi.length === 0) {
-      toast.error("No items found for this purchase", { id: "load-items" });
+      console.warn("No items found for ID:", p.id);
+      toast.error("No items found! Try refreshing the page.", { id: "load-items" });
       return;
     }
     
@@ -81,7 +89,7 @@ const Purchases = () => {
     setAmountPaid((p.amount_paid || 0).toString());
     setItems(mappedItems);
     setShowForm(true);
-    toast.success("Purchase loaded for editing", { id: "load-items" });
+    toast.success(`${pi.length} items loaded!`, { id: "load-items" });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
