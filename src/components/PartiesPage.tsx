@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { printHTML, escapeHtml } from "@/lib/print";
 import { getShopName } from "@/lib/shop";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
 type Party = { id: string; name: string; phone: string | null; balance: number };
@@ -33,8 +34,23 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
   const [payAmount, setPayAmount] = useState(""); const [payNote, setPayNote] = useState("");
 
   const load = async () => {
-    const { data } = await supabase.from(table).select("*").order("name");
-    setItems((data ?? []) as any);
+    const [{ data: p }, { data: l }] = await Promise.all([
+      supabase.from(table).select("*").order("name"),
+      supabase.from("ledger_entries").select("party_id, entry_type, amount").eq("party_type", type)
+    ]);
+    
+    const parties = (p || []).map((party: any) => {
+      const partyEntries = (l || []).filter((e: any) => e.party_id === party.id);
+      const balance = partyEntries.reduce((acc: number, e: any) => {
+        // For suppliers: purchase increases debt (+), payment decreases it (-)
+        // For customers: sale increases debt (+), payment decreases it (-)
+        const isDebt = e.entry_type === "purchase" || e.entry_type === "sale" || e.entry_type === "debit";
+        return acc + (isDebt ? e.amount : -e.amount);
+      }, 0);
+      return { ...party, balance };
+    });
+
+    setItems(parties);
   };
   useEffect(() => { if (user) load(); }, [user, type]);
 
@@ -88,6 +104,29 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
               <table><thead><tr><th>Date</th><th>Detail</th><th>Amount</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
             printHTML(`${selected.name} — Ledger`, body);
           }}><Printer className="h-4 w-4 mr-1" />Print</Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="text-destructive border-destructive/20 hover:bg-destructive/10">
+                <Trash2 className="h-4 w-4 mr-1" /> Clear History
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear Ledger History?</AlertDialogTitle>
+                <AlertDialogDescription>This will permanently delete all transaction history for {selected.name}. Only use this if the account is settled.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={async () => {
+                  const { error } = await supabase.from("ledger_entries").delete().eq("party_type", type).eq("party_id", selected.id);
+                  if (error) return toast.error(error.message);
+                  toast.success("History cleared"); openLedger(selected); load();
+                }} className="bg-destructive text-destructive-foreground">Clear All</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           <Dialog open={payOpen} onOpenChange={setPayOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-primary text-primary-foreground"><Wallet className="h-4 w-4 mr-1" /> Record Payment</Button>

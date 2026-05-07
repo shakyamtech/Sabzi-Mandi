@@ -19,35 +19,52 @@ import BalanceSheet from "./pages/BalanceSheet";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound.tsx";
 
+import { SplashScreen } from "@/components/SplashScreen";
+import { useState, useEffect } from "react";
+
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/pos" element={<POS />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/suppliers" element={<Suppliers />} />
-              <Route path="/purchases" element={<Purchases />} />
-              <Route path="/cashbook" element={<Cashbook />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/balance-sheet" element={<BalanceSheet />} />
-              <Route path="/admin" element={<Admin />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SplashScreen />
+      <TooltipProvider>
+        {!loading && (
+          <>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
+                <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                  <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/pos" element={<POS />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/customers" element={<Customers />} />
+                    <Route path="/suppliers" element={<Suppliers />} />
+                    <Route path="/purchases" element={<Purchases />} />
+                    <Route path="/cashbook" element={<Cashbook />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/balance-sheet" element={<BalanceSheet />} />
+                    <Route path="/admin" element={<Admin />} />
+                  </Route>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AuthProvider>
+            </BrowserRouter>
+          </>
+        )}
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

@@ -9,8 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmt, fmtQty } from "@/lib/format";
-import { Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle, ChefHat } from "lucide-react";
 import { toast } from "sonner";
+
+type Ingredient = {
+  id: string;
+  product_id: string;
+  ingredient_id: string;
+  quantity: number;
+  ingredient_name?: string;
+  unit?: string;
+};
 
 type Product = {
   id: string; name: string; unit: string;
@@ -25,10 +34,26 @@ const Products = () => {
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<any>(blank);
   const [search, setSearch] = useState("");
+  const [recipeOpen, setRecipeOpen] = useState(false);
+  const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+  const [recipeIngredients, setRecipeIngredients] = useState<Ingredient[]>([]);
+  const [newIngredientId, setNewIngredientId] = useState("");
+  const [newIngredientQty, setNewIngredientQty] = useState("1");
 
   const load = async () => {
-    const { data } = await supabase.from("products").select("*").order("name");
-    setItems((data ?? []) as any);
+    const [{ data: p }, { data: i }] = await Promise.all([
+      supabase.from("products").select("*").order("name"),
+      supabase.from("product_ingredients" as any).select("*, ingredient:products!ingredient_id(name, unit)")
+    ]);
+
+    setItems((p ?? []) as any);
+
+    const formatted = (i || []).map((ing: any) => ({
+      ...ing,
+      ingredient_name: ing.ingredient?.name,
+      unit: ing.ingredient?.unit
+    }));
+    setRecipeIngredients(formatted);
   };
   useEffect(() => { if (user) load(); }, [user]);
 
@@ -48,6 +73,52 @@ const Products = () => {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) return toast.error(error.message);
     load();
+  };
+
+  const loadRecipe = async (product: Product) => {
+    setActiveProduct(product);
+    const { data, error } = await supabase
+      .from("product_ingredients" as any)
+      .select("*, ingredient:products!ingredient_id(name, unit)")
+      .eq("product_id", product.id);
+
+    if (error) {
+      // If table doesn't exist yet, we'll handle it gracefully
+      if (error.code === "PGRST116" || error.message.includes("does not exist")) {
+        toast.error("Please run the SQL migration first!");
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+
+    const formatted = (data || []).map((i: any) => ({
+      ...i,
+      ingredient_name: i.ingredient?.name,
+      unit: i.ingredient?.unit
+    }));
+    setRecipeIngredients(formatted);
+    setRecipeOpen(true);
+  };
+
+  const addIngredient = async () => {
+    if (!activeProduct || !newIngredientId) return;
+    const { error } = await supabase.from("product_ingredients" as any).insert({
+      product_id: activeProduct.id,
+      ingredient_id: newIngredientId,
+      quantity: Number(newIngredientQty),
+      user_id: user?.id
+    });
+    if (error) return toast.error(error.message);
+    setNewIngredientId("");
+    setNewIngredientQty("1");
+    loadRecipe(activeProduct);
+  };
+
+  const removeIngredient = async (id: string) => {
+    const { error } = await supabase.from("product_ingredients" as any).delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    if (activeProduct) loadRecipe(activeProduct);
   };
 
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()));
@@ -73,8 +144,11 @@ const Products = () => {
                       <SelectContent>
                         <SelectItem value="kg">kg</SelectItem>
                         <SelectItem value="g">gram</SelectItem>
+                        <SelectItem value="Ltr">ltr</SelectItem>
+                        <SelectItem value="ml">ml</SelectItem>
                         <SelectItem value="pcs">pcs</SelectItem>
-                        <SelectItem value="bunch">bunch</SelectItem>
+                        <SelectItem value="cup">cup</SelectItem>
+                        <SelectItem value="jar">jar</SelectItem>
                         <SelectItem value="dozen">dozen</SelectItem>
                       </SelectContent>
                     </Select>
@@ -97,7 +171,28 @@ const Products = () => {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filtered.map((p) => {
-          const low = Number(p.stock_qty) <= Number(p.low_stock_threshold);
+          // Dynamic calculation of 'Produced Stock' based on ingredients
+          let possibleStock = Infinity;
+          const recipe = items.filter(other => items.find(pi => pi.id === p.id)) // This is a bit complex in-situ, let's simplify
+
+          // Find ingredients for this product
+          const ingredients = recipeIngredients.filter(ri => ri.product_id === p.id);
+
+          if (ingredients.length > 0) {
+            ingredients.forEach(ing => {
+              const actualProduct = items.find(prod => prod.id === ing.ingredient_id);
+              if (actualProduct) {
+                const canMake = Math.floor(actualProduct.stock_qty / ing.quantity);
+                if (canMake < possibleStock) possibleStock = canMake;
+              }
+            });
+          } else {
+            possibleStock = p.stock_qty;
+          }
+
+          const displayStock = Math.max(0, (possibleStock === Infinity ? 0 : possibleStock));
+          const low = Number(displayStock) <= Number(p.low_stock_threshold);
+
           return (
             <Card key={p.id} className="p-4 shadow-card border-0">
               <div className="flex items-start justify-between gap-2">
@@ -106,6 +201,7 @@ const Products = () => {
                   <div className="text-xs text-muted-foreground">per {p.unit}</div>
                 </div>
                 <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => loadRecipe(p)} title="Manage Recipe"><ChefHat className="h-4 w-4 text-orange-500" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => { setEdit(p); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => remove(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
@@ -115,10 +211,10 @@ const Products = () => {
                 <div><div className="text-muted-foreground text-xs">Sell</div><div className="text-primary font-medium">{fmt(p.sell_price)}</div></div>
               </div>
               <div className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 ${low ? "bg-warning/15 text-warning-foreground" : "bg-secondary"}`}>
-                <span className="text-xs">Stock</span>
+                <span className="text-xs">{ingredients.length > 0 ? "Possible Stock" : "Stock"}</span>
                 <span className="font-medium flex items-center gap-1">
                   {low && <AlertTriangle className="h-3.5 w-3.5 text-warning" />}
-                  {fmtQty(p.stock_qty)} {p.unit}
+                  {fmtQty(displayStock)} {p.unit}
                 </span>
               </div>
             </Card>
@@ -126,6 +222,56 @@ const Products = () => {
         })}
         {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground py-12">No products yet. Add your first vegetable!</div>}
       </div>
+
+      <Dialog open={recipeOpen} onOpenChange={setRecipeOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Recipe for {activeProduct?.name}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="flex gap-2 items-end">
+              <div className="flex-1 space-y-2">
+                <Label>Add Ingredient</Label>
+                <Select value={newIngredientId} onValueChange={setNewIngredientId}>
+                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent>
+                    {items.filter(p => p.id !== activeProduct?.id).map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name} ({p.unit})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-24 space-y-2">
+                <Label>Qty</Label>
+                <Input type="number" value={newIngredientQty} onChange={e => setNewIngredientQty(e.target.value)} />
+              </div>
+              <Button onClick={addIngredient} size="icon"><Plus className="h-4 w-4" /></Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Required Ingredients</Label>
+              {recipeIngredients.length === 0 && (
+                <div className="text-center text-sm text-muted-foreground py-4 border rounded-lg border-dashed">
+                  No ingredients added yet
+                </div>
+              )}
+              {recipeIngredients.map(ing => (
+                <div key={ing.id} className="flex items-center justify-between bg-secondary p-2 rounded-lg">
+                  <div className="text-sm">
+                    <span className="font-medium">{ing.ingredient_name}</span>
+                    <span className="text-muted-foreground ml-2">{ing.quantity} {ing.unit}</span>
+                  </div>
+                  <Button size="icon" variant="ghost" onClick={() => removeIngredient(ing.id)} className="h-8 w-8">
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <Button onClick={() => setRecipeOpen(false)} variant="secondary" className="w-full">Done</Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

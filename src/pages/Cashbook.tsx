@@ -144,9 +144,8 @@ const Cashbook = () => {
               <div className="text-xs text-muted-foreground">{format(new Date(r.created_at), "dd MMM yyyy, hh:mm a")}{r.note ? ` · ${r.note}` : ""}</div>
             </div>
             <div className={`font-medium ${r.direction === "in" ? "text-success" : "text-destructive"}`}>{r.direction === "in" ? "+" : "-"}{fmt(r.amount)}</div>
-            {r.reference_id ? (
-              <span className="text-[10px] text-muted-foreground italic px-1">auto</span>
-            ) : (
+            <div className="flex items-center gap-2">
+              {r.reference_id && <span className="text-[10px] text-muted-foreground italic px-1">auto</span>}
               <div className="flex gap-1">
                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(r)}><Pencil className="h-3.5 w-3.5" /></Button>
                 <AlertDialog>
@@ -165,7 +164,7 @@ const Cashbook = () => {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            )}
+            </div>
           </div>
         ))}
         {filtered.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No entries</div>}

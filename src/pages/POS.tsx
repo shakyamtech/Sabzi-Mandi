@@ -30,22 +30,50 @@ const POS = () => {
   const [tendered, setTendered] = useState<string>("");
   const [discount, setDiscount] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [recipes, setRecipes] = useState<any[]>([]);
 
   const load = async () => {
-    const [{ data: p }, { data: c }] = await Promise.all([
+    const [{ data: p }, { data: c }, { data: r }] = await Promise.all([
       supabase.from("products").select("*").order("name"),
       supabase.from("customers").select("id,name").order("name"),
+      supabase.from("product_ingredients" as any).select("*"),
     ]);
-    setProducts((p ?? []) as any); setCustomers((c ?? []) as any);
+    setProducts((p ?? []) as any); 
+    setCustomers((c ?? []) as any);
+    setRecipes(r ?? []);
   };
   useEffect(() => { if (user) load(); }, [user]);
 
   const filtered = useMemo(() => products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())), [products, search]);
 
   const addToCart = (p: Product) => {
+    // Check Smart Stock (recipes + simple)
+    let possibleStock = Infinity;
+    const pRecipes = recipes.filter(r => r.product_id === p.id);
+    if (pRecipes.length > 0) {
+      pRecipes.forEach(rec => {
+        const ing = products.find(prod => prod.id === rec.ingredient_id);
+        if (ing) {
+          const canMake = Math.floor(ing.stock_qty / rec.quantity);
+          if (canMake < possibleStock) possibleStock = canMake;
+        }
+      });
+    } else {
+      possibleStock = p.stock_qty;
+    }
+    const displayStock = possibleStock === Infinity ? 0 : possibleStock;
+
+    if (displayStock <= 0) return toast.error(`${p.name} is out of stock!`);
+
     setCart((c) => {
       const ex = c.find((i) => i.product_id === p.id);
-      if (ex) return c.map((i) => i.product_id === p.id ? { ...i, qty: +(i.qty + 1).toFixed(3) } : i);
+      if (ex) {
+        if (ex.qty + 1 > displayStock) {
+          toast.error(`Cannot add more ${p.name}. Stock limit reached.`);
+          return c;
+        }
+        return c.map((i) => i.product_id === p.id ? { ...i, qty: +(i.qty + 1).toFixed(3) } : i);
+      }
       return [...c, { product_id: p.id, product_name: p.name, unit: p.unit, sell_price: Number(p.sell_price), cost_price: Number(p.cost_price), qty: 1 }];
     });
   };
@@ -115,14 +143,39 @@ const POS = () => {
         <div>
           <Input className="mb-3" placeholder="Search vegetable..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {filtered.map((p) => (
-              <button key={p.id} onClick={() => addToCart(p)}
-                className="text-left p-3 rounded-xl bg-card shadow-card hover:shadow-elegant transition-smooth border-0 active:scale-95">
-                <div className="font-display text-base truncate">{p.name}</div>
-                <div className="text-xs text-muted-foreground">{fmtQty(p.stock_qty)} {p.unit} left</div>
-                <div className="mt-2 text-primary font-semibold">{fmt(p.sell_price)}</div>
-              </button>
-            ))}
+            {filtered.map((p) => {
+              // Calculate Smart Stock
+              let possibleStock = Infinity;
+              const productRecipes = recipes.filter(r => r.product_id === p.id);
+              
+              if (productRecipes.length > 0) {
+                productRecipes.forEach(rec => {
+                  const ing = products.find(prod => prod.id === rec.ingredient_id);
+                  if (ing) {
+                    const canMake = Math.floor(ing.stock_qty / rec.quantity);
+                    if (canMake < possibleStock) possibleStock = canMake;
+                  }
+                });
+              } else {
+                possibleStock = p.stock_qty;
+              }
+              const displayStock = possibleStock === Infinity ? 0 : possibleStock;
+
+              return (
+                <button 
+                  key={p.id} 
+                  onClick={() => addToCart(p)}
+                  disabled={displayStock <= 0}
+                  className={`text-left p-3 rounded-xl bg-card shadow-card transition-smooth border-0 active:scale-95 ${displayStock <= 0 ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:shadow-elegant'}`}
+                >
+                  <div className="font-display text-base truncate">{p.name}</div>
+                  <div className={`text-xs ${displayStock <= 0 ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>
+                    {displayStock <= 0 ? 'OUT OF STOCK' : `${fmtQty(displayStock)} ${p.unit} left`}
+                  </div>
+                  <div className="mt-2 text-primary font-semibold">{fmt(p.sell_price)}</div>
+                </button>
+              );
+            })}
             {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground py-8">No products. Add some first.</div>}
           </div>
         </div>
@@ -179,7 +232,7 @@ const POS = () => {
               </div>
               <div>
                 <Label className="text-xs">Amount Paid</Label>
-                <Input type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} />
+                <Input type="number" step="0.01" value={amountPaid} onWheel={(e) => e.currentTarget.blur()} onChange={(e) => setAmountPaid(e.target.value)} />
               </div>
             </div>
             {paymentMode === "cash" && (
@@ -190,6 +243,7 @@ const POS = () => {
                   step="0.01"
                   placeholder="e.g. 500"
                   value={tendered}
+                  onWheel={(e) => e.currentTarget.blur()}
                   onChange={(e) => setTendered(e.target.value)}
                 />
               </div>
@@ -201,6 +255,7 @@ const POS = () => {
                 step="0.01"
                 placeholder="0"
                 value={discount}
+                onWheel={(e) => e.currentTarget.blur()}
                 onChange={(e) => setDiscount(e.target.value)}
               />
             </div>

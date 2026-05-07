@@ -20,12 +20,11 @@ const Dashboard = () => {
     const iso = today.toISOString();
 
     (async () => {
-      const [{ data: sales }, { data: products }, { data: cash }, { data: customers }, { data: suppliers }] = await Promise.all([
+      const [{ data: sales }, { data: products }, { data: cash }, { data: ledger }] = await Promise.all([
         supabase.from("sales").select("total, cost_total, created_at").gte("created_at", iso),
         supabase.from("products").select("stock_qty, cost_price, low_stock_threshold"),
         supabase.from("cash_transactions").select("direction, amount"),
-        supabase.from("customers").select("balance"),
-        supabase.from("suppliers").select("balance"),
+        supabase.from("ledger_entries").select("party_id, party_type, entry_type, amount"),
       ]);
 
       const todaySales = (sales ?? []).reduce((s, r: any) => s + Number(r.total), 0);
@@ -33,8 +32,23 @@ const Dashboard = () => {
       const cashBalance = (cash ?? []).reduce((s, r: any) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0);
       const stockValue = (products ?? []).reduce((s, r: any) => s + Number(r.stock_qty) * Number(r.cost_price), 0);
       const lowStock = (products ?? []).filter((r: any) => Number(r.stock_qty) <= Number(r.low_stock_threshold)).length;
-      const customerDues = (customers ?? []).reduce((s, r: any) => s + Math.max(0, Number(r.balance)), 0);
-      const supplierDues = (suppliers ?? []).reduce((s, r: any) => s + Math.max(0, Number(r.balance)), 0);
+      
+      // Calculate dues from ledger entries
+      const partyBalances: Record<string, number> = {};
+      (ledger || []).forEach((e: any) => {
+        const key = `${e.party_type}_${e.party_id}`;
+        const isDebt = e.entry_type === "purchase" || e.entry_type === "sale" || e.entry_type === "debit";
+        const val = isDebt ? Number(e.amount) : -Number(e.amount);
+        partyBalances[key] = (partyBalances[key] || 0) + val;
+      });
+
+      const customerDues = Object.entries(partyBalances)
+        .filter(([k]) => k.startsWith("customer_"))
+        .reduce((s, [_, b]) => s + Math.max(0, b), 0);
+        
+      const supplierDues = Object.entries(partyBalances)
+        .filter(([k]) => k.startsWith("supplier_"))
+        .reduce((s, [_, b]) => s + Math.max(0, b), 0);
 
       setStats({
         todaySales, todayProfit, cashBalance, stockValue, lowStock,

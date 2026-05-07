@@ -112,3 +112,18 @@
   .shadow-glow { box-shadow: var(--shadow-glow); }
   .transition-smooth { transition: var(--transition-smooth); }
 }
+
+/* Disable number input spin buttons */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Prevent scroll wheel from changing numbers */
+input[type=number]:focus {
+  pointer-events: auto;
+}
