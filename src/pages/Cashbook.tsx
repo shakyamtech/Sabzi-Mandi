@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmt } from "@/lib/format";
-import { Plus, ArrowDownCircle, ArrowUpCircle, Wallet, Pencil, Trash2, Printer } from "lucide-react";
+import { Plus, ArrowDownCircle, ArrowUpCircle, Wallet, Trash2, Printer } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
@@ -210,7 +210,6 @@ const Cashbook = () => {
             <div className="flex items-center gap-2">
               {r.reference_id && <span className="text-[10px] text-muted-foreground italic px-1">auto</span>}
               <div className="flex gap-1">
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(r)}><Pencil className="h-3.5 w-3.5" /></Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
