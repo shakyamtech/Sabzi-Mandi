@@ -34,7 +34,7 @@ const Purchases = () => {
     const [{ data: p }, { data: s }, { data: h }] = await Promise.all([
       supabase.from("products").select("id,name,unit,cost_price,stock_qty").order("name"),
       supabase.from("suppliers").select("id,name").order("name"),
-      supabase.from("purchases").select("id,total,payment_mode,created_at,suppliers(name)").order("created_at", { ascending: false }).limit(20),
+      supabase.from("purchases").select("id,total,amount_paid,payment_mode,supplier_id,created_at,suppliers(name)").order("created_at", { ascending: false }).limit(20),
     ]);
     setProducts((p ?? []) as any); setSuppliers((s ?? []) as any); setHistory(h ?? []);
   };
@@ -60,7 +60,7 @@ const Purchases = () => {
     setEditingId(p.id);
     setSupplierId(p.supplier_id || "none");
     setPaymentMode(p.payment_mode);
-    setAmountPaid(p.amount_paid.toString());
+    setAmountPaid((p.amount_paid || 0).toString());
     setItems(pi.map(item => ({
       product_id: item.product_id,
       product_name: item.product_name,
