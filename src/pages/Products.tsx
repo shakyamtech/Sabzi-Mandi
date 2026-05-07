@@ -43,7 +43,7 @@ const Products = () => {
   const load = async () => {
     const [{ data: p }, { data: i }] = await Promise.all([
       supabase.from("products").select("*").order("name"),
-      supabase.from("product_ingredients" as any).select("*, ingredient:products!ingredient_id(name, unit)")
+      supabase.from("product_ingredients" as any).select("*, ingredient:products!fk_product_ingredient(name, unit)")
     ]);
 
     setItems((p ?? []) as any);
@@ -79,7 +79,7 @@ const Products = () => {
     setActiveProduct(product);
     const { data, error } = await supabase
       .from("product_ingredients" as any)
-      .select("*, ingredient:products!ingredient_id(name, unit)")
+      .select("*, ingredient:products!fk_product_ingredient(name, unit)")
       .eq("product_id", product.id);
 
     if (error) {

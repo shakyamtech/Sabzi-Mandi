@@ -17,7 +17,20 @@ import { printHTML, escapeHtml } from "@/lib/print";
 import { getShopName } from "@/lib/shop";
 import { format } from "date-fns";
 
-const categories = ["sale", "purchase", "expense", "customer_payment", "supplier_payment", "opening", "drawing", "other"];
+const categories = [
+  "sale", 
+  "purchase", 
+  "expense", 
+  "salary", 
+  "rent", 
+  "electricity", 
+  "maintenance", 
+  "customer_payment", 
+  "supplier_payment", 
+  "opening", 
+  "personal", 
+  "other"
+];
 
 const Cashbook = () => {
   const { user } = useAuth();
@@ -26,7 +39,7 @@ const Cashbook = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [direction, setDirection] = useState<"in" | "out">("in");
   const [amount, setAmount] = useState(""); const [note, setNote] = useState("");
-  const [category, setCategory] = useState("other");
+  const [category, setCategory] = useState("");
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
 
   const load = async () => {
@@ -49,6 +62,8 @@ const Cashbook = () => {
 
   const save = async () => {
     if (!amount) return toast.error("Amount required");
+    if (!category) return toast.error("Please select a category");
+    
     if (editId) {
       const { error } = await supabase.from("cash_transactions").update({
         direction, amount: Number(amount), category, note: note || null,
@@ -60,8 +75,16 @@ const Cashbook = () => {
         user_id: user!.id, direction, amount: Number(amount), category, note: note || null,
       });
       if (error) return toast.error(error.message);
-      if (Number(amount) > 0 && (category === "expense")) {
-        await supabase.from("expenses").insert({ user_id: user!.id, amount: Number(amount), category: note || "general", note });
+      
+      // If it's an expense, record it in the expenses table too
+      const expenseCategories = ["expense", "salary", "rent", "electricity", "maintenance"];
+      if (direction === "out" && expenseCategories.includes(category)) {
+        await supabase.from("expenses").insert({ 
+          user_id: user!.id, 
+          amount: Number(amount), 
+          category: category, 
+          note: note || category 
+        });
       }
       toast.success("Entry added");
     }
@@ -113,7 +136,7 @@ const Cashbook = () => {
               <div>
                 <Label>Category</Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select Category..." /></SelectTrigger>
                   <SelectContent>{categories.map((c) => <SelectItem key={c} value={c}>{c.replace("_", " ")}</SelectItem>)}</SelectContent>
                 </Select>
               </div>

@@ -33,7 +33,6 @@ const Dashboard = () => {
       const stockValue = (products ?? []).reduce((s, r: any) => s + Number(r.stock_qty) * Number(r.cost_price), 0);
       const lowStock = (products ?? []).filter((r: any) => Number(r.stock_qty) <= Number(r.low_stock_threshold)).length;
       
-      // Calculate dues from ledger entries
       const partyBalances: Record<string, number> = {};
       (ledger || []).forEach((e: any) => {
         const key = `${e.party_type}_${e.party_id}`;
@@ -131,3 +130,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

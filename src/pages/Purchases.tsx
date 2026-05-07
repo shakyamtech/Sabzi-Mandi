@@ -53,46 +53,10 @@ const Purchases = () => {
     setItems((arr) => arr.map((i) => i.product_id === id ? { ...i, [k]: v } : i));
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
-  const editPurchase = async (p: any) => {
-    toast.loading(`Loading items...`, { id: "load-items" });
-    
-    // Fetch the items for this purchase
-    const { data: pi, error } = await supabase
-      .from("purchase_items")
-      .select("*")
-      .eq("purchase_id", p.id);
-
-    if (error) {
-      toast.error(`Database error: ${error.message}`, { id: "load-items" });
-      return;
-    }
-
-    if (!pi || pi.length === 0) {
-      toast.error("No items found! Did you run the SQL fix?", { id: "load-items", duration: 5000 });
-      return;
-    }
-
-    const mappedItems = pi.map((item: any) => ({
-      product_id: item.product_id,
-      product_name: item.product_name || "Unknown Product",
-      unit: item.unit || "kg",
-      cost_price: Number(item.cost_price || 0),
-      qty: Number(item.qty || 0)
-    }));
-
-    setEditingId(p.id);
-    setSupplierId(p.supplier_id || "none");
-    setPaymentMode(p.payment_mode);
-    setAmountPaid((p.amount_paid || 0).toString());
-    setItems(mappedItems);
-    setShowForm(true);
-    toast.success(`${pi.length} items loaded!`, { id: "load-items" });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const editPurchase = async (p: any) => {
     toast.loading(`Loading items...`, { id: "load-items" });
-    
+
     // Fetch the items for this purchase
     const { data: pi, error } = await supabase
       .from("purchase_items")
@@ -130,7 +94,7 @@ const Purchases = () => {
   const save = async () => {
     if (items.length === 0) return toast.error("Add items");
     if (paymentMode === "credit" && (supplierId === "none" || !supplierId)) return toast.error("Pick a supplier for credit");
-    
+
     if (editingId) {
       const { error: delErr } = await supabase.rpc("delete_purchase", { p_purchase_id: editingId });
       if (delErr) return toast.error("Failed to update: " + delErr.message);
@@ -155,8 +119,8 @@ const Purchases = () => {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <PageHeader title="Purchases" subtitle="Stock-in from suppliers" actions={
-        <Button onClick={() => { 
-          setShowForm(!showForm); 
+        <Button onClick={() => {
+          setShowForm(!showForm);
           if (showForm) { setEditingId(null); setItems([]); setSupplierId("none"); }
         }} className="bg-gradient-primary text-primary-foreground">
           <Plus className="h-4 w-4 mr-1" />{showForm ? "Cancel" : "New Purchase"}
