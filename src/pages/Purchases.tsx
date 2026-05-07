@@ -191,7 +191,6 @@ const Purchases = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="font-medium">{fmt(h.total)}</div>
-                <Button size="icon" variant="ghost" onClick={() => editPurchase(h)} className="h-8 w-8 text-muted-foreground"><Pencil className="h-4 w-4" /></Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
