@@ -42,10 +42,14 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
     const parties = (p || []).map((party: any) => {
       const partyEntries = (l || []).filter((e: any) => e.party_id === party.id);
       const balance = partyEntries.reduce((acc: number, e: any) => {
-        // For suppliers: purchase increases debt (+), payment decreases it (-)
-        // For customers: sale increases debt (+), payment decreases it (-)
-        const isDebt = e.entry_type === "purchase" || e.entry_type === "sale" || e.entry_type === "debit";
-        return acc + (isDebt ? e.amount : -e.amount);
+        // For Customers: Sale/Debit increases debt (+), Payment decreases it (-)
+        // For Suppliers: Purchase/Credit increases debt (+), Payment decreases it (-)
+        const isDebt = ["sale", "purchase", "debit", "credit"].includes(e.entry_type);
+        const isPayment = ["payment_in", "payment_out", "payment"].includes(e.entry_type);
+        
+        if (isDebt) return acc + Number(e.amount);
+        if (isPayment) return acc - Number(e.amount);
+        return acc;
       }, 0);
       return { ...party, balance };
     });
@@ -133,7 +137,9 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
           </div>
         } />
         <Card className="p-5 mb-4 shadow-card border-0">
-          <div className="text-xs uppercase text-muted-foreground tracking-wide">Outstanding {dueLabel}</div>
+          <div className="text-xs uppercase text-muted-foreground tracking-wide">
+            {Number(selected.balance) >= 0 ? `Outstanding ${dueLabel}` : "Advance / Overpaid"}
+          </div>
           <div className={`font-display text-3xl mt-1 ${Number(selected.balance) > 0 ? "text-orange-600" : "text-green-600"}`}>
             {fmt(Math.abs(Number(selected.balance)))}
           </div>
@@ -207,8 +213,12 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
               </div>
             </div>
             <div className="mt-3 flex items-center justify-between bg-secondary rounded-lg px-3 py-2">
-              <span className="text-xs text-muted-foreground">{dueLabel}</span>
-              <span className={`font-medium ${Number(p.balance) > 0 ? "text-orange-600 font-bold" : "text-green-600"}`}>{fmt(Math.abs(Number(p.balance)))}</span>
+              <span className="text-xs text-muted-foreground">
+                {Number(p.balance) >= 0 ? dueLabel : "Advance"}
+              </span>
+              <span className={`font-medium ${Number(p.balance) > 0 ? "text-orange-600 font-bold" : "text-green-600"}`}>
+                {fmt(Math.abs(Number(p.balance)))}
+              </span>
             </div>
           </Card>
         ))}
