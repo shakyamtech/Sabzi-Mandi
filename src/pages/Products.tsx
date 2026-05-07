@@ -136,7 +136,7 @@ const Products = () => {
             <DialogContent>
               <DialogHeader><DialogTitle>{edit.id ? "Edit Product" : "New Product"}</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div><Label>Name</Label><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} placeholder="Tomato" /></div>
+                <div><Label>Name</Label><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} placeholder="Enter vegetable or item name..." /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>Unit</Label>
                     <Select value={edit.unit} onValueChange={(v) => setEdit({ ...edit, unit: v })}>
