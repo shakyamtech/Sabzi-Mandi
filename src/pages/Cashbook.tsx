@@ -163,27 +163,22 @@ const Cashbook = () => {
                 </Select>
               </div>
 
-              {(category === "customer_payment" || category === "payment") && (
+              {(category === "customer_payment" || category === "supplier_payment" || category === "payment" || category === "salary") && (
                 <div>
-                  <Label>Customer</Label>
+                  <Label>{direction === "in" ? "Customer" : "Payee / Supplier"}</Label>
                   <Select value={partyId || ""} onValueChange={setPartyId}>
-                    <SelectTrigger><SelectValue placeholder="Select Customer..." /></SelectTrigger>
-                    <SelectContent>{customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                    <SelectTrigger><SelectValue placeholder={`Select ${direction === "in" ? "Customer" : "Supplier"}...`} /></SelectTrigger>
+                    <SelectContent>
+                      {direction === "in" 
+                        ? customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
+                        : suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+                      }
+                    </SelectContent>
                   </Select>
                 </div>
               )}
 
-              {category === "supplier_payment" && (
-                <div>
-                  <Label>Supplier</Label>
-                  <Select value={partyId || ""} onValueChange={setPartyId}>
-                    <SelectTrigger><SelectValue placeholder="Select Supplier..." /></SelectTrigger>
-                    <SelectContent>{suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div><Label>Note</Label><Input value={note} onChange={(e) => setNote(e.target.value)} /></div>
+              <div><Label>Note</Label><Input value={note} placeholder="Add a note (optional)" onChange={(e) => setNote(e.target.value)} /></div>
               <Button onClick={save} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
             </div>
           </DialogContent>
@@ -206,11 +201,14 @@ const Cashbook = () => {
           <div key={r.id} className="p-3 flex items-center gap-3">
             {r.direction === "in" ? <ArrowDownCircle className="h-5 w-5 text-success" /> : <ArrowUpCircle className="h-5 w-5 text-destructive" />}
             <div className="flex-1 min-w-0">
-              <div className="font-medium capitalize">
-                {r.party_name ? `${r.party_name}` : r.category.replace("_", " ")}
-                {r.party_name && <span className="text-[10px] text-muted-foreground font-normal ml-2 uppercase">({r.category.replace("_", " ")})</span>}
+              <div className="font-medium flex items-center gap-2">
+                <span className="capitalize">{r.party_name ? r.party_name : r.category.replace("_", " ")}</span>
+                {r.party_name && <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground font-normal uppercase tracking-wider">{r.category.replace("_", " ")}</span>}
               </div>
-              <div className="text-xs text-muted-foreground">{format(new Date(r.created_at), "dd MMM yyyy, hh:mm a")}{r.note ? ` · ${r.note}` : ""}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {format(new Date(r.created_at), "dd MMM yyyy, hh:mm a")}
+                {r.note && <span className="italic ml-1"> · {r.note}</span>}
+              </div>
             </div>
             <div className={`font-medium ${r.direction === "in" ? "text-success" : "text-destructive"}`}>{r.direction === "in" ? "+" : "-"}{fmt(r.amount)}</div>
             <div className="flex items-center gap-2">
