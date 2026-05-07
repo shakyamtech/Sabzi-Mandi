@@ -24,9 +24,10 @@ type Ingredient = {
 type Product = {
   id: string; name: string; unit: string;
   cost_price: number; sell_price: number; stock_qty: number; low_stock_threshold: number;
+  is_manufactured: boolean;
 };
 
-const blank = { name: "", unit: "kg", cost_price: 0, sell_price: 0, stock_qty: 0, low_stock_threshold: 5 };
+const blank = { name: "", unit: "kg", cost_price: 0, sell_price: 0, stock_qty: 0, low_stock_threshold: 5, is_manufactured: false };
 
 const Products = () => {
   const { user } = useAuth();
@@ -160,7 +161,17 @@ const Products = () => {
                   <div><Label>Sell Price (Rs.)</Label><Input type="number" step="0.01" value={edit.sell_price} onChange={(e) => setEdit({ ...edit, sell_price: +e.target.value })} /></div>
                 </div>
                 <div><Label>Low-stock alert at</Label><Input type="number" step="0.001" value={edit.low_stock_threshold} onChange={(e) => setEdit({ ...edit, low_stock_threshold: +e.target.value })} /></div>
-                <Button onClick={save} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
+                <div className="flex items-center gap-2 pt-1">
+                  <input 
+                    type="checkbox" 
+                    id="is_manufactured"
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    checked={edit.is_manufactured} 
+                    onChange={(e) => setEdit({ ...edit, is_manufactured: e.target.checked })} 
+                  />
+                  <Label htmlFor="is_manufactured" className="cursor-pointer font-medium text-primary">Made in our Shop (Has Recipe)</Label>
+                </div>
+                <Button onClick={save} className="w-full bg-gradient-primary text-primary-foreground mt-2">Save</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -201,7 +212,9 @@ const Products = () => {
                   <div className="text-xs text-muted-foreground">per {p.unit}</div>
                 </div>
                 <div className="flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => loadRecipe(p)} title="Manage Recipe"><ChefHat className="h-4 w-4 text-orange-500" /></Button>
+                  {p.is_manufactured && (
+                    <Button size="icon" variant="ghost" onClick={() => loadRecipe(p)} title="Manage Recipe"><ChefHat className="h-4 w-4 text-orange-500" /></Button>
+                  )}
                   <Button size="icon" variant="ghost" onClick={() => { setEdit(p); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => remove(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
