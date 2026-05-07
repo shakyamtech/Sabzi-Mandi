@@ -54,13 +54,13 @@ const Purchases = () => {
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
   const editPurchase = async (p: any) => {
-    console.log("Editing purchase:", p.id);
-    toast.loading(`Searching for items (ID: ${p.id.slice(0,5)})...`, { id: "load-items" });
+    console.log("Analyzing purchase:", p.id);
+    toast.loading(`Deep Scanning (ID: ${p.id.slice(0,5)})...`, { id: "load-items" });
     
-    // Ultimate Diagnostic: Fetch through the parent 'purchases' table using the foreign key
-    const { data: purchaseData, error } = await supabase
+    // Fetch the absolute raw purchase record
+    const { data: rawPurchase, error } = await supabase
       .from("purchases")
-      .select("*, purchase_items(*)")
+      .select("*")
       .eq("id", p.id)
       .single();
     
@@ -70,34 +70,17 @@ const Purchases = () => {
       return;
     }
 
-    const pi = purchaseData?.purchase_items || [];
+    const keys = Object.keys(rawPurchase || {});
+    console.log("Purchase columns:", keys);
     
-    if (!pi || pi.length === 0) {
-      console.warn("No items found for ID:", p.id);
-      toast.error("No items found! Try refreshing the page.", { id: "load-items" });
-      return;
+    // Look for JSON columns
+    if (rawPurchase.items || rawPurchase.purchase_items || rawPurchase.details) {
+      toast.success("Found items stored directly inside the purchase!", { id: "load-items", duration: 5000 });
+      console.log("Items data:", rawPurchase.items || rawPurchase.purchase_items || rawPurchase.details);
+      toast.info("Please tell me what the toast says!", { id: "load-items", duration: 5000 });
+    } else {
+      toast.info(`Purchase columns: ${keys.join(", ")}`, { id: "load-items", duration: 15000 });
     }
-    
-    if (pi && pi.length > 0) {
-      toast.info(`DB Columns: ${Object.keys(pi[0]).join(", ")}`, { duration: 10000, id: "db-cols" });
-    }
-
-    const mappedItems = pi.map((item: any) => ({
-      product_id: item.product_id,
-      product_name: item.product_name || item.products?.name || "Unknown Product",
-      unit: item.unit || item.products?.unit || "kg",
-      cost_price: Number(item.cost_price || item.price || 0),
-      qty: Number(item.qty || item.quantity || 0)
-    }));
-
-    setEditingId(p.id);
-    setSupplierId(p.supplier_id || "none");
-    setPaymentMode(p.payment_mode);
-    setAmountPaid((p.amount_paid || 0).toString());
-    setItems(mappedItems);
-    setShowForm(true);
-    toast.success(`${pi.length} items loaded!`, { id: "load-items" });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const save = async () => {
