@@ -134,7 +134,7 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
         } />
         <Card className="p-5 mb-4 shadow-card border-0">
           <div className="text-xs uppercase text-muted-foreground tracking-wide">Outstanding {dueLabel}</div>
-          <div className={`font-display text-3xl mt-1 ${Number(selected.balance) > 0 ? "text-accent" : "text-success"}`}>
+          <div className={`font-display text-3xl mt-1 ${Number(selected.balance) > 0 ? "text-orange-600" : "text-green-600"}`}>
             {fmt(Math.abs(Number(selected.balance)))}
           </div>
         </Card>
@@ -208,7 +208,7 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
             </div>
             <div className="mt-3 flex items-center justify-between bg-secondary rounded-lg px-3 py-2">
               <span className="text-xs text-muted-foreground">{dueLabel}</span>
-              <span className={`font-medium ${Number(p.balance) > 0 ? "text-accent" : "text-success"}`}>{fmt(Math.abs(Number(p.balance)))}</span>
+              <span className={`font-medium ${Number(p.balance) > 0 ? "text-orange-600 font-bold" : "text-green-600"}`}>{fmt(Math.abs(Number(p.balance)))}</span>
             </div>
           </Card>
         ))}
