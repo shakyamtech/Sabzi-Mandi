@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="36" fill="#65C449" />
+  <g fill="none" stroke="#122A14" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Base line -->
+    <line x1="42" y1="85" x2="78" y2="85" />
+    
+    <!-- Stem curving up and right -->
+    <path d="M60 85 C 60 70, 62 60, 68 52" />
+    
+    <!-- Left leaf -->
+    <path d="M62 68 C 45 70, 35 55, 35 55 C 45 45, 55 55, 62 68 Z" />
+    
+    <!-- Right leaf -->
+    <path d="M68 52 C 68 32, 88 28, 88 28 C 92 42, 78 52, 68 52 Z" />
+  </g>
+</svg>
