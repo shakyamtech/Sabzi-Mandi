@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmt, fmtQty } from "@/lib/format";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -28,6 +28,7 @@ const Purchases = () => {
   const [paymentMode, setPaymentMode] = useState<"cash" | "credit">("cash");
   const [amountPaid, setAmountPaid] = useState("0");
   const [productPick, setProductPick] = useState<string>("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const load = async () => {
     const [{ data: p }, { data: s }, { data: h }] = await Promise.all([
@@ -52,17 +53,42 @@ const Purchases = () => {
     setItems((arr) => arr.map((i) => i.product_id === id ? { ...i, [k]: v } : i));
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
+  const editPurchase = async (p: any) => {
+    const { data: pi } = await supabase.from("purchase_items").select("*").eq("purchase_id", p.id);
+    if (!pi) return toast.error("Could not load items");
+    
+    setEditingId(p.id);
+    setSupplierId(p.supplier_id || "none");
+    setPaymentMode(p.payment_mode);
+    setAmountPaid(p.amount_paid.toString());
+    setItems(pi.map(item => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      unit: item.unit,
+      cost_price: item.cost_price,
+      qty: item.qty
+    })));
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const save = async () => {
     if (items.length === 0) return toast.error("Add items");
-    if (paymentMode === "credit" && supplierId === "none") return toast.error("Pick a supplier for credit");
+    if (paymentMode === "credit" && (supplierId === "none" || !supplierId)) return toast.error("Pick a supplier for credit");
+    
+    if (editingId) {
+      const { error: delErr } = await supabase.rpc("delete_purchase", { p_purchase_id: editingId });
+      if (delErr) return toast.error("Failed to update: " + delErr.message);
+    }
+
     const { error } = await supabase.rpc("record_purchase", {
-      p_supplier_id: supplierId === "none" ? null : supplierId,
+      p_supplier_id: supplierId === "none" || !supplierId ? null : supplierId,
       p_payment_mode: paymentMode, p_amount_paid: Number(amountPaid || 0),
-      p_note: null, p_items: items as any,
+      p_note: editingId ? "Updated purchase" : null, p_items: items as any,
     });
     if (error) return toast.error(error.message);
-    toast.success("Purchase recorded");
-    setItems([]); setSupplierId("none"); setPaymentMode("cash"); setShowForm(false); load();
+    toast.success(editingId ? "Purchase updated" : "Purchase recorded");
+    setItems([]); setSupplierId("none"); setPaymentMode("cash"); setShowForm(false); setEditingId(null); load();
   };
 
   const removePurchase = async (id: string) => {
@@ -74,7 +100,10 @@ const Purchases = () => {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <PageHeader title="Purchases" subtitle="Stock-in from suppliers" actions={
-        <Button onClick={() => setShowForm((v) => !v)} className="bg-gradient-primary text-primary-foreground">
+        <Button onClick={() => { 
+          setShowForm(!showForm); 
+          if (showForm) { setEditingId(null); setItems([]); setSupplierId("none"); }
+        }} className="bg-gradient-primary text-primary-foreground">
           <Plus className="h-4 w-4 mr-1" />{showForm ? "Cancel" : "New Purchase"}
         </Button>
       } />
@@ -144,6 +173,7 @@ const Purchases = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="font-medium">{fmt(h.total)}</div>
+                <Button size="icon" variant="ghost" onClick={() => editPurchase(h)} className="h-8 w-8 text-muted-foreground"><Pencil className="h-4 w-4" /></Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
