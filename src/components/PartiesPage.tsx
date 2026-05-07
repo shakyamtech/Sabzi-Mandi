@@ -127,19 +127,9 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
             </AlertDialogContent>
           </AlertDialog>
 
-          <Dialog open={payOpen} onOpenChange={setPayOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-primary text-primary-foreground"><Wallet className="h-4 w-4 mr-1" /> Record Payment</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Record {type === "customer" ? "Payment Received" : "Payment Made"}</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div><Label>Amount</Label><Input type="number" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} /></div>
-                <div><Label>Note</Label><Input value={payNote} onChange={(e) => setPayNote(e.target.value)} /></div>
-                <Button onClick={recordPayment} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setPayOpen(true)} className="bg-gradient-primary text-primary-foreground">
+            <Wallet className="h-4 w-4 mr-1" /> Record Payment
+          </Button>
           </div>
         } />
         <Card className="p-5 mb-4 shadow-card border-0">
@@ -191,9 +181,18 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
                 <div className="font-display text-lg">{p.name}</div>
                 {p.phone && <div className="text-xs text-muted-foreground">{p.phone}</div>}
               </div>
-              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); remove(p.id); }}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
+              <div className="flex gap-1">
+                <Button size="icon" variant="ghost" onClick={(e) => { 
+                  e.stopPropagation(); 
+                  setSelected(p);
+                  setPayOpen(true);
+                }}>
+                  <Wallet className="h-4 w-4 text-primary" />
+                </Button>
+                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); remove(p.id); }}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
             </div>
             <div className="mt-3 flex items-center justify-between bg-secondary rounded-lg px-3 py-2">
               <span className="text-xs text-muted-foreground">{dueLabel}</span>
@@ -201,6 +200,18 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
             </div>
           </Card>
         ))}
+
+        {/* Global Payment Dialog (Shared between Card and Ledger views) */}
+        <Dialog open={payOpen} onOpenChange={setPayOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Record {type === "customer" ? "Payment Received" : "Payment Made"} {selected ? `— ${selected.name}` : ""}</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div><Label>Amount</Label><Input type="number" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} autoFocus /></div>
+              <div><Label>Note</Label><Input value={payNote} placeholder="Optional note" onChange={(e) => setPayNote(e.target.value)} /></div>
+              <Button onClick={recordPayment} className="w-full bg-gradient-primary text-primary-foreground">Save Payment</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
         {items.length === 0 && <div className="col-span-full text-center text-muted-foreground py-12">No {type}s yet</div>}
       </div>
     </div>
