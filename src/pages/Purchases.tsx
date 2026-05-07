@@ -54,32 +54,20 @@ const Purchases = () => {
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
   const editPurchase = async (p: any) => {
-    console.log("Analyzing purchase:", p.id);
-    toast.loading(`Deep Scanning (ID: ${p.id.slice(0,5)})...`, { id: "load-items" });
+    toast.loading(`Testing Database...`, { id: "load-items" });
     
-    // Fetch the absolute raw purchase record
-    const { data: rawPurchase, error } = await supabase
-      .from("purchases")
-      .select("*")
-      .eq("id", p.id)
-      .single();
-    
-    if (error) {
-      console.error("DB Error:", error);
-      toast.error("Database error: " + error.message, { id: "load-items" });
-      return;
-    }
+    // Attempt to insert a dummy row to see exactly why PostgREST is failing
+    const { error: insertErr } = await supabase.from("purchase_items").insert({
+      purchase_id: p.id,
+      qty: 1,
+      cost_price: 1,
+      line_total: 1
+    });
 
-    const keys = Object.keys(rawPurchase || {});
-    console.log("Purchase columns:", keys);
-    
-    // Look for JSON columns
-    if (rawPurchase.items || rawPurchase.purchase_items || rawPurchase.details) {
-      toast.success("Found items stored directly inside the purchase!", { id: "load-items", duration: 5000 });
-      console.log("Items data:", rawPurchase.items || rawPurchase.purchase_items || rawPurchase.details);
-      toast.info("Please tell me what the toast says!", { id: "load-items", duration: 5000 });
+    if (insertErr) {
+      toast.error(`DB Test Error: ${insertErr.message}`, { id: "load-items", duration: 15000 });
     } else {
-      toast.info(`Purchase columns: ${keys.join(", ")}`, { id: "load-items", duration: 15000 });
+      toast.success("DB Test Success! The table works.", { id: "load-items" });
     }
   };
 
