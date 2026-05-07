@@ -54,21 +54,34 @@ const Purchases = () => {
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
   const editPurchase = async (p: any) => {
-    const { data: pi } = await supabase.from("purchase_items").select("*").eq("purchase_id", p.id);
-    if (!pi) return toast.error("Could not load items");
+    toast.loading("Loading items...", { id: "load-items" });
+    const { data: pi, error } = await supabase.from("purchase_items").select("*").eq("purchase_id", p.id);
     
+    if (error) {
+      toast.error("Failed to load: " + error.message, { id: "load-items" });
+      return;
+    }
+    
+    if (!pi || pi.length === 0) {
+      toast.error("No items found for this purchase", { id: "load-items" });
+      return;
+    }
+    
+    const mappedItems = pi.map(item => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      unit: item.unit,
+      cost_price: Number(item.cost_price || 0),
+      qty: Number(item.qty || 0)
+    }));
+
     setEditingId(p.id);
     setSupplierId(p.supplier_id || "none");
     setPaymentMode(p.payment_mode);
     setAmountPaid((p.amount_paid || 0).toString());
-    setItems(pi.map(item => ({
-      product_id: item.product_id,
-      product_name: item.product_name,
-      unit: item.unit,
-      cost_price: item.cost_price,
-      qty: item.qty
-    })));
+    setItems(mappedItems);
     setShowForm(true);
+    toast.success("Purchase loaded for editing", { id: "load-items" });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
