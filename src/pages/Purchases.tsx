@@ -41,7 +41,24 @@ const Purchases = () => {
   useEffect(() => { if (user) load(); }, [user]);
 
   const total = items.reduce((s, i) => s + i.qty * i.cost_price, 0);
-  useEffect(() => { if (paymentMode === "cash") setAmountPaid(total.toFixed(2)); else setAmountPaid("0"); }, [paymentMode, total]);
+
+  // Set default amount paid only when total or payment mode changes, 
+  // but don't force it if the user is typing or if we are EDITING.
+  useEffect(() => { 
+    if (editingId) return; // Don't auto-fill if we are editing an existing record
+    
+    if (paymentMode === "cash") {
+      setAmountPaid(total.toFixed(2)); 
+    } else {
+      if (Number(amountPaid) === total) setAmountPaid("0");
+    }
+  }, [paymentMode, editingId]);
+
+  // Update amount paid when items change ONLY if it's a cash purchase and NOT editing
+  useEffect(() => {
+    if (editingId) return;
+    if (paymentMode === "cash") setAmountPaid(total.toFixed(2));
+  }, [total, editingId]);
 
   const addProduct = (id: string) => {
     const p = products.find((x) => x.id === id); if (!p) return;
