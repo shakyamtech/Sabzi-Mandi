@@ -90,6 +90,43 @@ const Purchases = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const editPurchase = async (p: any) => {
+    toast.loading(`Loading items...`, { id: "load-items" });
+    
+    // Fetch the items for this purchase
+    const { data: pi, error } = await supabase
+      .from("purchase_items")
+      .select("*")
+      .eq("purchase_id", p.id);
+
+    if (error) {
+      toast.error(`Database error: ${error.message}`, { id: "load-items" });
+      return;
+    }
+
+    if (!pi || pi.length === 0) {
+      toast.error("No items found! (This purchase was made before the database fix)", { id: "load-items", duration: 5000 });
+      return;
+    }
+
+    const mappedItems = pi.map((item: any) => ({
+      product_id: item.product_id,
+      product_name: item.product_name || "Unknown Product",
+      unit: item.unit || "kg",
+      cost_price: Number(item.cost_price || item.price || 0),
+      qty: Number(item.qty || item.quantity || 0)
+    }));
+
+    setEditingId(p.id);
+    setSupplierId(p.supplier_id || "none");
+    setPaymentMode(p.payment_mode);
+    setAmountPaid((p.amount_paid || 0).toString());
+    setItems(mappedItems);
+    setShowForm(true);
+    toast.success(`${pi.length} items loaded!`, { id: "load-items" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const save = async () => {
     if (items.length === 0) return toast.error("Add items");
     if (paymentMode === "credit" && (supplierId === "none" || !supplierId)) return toast.error("Pick a supplier for credit");
@@ -191,6 +228,7 @@ const Purchases = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="font-medium">{fmt(h.total)}</div>
+                <Button size="icon" variant="ghost" onClick={() => editPurchase(h)} className="h-8 w-8 text-muted-foreground"><Pencil className="h-4 w-4" /></Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
