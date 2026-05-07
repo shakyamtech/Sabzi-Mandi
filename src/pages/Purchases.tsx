@@ -54,26 +54,40 @@ const Purchases = () => {
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
   const editPurchase = async (p: any) => {
-    toast.loading(`Using Master Key...`, { id: "load-items" });
+    toast.loading(`Loading items...`, { id: "load-items" });
     
-    // Fetch absolutely everything to see if RLS is blocking us
-    const { data: allItems, error } = await supabase
+    // Fetch the items for this purchase
+    const { data: pi, error } = await supabase
       .from("purchase_items")
       .select("*")
-      .limit(10);
+      .eq("purchase_id", p.id);
 
     if (error) {
-      toast.error(`RLS Error: ${error.message}`, { id: "load-items", duration: 15000 });
+      toast.error(`Database error: ${error.message}`, { id: "load-items" });
       return;
     }
 
-    if (!allItems || allItems.length === 0) {
-      toast.error("MASTER KEY: The entire table is completely invisible or empty!", { id: "load-items", duration: 15000 });
+    if (!pi || pi.length === 0) {
+      toast.error("No items found! Did you run the SQL fix?", { id: "load-items", duration: 5000 });
       return;
     }
 
-    toast.success(`MASTER KEY: Found ${allItems.length} total items in DB!`, { id: "load-items", duration: 15000 });
-    console.log("Master Items:", allItems);
+    const mappedItems = pi.map((item: any) => ({
+      product_id: item.product_id,
+      product_name: item.product_name || "Unknown Product",
+      unit: item.unit || "kg",
+      cost_price: Number(item.cost_price || 0),
+      qty: Number(item.qty || 0)
+    }));
+
+    setEditingId(p.id);
+    setSupplierId(p.supplier_id || "none");
+    setPaymentMode(p.payment_mode);
+    setAmountPaid((p.amount_paid || 0).toString());
+    setItems(mappedItems);
+    setShowForm(true);
+    toast.success(`${pi.length} items loaded!`, { id: "load-items" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const save = async () => {
