@@ -76,6 +76,12 @@ const Cashbook = () => {
     if (!amount) return toast.error("Amount required");
     if (!category) return toast.error("Please select a category");
     
+    // Safety check: Require a person for payments
+    const needsParty = ["customer_payment", "supplier_payment", "payment"];
+    if (needsParty.includes(category) && !partyId) {
+      return toast.error("Please select a Customer or Supplier");
+    }
+    
     // Get party name if selected
     let pName = null;
     if (partyId) {
