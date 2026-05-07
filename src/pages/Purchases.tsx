@@ -54,21 +54,40 @@ const Purchases = () => {
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
   const editPurchase = async (p: any) => {
-    toast.loading(`Testing Database...`, { id: "load-items" });
+    toast.loading(`Loading items...`, { id: "load-items" });
     
-    // Attempt to insert a dummy row to see exactly why PostgREST is failing
-    const { error: insertErr } = await supabase.from("purchase_items").insert({
-      purchase_id: p.id,
-      qty: 1,
-      cost_price: 1,
-      line_total: 1
-    });
+    // Fetch the items for this purchase
+    const { data: pi, error } = await supabase
+      .from("purchase_items")
+      .select("*")
+      .eq("purchase_id", p.id);
 
-    if (insertErr) {
-      toast.error(`DB Test Error: ${insertErr.message}`, { id: "load-items", duration: 15000 });
-    } else {
-      toast.success("DB Test Success! The table works.", { id: "load-items" });
+    if (error) {
+      toast.error(`Database error: ${error.message}`, { id: "load-items" });
+      return;
     }
+
+    if (!pi || pi.length === 0) {
+      toast.error("No items found! Did you reload the schema cache?", { id: "load-items", duration: 5000 });
+      return;
+    }
+
+    const mappedItems = pi.map((item: any) => ({
+      product_id: item.product_id,
+      product_name: item.product_name || "Unknown Product",
+      unit: item.unit || "kg",
+      cost_price: Number(item.cost_price || 0),
+      qty: Number(item.qty || 0)
+    }));
+
+    setEditingId(p.id);
+    setSupplierId(p.supplier_id || "none");
+    setPaymentMode(p.payment_mode);
+    setAmountPaid((p.amount_paid || 0).toString());
+    setItems(mappedItems);
+    setShowForm(true);
+    toast.success(`${pi.length} items loaded!`, { id: "load-items" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const save = async () => {
