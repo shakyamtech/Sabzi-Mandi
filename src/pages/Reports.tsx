@@ -35,7 +35,7 @@ const Reports = () => {
 
   const viewSale = async (s: any) => {
     setSelectedSale(s);
-    const { data } = await supabase.from("sale_items").select("quantity, unit_price, total_price, products(name, unit)").eq("sale_id", s.id);
+    const { data } = await supabase.from("sale_items").select("qty, sell_price, line_total, products(name, unit)").eq("sale_id", s.id);
     setSaleItems(data ?? []);
   };
 
@@ -152,9 +152,9 @@ const Reports = () => {
               <div key={idx} className="py-2 flex justify-between items-center">
                 <div>
                   <div className="font-medium">{item.products?.name}</div>
-                  <div className="text-xs text-muted-foreground">{item.quantity} {item.products?.unit} × {fmt(item.unit_price)}</div>
+                  <div className="text-xs text-muted-foreground">{item.qty} {item.products?.unit} × {fmt(item.sell_price)}</div>
                 </div>
-                <div className="font-medium">{fmt(item.total_price)}</div>
+                <div className="font-medium">{fmt(item.line_total)}</div>
               </div>
             ))}
             <div className="pt-3 mt-1 flex justify-between items-center font-display text-lg">
