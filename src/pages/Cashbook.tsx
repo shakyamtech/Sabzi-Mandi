@@ -104,16 +104,6 @@ const Cashbook = () => {
       });
       if (error) return toast.error(error.message);
       
-      // If it's an expense, record it in the expenses table too
-      const expenseCategories = ["expense", "salary", "rent", "electricity", "maintenance"];
-      if (direction === "out" && expenseCategories.includes(category)) {
-        await supabase.from("expenses").insert({ 
-          user_id: user!.id, 
-          amount: Number(amount), 
-          category: category, 
-          note: note || (pName ? `${category} - ${pName}` : category)
-        });
-      }
       toast.success("Entry added");
     }
     setOpen(false); resetForm(); load();

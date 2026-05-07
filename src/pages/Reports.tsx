@@ -27,7 +27,7 @@ const Reports = () => {
     const since = startOfDay(subDays(new Date(), Number(range))).toISOString();
     Promise.all([
       supabase.from("sales").select("created_at,total,cost_total").gte("created_at", since),
-      supabase.from("expenses").select("created_at,amount").gte("created_at", since),
+      supabase.from("cash_transactions").select("created_at,amount").eq("direction", "out").in("category", ["expense", "salary", "rent", "electricity", "maintenance"]).gte("created_at", since),
       supabase.from("sales").select("id,total,payment_mode,created_at,customers(name)").order("created_at", { ascending: false }).limit(30),
     ]).then(([s, e, r]) => { setSales(s.data ?? []); setExpenses(e.data ?? []); setRecentSales(r.data ?? []); });
   };
