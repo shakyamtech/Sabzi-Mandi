@@ -57,10 +57,10 @@ const Purchases = () => {
     console.log("Editing purchase:", p.id);
     toast.loading(`Searching for items (ID: ${p.id.slice(0,5)})...`, { id: "load-items" });
     
-    // Using a more direct query
+    // Using a more direct query, avoiding 'product_name' if it was removed, and joining with products table
     const { data: pi, error } = await supabase
       .from("purchase_items")
-      .select("product_id, product_name, unit, cost_price, qty")
+      .select("product_id, unit, cost_price, qty, products(name)")
       .eq("purchase_id", p.id);
     
     if (error) {
@@ -75,9 +75,9 @@ const Purchases = () => {
       return;
     }
     
-    const mappedItems = pi.map(item => ({
+    const mappedItems = pi.map((item: any) => ({
       product_id: item.product_id,
-      product_name: item.product_name,
+      product_name: item.products?.name || "Unknown Product",
       unit: item.unit,
       cost_price: Number(item.cost_price || 0),
       qty: Number(item.qty || 0)
