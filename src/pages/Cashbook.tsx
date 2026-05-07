@@ -27,6 +27,7 @@ const categories = [
   "maintenance", 
   "customer_payment", 
   "supplier_payment", 
+  "payment",
   "opening", 
   "personal", 
   "other"
@@ -162,7 +163,7 @@ const Cashbook = () => {
                 </Select>
               </div>
 
-              {category === "customer_payment" && (
+              {(category === "customer_payment" || category === "payment") && (
                 <div>
                   <Label>Customer</Label>
                   <Select value={partyId || ""} onValueChange={setPartyId}>
