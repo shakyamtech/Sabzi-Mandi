@@ -10,7 +10,15 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -311,7 +319,6 @@ export const AppShell = () => {
               setSettingsOpen(v);
               if (v) {
                 setNewName(shopName);
-                setNewPan(shopPan);
               }
             }}>
               <DialogTrigger asChild>
@@ -332,11 +339,23 @@ export const AppShell = () => {
                     </div>
                     <div className="space-y-2">
                       <Label>PAN Number</Label>
-                      <Input value={newPan} onChange={(e) => setNewPan(e.target.value)} />
+                      <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-4 pt-4 border-t border-border">
-                    <h4 className="text-sm font-medium">Change Password</h4>
+                    <h4 className="text-sm font-medium">Verify Identity</h4>
+                    <div className="space-y-2">
+                      <Label>Current Password</Label>
+                      <div className="relative">
+                        <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Required to save changes" />
+                        <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4 pt-4 border-t border-border">
+                    <h4 className="text-sm font-medium">Change Password (Optional)</h4>
                     <div className="space-y-2">
                       <Label>New Password</Label>
                       <div className="relative">
@@ -350,7 +369,7 @@ export const AppShell = () => {
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
-                  <Button disabled={busy} onClick={handleUpdateSettings}>
+                  <Button disabled={busy} onClick={handleSave}>
                     {busy ? "Updating..." : "Save Changes"}
                   </Button>
                 </DialogFooter>
