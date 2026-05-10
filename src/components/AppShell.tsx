@@ -272,11 +272,13 @@ export const AppShell = () => {
                     <div className="h-12 w-12 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shrink-0">
                       <Sprout className="h-7 w-7 text-sidebar-primary-foreground" />
                     </div>
-                    <div className="min-w-0">
-                      <SheetHeader className="text-left p-0">
-                        <SheetTitle className="font-display text-xl text-sidebar-foreground truncate max-w-[180px]">{shopName}</SheetTitle>
-                        <SheetDescription className="text-[9px] text-sidebar-foreground/40 uppercase tracking-widest font-bold mt-1">Sabzi App ver.1.0</SheetDescription>
-                      </SheetHeader>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <SheetTitle className="font-display text-xl text-sidebar-foreground">Sabzi</SheetTitle>
+                        <span className="text-[9px] text-sidebar-foreground/30 font-black uppercase tracking-widest shrink-0">ver.1.0</span>
+                      </div>
+                      <div className="text-[11px] font-bold text-sidebar-foreground/60 uppercase tracking-tight truncate mt-0.5">{shopName}</div>
+                      <SheetDescription className="sr-only">Mobile menu for Sabzi</SheetDescription>
                     </div>
                   </div>
                 </div>
