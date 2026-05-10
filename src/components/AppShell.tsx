@@ -5,12 +5,12 @@ import {
   BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
   Eye, EyeOff, Menu
 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -147,7 +147,10 @@ export const AppShell = () => {
                                         </button>
                                     </DialogTrigger>
                                     <DialogContent>
-                                        <DialogHeader><DialogTitle>Account Settings</DialogTitle></DialogHeader>
+                                        <DialogHeader>
+                                            <DialogTitle>Account Settings</DialogTitle>
+                                            <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
+                                        </DialogHeader>
                                         <div className="space-y-6 py-2">
                                             <div className="space-y-4">
                                                 <div className="space-y-2">
@@ -297,8 +300,10 @@ export const AppShell = () => {
                 <Sprout className="h-6 w-6 text-sidebar-primary-foreground" />
               </div>
               <div>
-                <div className="font-display text-xl">Sabzi</div>
-                <div className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider font-bold">Official App v2.0</div>
+                <SheetHeader className="text-left">
+                  <SheetTitle className="font-display text-xl text-sidebar-foreground">Sabzi</SheetTitle>
+                  <SheetDescription className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider font-bold">Official App v2.0</SheetDescription>
+                </SheetHeader>
               </div>
             </div>
           </div>
