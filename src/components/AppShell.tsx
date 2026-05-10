@@ -342,39 +342,9 @@ export const AppShell = () => {
                       <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} />
                     </div>
                   </div>
-                  <div className="space-y-4 pt-4 border-t border-border">
-                    <h4 className="text-sm font-medium">Verify Identity</h4>
-                    <div className="space-y-2">
-                      <Label>Current Password</Label>
-                      <div className="relative">
-                        <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Required to save changes" />
-                        <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4 pt-4 border-t border-border">
-                    <h4 className="text-sm font-medium">Change Password (Optional)</h4>
-                    <div className="space-y-2">
-                      <Label>New Password</Label>
-                      <div className="relative">
-                        <Input type={showNewPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                        <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowNewPassword(!showNewPassword)}>
-                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
-                  <Button disabled={busy} onClick={handleSave}>
-                    {busy ? "Updating..." : "Save Changes"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button variant="ghost" size="icon" className="h-10 w-10 text-sidebar-foreground/40 active:text-sidebar-foreground" onClick={() => { setNewName(shopName); setNewPan(shopDetails?.pan || ""); setSettingsOpen(true); }}>
+              <Settings className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
@@ -393,8 +363,78 @@ export const AppShell = () => {
       <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
         <Outlet />
       </main>
-    </div>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Account Settings</DialogTitle>
+            <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Shop Name</Label>
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter shop name..." />
+            </div>
+            <div className="space-y-2">
+              <Label>PAN Number</Label>
+              <Input value={newPan} onChange={(e) => setNewPan(e.target.value)} placeholder="Enter PAN number..." />
+            </div>
+
+            <div className="pt-2 border-t space-y-4">
+              <div className="font-medium text-sm text-muted-foreground">Verify Identity</div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label>Current Password</Label>
+                </div>
+                <div className="relative">
+                  <Input 
+                    type={showPassword ? "text" : "password"} 
+                    value={currentPassword} 
+                    onChange={(e) => setCurrentPassword(e.target.value)} 
+                    placeholder="Required to save changes"
+                    autoFocus={false}
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t space-y-4">
+              <div className="font-medium text-sm text-muted-foreground">Change Password (Optional)</div>
+              <div className="space-y-2">
+                <Label>New Password</Label>
+                <div className="relative">
+                  <Input 
+                    type={showNewPassword ? "text" : "password"} 
+                    value={newPassword} 
+                    onChange={(e) => setNewPassword(e.target.value)} 
+                    placeholder="Leave blank to keep current"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={loading} className="bg-primary text-primary-foreground">
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </SidebarProvider>
   );
 };
-
-
