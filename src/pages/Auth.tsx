@@ -37,6 +37,7 @@ const Auth = () => {
           required
           minLength={6}
           className="pr-10"
+          autoComplete="current-password"
         />
         <button
           type="button"
@@ -133,11 +134,31 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-3">
-                <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" /></div>
-                <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Enter your shop name" /></div>
-                <div><Label>PAN Number</Label><Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number" /></div>
-                <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-                {PasswordField}
+                <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" autoComplete="off" /></div>
+                <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Enter your shop name" autoComplete="off" /></div>
+                <div><Label>PAN Number</Label><Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number" autoComplete="off" /></div>
+                <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" /></div>
+                <div>
+                  <Label>Password</Label>
+                  <div className="relative">
+                    <Input
+                      type={showPw ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="pr-10"
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw((v) => !v)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                    >
+                      {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">
                   {loading ? "Creating..." : "Create account"}
                 </Button>
