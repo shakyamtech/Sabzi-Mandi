@@ -316,8 +316,8 @@ export const AppShell = () => {
               </NavLink>
             ))}
           </nav>
-          <div className="p-6 border-t border-sidebar-border bg-sidebar-accent/10">
-            <Button variant="outline" className="w-full justify-start gap-3 h-12 rounded-xl border-sidebar-border text-sidebar-foreground/80"
+          <div className="p-6 border-t border-sidebar-border mt-auto">
+            <Button variant="ghost" className="w-full justify-start gap-3 h-12 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={async () => { await signOut(); navigate("/auth"); }}>
               <LogOut className="h-5 w-5" /> Sign out
             </Button>
