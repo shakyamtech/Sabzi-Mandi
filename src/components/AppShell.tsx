@@ -154,7 +154,7 @@ export const AppShell = () => {
                                             <Settings className="h-3 w-3" />
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent>
+                                    <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                                         <DialogHeader>
                                             <DialogTitle>Account Settings</DialogTitle>
                                             <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
@@ -326,7 +326,7 @@ export const AppShell = () => {
                   <Settings className="h-5 w-5" />
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                   <DialogTitle>Account Settings</DialogTitle>
                   <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
