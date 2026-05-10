@@ -122,7 +122,7 @@ export const AppShell = () => {
             <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground">
                 <div className="px-6 py-6 border-b border-sidebar-border">
                     <div className="flex items-center gap-2">
-                        <div className="h-9 w-9 rounded-xl bg-sidebar-primary flex items-center justify-center logo-bloom logo-breathe">
+                        <div className="h-9 w-9 rounded-xl bg-sidebar-primary flex items-center justify-center">
                             <Sprout className="h-5 w-5 text-sidebar-primary-foreground" />
                         </div>
                         <div>
@@ -238,9 +238,7 @@ export const AppShell = () => {
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="logo-bloom logo-breathe">
-            <Sprout className="h-5 w-5 text-sidebar-primary" />
-          </div>
+          <Sprout className="h-5 w-5 text-sidebar-primary" />
           <span className="font-display text-lg">Sabzi</span>
         </div>
         <Button size="sm" variant="ghost" onClick={async () => { await signOut(); navigate("/auth"); }}>
