@@ -122,10 +122,16 @@ const POS = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {filtered.map((p) => (
               <button key={p.id} onClick={() => addToCart(p)}
-                className="text-left p-3 rounded-xl bg-card shadow-card hover:shadow-elegant transition-smooth border-0 active:scale-95">
-                <div className="font-display text-base truncate">{p.name}</div>
-                <div className="text-xs text-muted-foreground">{fmtQty(p.stock_qty)} {p.unit} left</div>
-                <div className="mt-2 text-primary font-semibold">{fmt(p.sell_price)}</div>
+                className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border active:scale-95 ${
+                  p.stock_qty < 5 
+                    ? "bg-red-50 border-red-200" 
+                    : "bg-card border-transparent"
+                }`}>
+                <div className={`font-display text-base truncate ${p.stock_qty < 5 ? "text-red-900" : ""}`}>{p.name}</div>
+                <div className={`text-xs ${p.stock_qty < 5 ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                  {p.stock_qty <= 0 ? "OUT OF STOCK" : `${fmtQty(p.stock_qty)} ${p.unit} left`}
+                </div>
+                <div className={`mt-2 font-semibold ${p.stock_qty < 5 ? "text-red-700" : "text-primary"}`}>{fmt(p.sell_price)}</div>
               </button>
             ))}
             {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground py-8">No products. Add some first.</div>}
