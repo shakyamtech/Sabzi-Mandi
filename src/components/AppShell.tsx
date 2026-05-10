@@ -307,7 +307,7 @@ export const AppShell = () => {
             <span className="font-display text-xl tracking-tight">Sabzi</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-[10px] font-bold bg-sidebar-accent px-2 py-1 rounded text-sidebar-foreground/60 truncate max-w-[150px] uppercase tracking-tighter">{shopName}</div>
+            <div className="text-[11px] font-bold bg-sidebar-accent px-3 py-1.5 rounded-lg text-sidebar-foreground/80 truncate max-w-[160px] uppercase tracking-tight">{shopName}</div>
           </div>
         </div>
 
