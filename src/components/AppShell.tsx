@@ -307,7 +307,55 @@ export const AppShell = () => {
             <div className="text-sm font-bold bg-sidebar-accent px-3 py-1.5 rounded-lg text-sidebar-foreground truncate max-w-[220px] uppercase tracking-tight">{shopName}</div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Shop name moved to the left */}
+            <Dialog open={settingsOpen} onOpenChange={(v) => {
+              setSettingsOpen(v);
+              if (v) {
+                setNewName(shopName);
+                setNewPan(shopPan);
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-10 w-10 text-sidebar-foreground/40 active:text-sidebar-foreground">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Account Settings</DialogTitle>
+                  <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-2">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Shop Name</Label>
+                      <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>PAN Number</Label>
+                      <Input value={newPan} onChange={(e) => setNewPan(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-4 pt-4 border-t border-border">
+                    <h4 className="text-sm font-medium">Change Password</h4>
+                    <div className="space-y-2">
+                      <Label>New Password</Label>
+                      <div className="relative">
+                        <Input type={showNewPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                        <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowNewPassword(!showNewPassword)}>
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
+                  <Button disabled={busy} onClick={handleUpdateSettings}>
+                    {busy ? "Updating..." : "Save Changes"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
