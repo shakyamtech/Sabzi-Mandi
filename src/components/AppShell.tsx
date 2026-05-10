@@ -32,6 +32,7 @@ export const AppShell = () => {
     const [shopName, setShopName] = useState("My Shop");
     const [newName, setNewName] = useState("");
     const [password, setPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
     const [busy, setBusy] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
@@ -53,12 +54,11 @@ export const AppShell = () => {
             });
     }, [user]);
 
-    const handleUpdateShop = async () => {
-        if (!newName.trim()) return toast.error("Shop name cannot be empty");
-        if (!password) return toast.error("Please enter your password to confirm");
+    const handleUpdateProfile = async (type: "name" | "password") => {
+        if (!password) return toast.error("Please enter your current password to confirm");
         
         setBusy(true);
-        // Verify password by re-signing in
+        // Verify current password
         const { error: authError } = await supabase.auth.signInWithPassword({
             email: user?.email || "",
             password: password
@@ -66,22 +66,30 @@ export const AppShell = () => {
 
         if (authError) {
             setBusy(false);
-            return toast.error("Invalid password. Please try again.");
+            return toast.error("Invalid current password. Please try again.");
         }
 
-        const { error } = await supabase
-            .from("profiles")
-            .update({ shop_name: newName })
-            .eq("id", user?.id);
+        if (type === "name") {
+            if (!newName.trim()) { setBusy(false); return toast.error("Shop name cannot be empty"); }
+            const { error } = await supabase.from("profiles").update({ shop_name: newName }).eq("id", user?.id);
+            if (error) toast.error(error.message);
+            else {
+                setShopName(newName);
+                toast.success("Shop name updated!");
+            }
+        } else if (type === "password") {
+            if (newPassword.length < 6) { setBusy(false); return toast.error("New password must be at least 6 characters"); }
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) toast.error(error.message);
+            else {
+                toast.success("Password changed successfully!");
+                setNewPassword("");
+            }
+        }
 
         setBusy(false);
-        if (error) toast.error(error.message);
-        else {
-            setShopName(newName);
-            toast.success("Shop name updated!");
-            setSettingsOpen(false);
-            setPassword("");
-        }
+        setPassword("");
+        if (type === "name") setSettingsOpen(false);
     };
 
     return (
@@ -103,33 +111,56 @@ export const AppShell = () => {
                                         </button>
                                     </DialogTrigger>
                                     <DialogContent>
-                                        <DialogHeader><DialogTitle>Shop Settings</DialogTitle></DialogHeader>
-                                        <div className="space-y-4 py-2">
-                                            <div className="space-y-2">
-                                                <Label>Shop Name</Label>
-                                                <Input 
-                                                    value={newName} 
-                                                    onChange={(e) => setNewName(e.target.value)} 
-                                                    placeholder="E.g. Sharma Vegetable Mart"
-                                                />
+                                        <DialogHeader><DialogTitle>Account Settings</DialogTitle></DialogHeader>
+                                        <div className="space-y-6 py-2">
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label>Shop Name</Label>
+                                                    <Input 
+                                                        value={newName} 
+                                                        onChange={(e) => setNewName(e.target.value)} 
+                                                        placeholder="E.g. Sharma Vegetable Mart"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2 pt-2 border-t">
+                                                    <Label>Change Password (Optional)</Label>
+                                                    <Input 
+                                                        type="password"
+                                                        value={newPassword} 
+                                                        onChange={(e) => setNewPassword(e.target.value)} 
+                                                        placeholder="Enter NEW password"
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label>Confirm Password</Label>
+
+                                            <div className="space-y-2 pt-2 border-t">
+                                                <Label className="text-primary font-bold">Confirm with Current Password</Label>
                                                 <Input 
                                                     type="password"
                                                     value={password} 
                                                     onChange={(e) => setPassword(e.target.value)} 
-                                                    placeholder="Enter your login password"
+                                                    placeholder="Enter your CURRENT password"
                                                 />
-                                                <p className="text-[10px] text-muted-foreground">Enter your login password to apply changes.</p>
+                                                <p className="text-[10px] text-muted-foreground">Required for any account changes.</p>
                                             </div>
-                                            <Button 
-                                                className="w-full bg-gradient-primary text-primary-foreground"
-                                                onClick={handleUpdateShop}
-                                                disabled={busy}
-                                            >
-                                                {busy ? "Verifying..." : "Save Changes"}
-                                            </Button>
+
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    className="flex-1 bg-gradient-primary text-primary-foreground"
+                                                    onClick={() => handleUpdateProfile("name")}
+                                                    disabled={busy}
+                                                >
+                                                    {busy ? "Updating..." : "Update Shop Name"}
+                                                </Button>
+                                                <Button 
+                                                    variant="outline"
+                                                    className="flex-1"
+                                                    onClick={() => handleUpdateProfile("password")}
+                                                    disabled={busy || !newPassword}
+                                                >
+                                                    Update Password
+                                                </Button>
+                                            </div>
                                         </div>
                                     </DialogContent>
                                 </Dialog>
