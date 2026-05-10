@@ -148,13 +148,13 @@ export const AppShell = () => {
                                 <Dialog open={settingsOpen} onOpenChange={(v) => {
                                     setSettingsOpen(v);
                                     if (v) setNewName(shopName);
-                                }}>
+                                }} modal={false}>
                                     <DialogTrigger asChild>
                                         <button className="text-sidebar-foreground/40 hover:text-sidebar-primary transition-colors">
                                             <Settings className="h-3 w-3" />
                                         </button>
                                     </DialogTrigger>
-                                    <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+                                    <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
                                         <DialogHeader>
                                             <DialogTitle>Account Settings</DialogTitle>
                                             <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
@@ -320,13 +320,13 @@ export const AppShell = () => {
               if (v) {
                 setNewName(shopName);
               }
-            }}>
+            }} modal={false}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-10 w-10 text-sidebar-foreground/40 active:text-sidebar-foreground">
                   <Settings className="h-5 w-5" />
                 </Button>
               </DialogTrigger>
-              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                   <DialogTitle>Account Settings</DialogTitle>
                   <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
