@@ -335,7 +335,7 @@ export const AppShell = () => {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label>Shop Name</Label>
-                      <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                      <Input autoFocus={false} value={newName} onChange={(e) => setNewName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label>PAN Number</Label>
