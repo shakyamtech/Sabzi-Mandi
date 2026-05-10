@@ -127,7 +127,7 @@ const POS = () => {
                 disabled={p.stock_qty <= 0}
                 className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${
                   p.stock_qty <= 0
-                    ? "bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale"
+                    ? "bg-red-100 border-red-300 opacity-80 cursor-not-allowed"
                     : p.stock_qty < 5 
                       ? "bg-red-50 border-red-200 active:scale-95" 
                       : "bg-card border-transparent active:scale-95"
