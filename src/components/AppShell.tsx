@@ -32,6 +32,7 @@ export const AppShell = () => {
   const { isAdmin } = useIsAdmin();
     const [shopName, setShopName] = useState("My Shop");
     const [newName, setNewName] = useState("");
+    const [panNo, setPanNo] = useState("");
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -47,22 +48,26 @@ export const AppShell = () => {
         }
         
         const loadProfile = async () => {
-            const { data, error } = await supabase.from("profiles").select("shop_name").eq("id", user.id).maybeSingle();
+            const { data, error } = await supabase.from("profiles").select("shop_name, pan_no").eq("id", user.id).maybeSingle();
             
-            if (data?.shop_name) {
-                setShopName(data.shop_name);
-                setNewName(data.shop_name);
+            if (data) {
+                setShopName(data.shop_name || "My Shop");
+                setNewName(data.shop_name || "My Shop");
+                setPanNo(data.pan_no || "");
             } else {
                 // If profile missing, try to create it from metadata
                 const metaShop = user.user_metadata?.shop_name || "My Shop";
+                const metaPan = user.user_metadata?.pan_no || "";
                 setShopName(metaShop);
                 setNewName(metaShop);
+                setPanNo(metaPan);
                 
                 // Save it to DB so it persists on next refresh
                 await supabase.from("profiles").upsert({
                     id: user.id,
                     shop_name: metaShop,
-                    full_name: user.user_metadata?.full_name || ""
+                    full_name: user.user_metadata?.full_name || "",
+                    pan_no: metaPan
                 });
             }
         };
@@ -87,9 +92,10 @@ export const AppShell = () => {
         }
 
         try {
-            // 2. Update Shop Name
+            // 2. Update Profile (Name & PAN)
             const { error: profileError } = await supabase.from("profiles").update({ 
-                shop_name: newName 
+                shop_name: newName,
+                pan_no: panNo
             }).eq("id", user?.id);
             
             if (profileError) throw profileError;
@@ -148,6 +154,14 @@ export const AppShell = () => {
                                                         value={newName} 
                                                         onChange={(e) => setNewName(e.target.value)} 
                                                         placeholder="E.g. Sharma Vegetable Mart"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>PAN Number</Label>
+                                                    <Input 
+                                                        value={panNo} 
+                                                        onChange={(e) => setPanNo(e.target.value)} 
+                                                        placeholder="Enter PAN number"
                                                     />
                                                 </div>
                                                 <div className="space-y-2 pt-2 border-t">

@@ -12,7 +12,7 @@ import { fmt, fmtQty } from "@/lib/format";
 import { Plus, Minus, Trash2, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
-import { getShopName } from "@/lib/shop";
+import { getShopInfo } from "@/lib/shop";
 
 type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number };
 type Customer = { id: string; name: string };
@@ -84,12 +84,18 @@ const POS = () => {
     if (paymentMode === "cash" && change > 0) toast.success(`Return change: ${fmt(change)}`);
 
     // Build & print receipt
+    const shop = await getShopInfo();
     const customerName = customerId === "walk-in" ? "Walk-in" : (customers.find((c) => c.id === customerId)?.name ?? "Walk-in");
     const rows = cart.map((i) => `<tr><td>${escapeHtml(i.product_name)}</td><td>${fmtQty(i.qty)} ${escapeHtml(i.unit)}</td><td>${fmt(i.sell_price)}</td><td>${fmt(i.qty * i.sell_price)}</td></tr>`).join("");
     const changeLine = paymentMode === "cash" && Number(tendered || 0) >= total
       ? `<div class="row"><span>Tendered</span><span>${fmt(Number(tendered))}</span></div><div class="row"><span>Change</span><span>${fmt(Number(tendered) - total)}</span></div>` : "";
+    
     const body = `
-      <div class="center"><h2>Sale Receipt</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
+      <div class="center">
+        <h2>${escapeHtml(shop.name)}</h2>
+        ${shop.pan ? `<div class="muted">PAN: ${escapeHtml(shop.pan)}</div>` : ""}
+        <div class="muted" style="margin-top: 4px">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div>
+      </div>
       <hr/>
       <div class="row"><span>Customer</span><span>${escapeHtml(customerName)}</span></div>
       <div class="row"><span>Payment</span><span>${paymentMode}</span></div>
@@ -98,7 +104,7 @@ const POS = () => {
       <div class="row total"><span>TOTAL</span><span>${fmt(total)}</span></div>
       <div class="row sub"><span>Paid</span><span>${fmt(paid)}</span></div>
       ${changeLine}
-      <hr/><div class="center muted">Thank you!</div>
+      <hr/><div class="center muted">Thank you for shopping with us!</div>
     `;
     printHTML("Receipt", body);
 

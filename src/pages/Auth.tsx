@@ -23,6 +23,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [shopName, setShopName] = useState("");
   const [fullName, setFullName] = useState("");
+  const [panNo, setPanNo] = useState("");
   const [showPw, setShowPw] = useState(false);
 
   const PasswordField = (
@@ -74,7 +75,11 @@ const Auth = () => {
       email, password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: fullName, shop_name: shopName || "My Vegetable Shop" },
+        data: { 
+          full_name: fullName, 
+          shop_name: shopName || "My Vegetable Shop",
+          pan_no: panNo
+        },
       },
     });
     
@@ -88,7 +93,8 @@ const Auth = () => {
       await supabase.from("profiles").upsert({
         id: authData.user.id,
         full_name: fullName,
-        shop_name: shopName || "My Vegetable Shop"
+        shop_name: shopName || "My Vegetable Shop",
+        pan_no: panNo
       });
     }
 
@@ -129,6 +135,7 @@ const Auth = () => {
               <form onSubmit={handleSignUp} className="space-y-3">
                 <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ramesh Kumar" /></div>
                 <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Sharma Vegetable Mart" /></div>
+                <div><Label>PAN Number</Label><Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number" /></div>
                 <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
                 {PasswordField}
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">

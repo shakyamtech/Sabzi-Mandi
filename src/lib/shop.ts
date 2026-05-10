@@ -1,14 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const getShopName = async (): Promise<string> => {
+export const getShopInfo = async (): Promise<{ name: string; pan: string }> => {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return "My Shop";
+  if (!user) return { name: "My Shop", pan: "" };
   
   const { data } = await supabase
     .from("profiles")
-    .select("shop_name")
+    .select("shop_name, pan_no")
     .eq("id", user.id)
     .maybeSingle();
     
-  return data?.shop_name || "My Shop";
+  return { 
+    name: data?.shop_name || "My Shop", 
+    pan: data?.pan_no || "" 
+  };
 };
