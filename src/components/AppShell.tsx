@@ -173,6 +173,7 @@ export const AppShell = () => {
                                                             value={newPassword} 
                                                             onChange={(e) => setNewPassword(e.target.value)} 
                                                             placeholder="Enter NEW password"
+                                                            autoComplete="new-password"
                                                             className="pr-10"
                                                         />
                                                         <button 
@@ -194,6 +195,7 @@ export const AppShell = () => {
                                                         value={password} 
                                                         onChange={(e) => setPassword(e.target.value)} 
                                                         placeholder="Enter your CURRENT password"
+                                                        autoComplete="current-password"
                                                         className="pr-10"
                                                     />
                                                     <button 
