@@ -70,16 +70,30 @@ const Auth = () => {
       emailSchema.parse(email); pwSchema.parse(password);
     } catch (err: any) { toast.error(err.errors?.[0]?.message ?? "Invalid input"); return; }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email, password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
         data: { full_name: fullName, shop_name: shopName || "My Vegetable Shop" },
       },
     });
+    
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+
+    // Manually ensure the profile is created with the correct data
+    if (authData.user) {
+      await supabase.from("profiles").upsert({
+        id: authData.user.id,
+        full_name: fullName,
+        shop_name: shopName || "My Vegetable Shop"
+      });
+    }
+
     setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Account created! You're signed in.");
+    toast.success("Account created! Welcome to Sabzi.");
     navigate("/");
   };
 
