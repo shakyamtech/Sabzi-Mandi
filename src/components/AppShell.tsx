@@ -257,16 +257,51 @@ export const AppShell = () => {
         </div>
       </aside>
 
-      {/* Mobile view wrapped in a single Sheet context */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         {/* Mobile top bar */}
         <div className="md:hidden fixed top-0 inset-x-0 z-50 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between border-b border-sidebar-border shadow-md">
           <div className="flex items-center gap-3">
-            <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-10 w-10 active:scale-95">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="ghost" className="h-10 w-10 active:scale-95">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border flex flex-col">
+                <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-lg">
+                      <Sprout className="h-6 w-6 text-sidebar-primary-foreground" />
+                    </div>
+                    <div>
+                      <SheetHeader className="text-left">
+                        <SheetTitle className="font-display text-xl text-sidebar-foreground">Sabzi</SheetTitle>
+                        <SheetDescription className="sr-only">Mobile navigation menu for Sabzi</SheetDescription>
+                      </SheetHeader>
+                    </div>
+                  </div>
+                </div>
+                <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+                  {navItems.map((n) => (
+                    <NavLink key={n.to} to={n.to} end={n.end}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        `flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all ${
+                          isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
+                        }`
+                      }
+                    >
+                      <n.icon className="h-5 w-5" /> {n.label}
+                    </NavLink>
+                  ))}
+                </nav>
+                <div className="p-6 border-t border-sidebar-border mt-auto">
+                  <Button className="w-full justify-start gap-3 h-12 rounded-xl shadow-lg bg-[#FACC15] hover:bg-[#EAB308] text-black border-none font-bold"
+                    onClick={async () => { await signOut(); navigate("/auth"); }}>
+                    <LogOut className="h-5 w-5" /> Sign out
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
             <span className="font-display text-xl tracking-tight">Sabzi</span>
           </div>
           <div className="flex items-center gap-2">
@@ -274,60 +309,17 @@ export const AppShell = () => {
           </div>
         </div>
 
-        {/* Mobile bottom nav (Quick Access) */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5 h-16">
-          {[nav[0], nav[1], nav[2], nav[6]].map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.end}
-              className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}>
-              <n.icon className="h-5 w-5" />
-              <span className="text-[9px] font-medium">{n.label}</span>
-            </NavLink>
-          ))}
-          <SheetTrigger asChild>
-            <button className="flex flex-col items-center justify-center gap-1 text-sidebar-foreground/40 active:bg-sidebar-accent/30">
-              <Menu className="h-5 w-5" />
-              <span className="text-[9px] font-medium">More</span>
-            </button>
-          </SheetTrigger>
-        </nav>
-
-        <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border flex flex-col">
-          <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-lg">
-                <Sprout className="h-6 w-6 text-sidebar-primary-foreground" />
-              </div>
-              <div>
-                <SheetHeader className="text-left">
-                  <SheetTitle className="font-display text-xl text-sidebar-foreground">Sabzi</SheetTitle>
-                  <SheetDescription className="sr-only">Mobile navigation menu for Sabzi</SheetDescription>
-                </SheetHeader>
-              </div>
-            </div>
-          </div>
-          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-            {navItems.map((n) => (
-              <NavLink key={n.to} to={n.to} end={n.end}
-                onClick={() => setMobileMenuOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all ${
-                    isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
-                  }`
-                }
-              >
-                <n.icon className="h-5 w-5" /> {n.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="p-6 border-t border-sidebar-border mt-auto">
-            <Button className="w-full justify-start gap-3 h-12 rounded-xl shadow-lg bg-[#FACC15] hover:bg-[#EAB308] text-black border-none font-bold"
-              onClick={async () => { await signOut(); navigate("/auth"); }}>
-              <LogOut className="h-5 w-5" /> Sign out
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Mobile bottom nav (Quick Access) */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-4 h-16">
+        {[nav[0], nav[1], nav[2], nav[6]].map((n) => (
+          <NavLink key={n.to} to={n.to} end={n.end}
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}>
+            <n.icon className="h-5 w-5" />
+            <span className="text-[9px] font-medium">{n.label}</span>
+          </NavLink>
+        ))}
+      </nav>
 
       <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
         <Outlet />
