@@ -148,26 +148,27 @@ const Products = () => {
                         <SelectItem value="Ltr">ltr</SelectItem>
                         <SelectItem value="ml">ml</SelectItem>
                         <SelectItem value="pcs">pcs</SelectItem>
+                        <SelectItem value="pkt">packet</SelectItem>
                         <SelectItem value="cup">cup</SelectItem>
                         <SelectItem value="jar">jar</SelectItem>
                         <SelectItem value="dozen">dozen</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div><Label>Stock Qty</Label><Input type="number" step="0.001" value={edit.stock_qty} onChange={(e) => setEdit({ ...edit, stock_qty: +e.target.value })} /></div>
+                  <div><Label>Stock Qty</Label><Input type="number" step="0.001" value={edit.stock_qty} onChange={(e) => setEdit({ ...edit, stock_qty: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Cost Price (Rs.)</Label><Input type="number" step="0.01" value={edit.cost_price} onChange={(e) => setEdit({ ...edit, cost_price: +e.target.value })} /></div>
-                  <div><Label>Sell Price (Rs.)</Label><Input type="number" step="0.01" value={edit.sell_price} onChange={(e) => setEdit({ ...edit, sell_price: +e.target.value })} /></div>
+                  <div><Label>Cost Price (Rs.)</Label><Input type="number" step="0.01" value={edit.cost_price} onChange={(e) => setEdit({ ...edit, cost_price: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
+                  <div><Label>Sell Price (Rs.)</Label><Input type="number" step="0.01" value={edit.sell_price} onChange={(e) => setEdit({ ...edit, sell_price: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
                 </div>
-                <div><Label>Low-stock alert at</Label><Input type="number" step="0.001" value={edit.low_stock_threshold} onChange={(e) => setEdit({ ...edit, low_stock_threshold: +e.target.value })} /></div>
+                <div><Label>Low-stock alert at</Label><Input type="number" step="0.001" value={edit.low_stock_threshold} onChange={(e) => setEdit({ ...edit, low_stock_threshold: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
                 <div className="flex items-center gap-2 pt-1">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     id="is_manufactured"
                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    checked={edit.is_manufactured} 
-                    onChange={(e) => setEdit({ ...edit, is_manufactured: e.target.checked })} 
+                    checked={edit.is_manufactured}
+                    onChange={(e) => setEdit({ ...edit, is_manufactured: e.target.checked })}
                   />
                   <Label htmlFor="is_manufactured" className="cursor-pointer font-medium text-primary">Made in our Shop (Has Recipe)</Label>
                 </div>
