@@ -304,10 +304,10 @@ export const AppShell = () => {
                 </div>
               </SheetContent>
             </Sheet>
-            <span className="font-display text-xl tracking-tight">Sabzi</span>
+            <div className="text-sm font-bold bg-sidebar-accent px-3 py-1.5 rounded-lg text-sidebar-foreground truncate max-w-[220px] uppercase tracking-tight">{shopName}</div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-[11px] font-bold bg-sidebar-accent px-3 py-1.5 rounded-lg text-sidebar-foreground/80 truncate max-w-[160px] uppercase tracking-tight">{shopName}</div>
+            {/* Shop name moved to the left */}
           </div>
         </div>
 
