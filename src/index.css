@@ -127,3 +127,25 @@ input[type=number] {
 input[type=number]:focus {
   pointer-events: auto;
 }
+
+/* Custom Logo Animations */
+@keyframes bloom {
+  0% { transform: scale(0.3) rotate(-30deg); opacity: 0; filter: blur(4px); }
+  60% { transform: scale(1.15) rotate(10deg); filter: blur(0); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px hsl(var(--primary-glow) / 0.3)); }
+  50% { transform: scale(1.06); filter: drop-shadow(0 0 15px hsl(var(--primary-glow) / 0.7)); }
+}
+
+.logo-bloom {
+  animation: bloom 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  display: inline-block;
+}
+
+.logo-breathe {
+  animation: breathe 4s ease-in-out infinite;
+  display: inline-block;
+}

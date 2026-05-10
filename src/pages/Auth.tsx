@@ -101,7 +101,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow mb-3">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow mb-3 logo-bloom logo-breathe">
             <Sprout className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="font-display text-3xl text-foreground">Sabzi</h1>
