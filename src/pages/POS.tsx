@@ -16,7 +16,7 @@ import { getShopInfo } from "@/lib/shop";
 
 type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number; low_stock_threshold: number };
 type Customer = { id: string; name: string };
-type CartItem = { product_id: string; product_name: string; unit: string; sell_price: number; cost_price: number; qty: number };
+type CartItem = { product_id: string; product_name: string; unit: string; sell_price: number | string; cost_price: number; qty: number | string };
 
 const POS = () => {
   const { user } = useAuth();
@@ -49,11 +49,11 @@ const POS = () => {
       return [...c, { product_id: p.id, product_name: p.name, unit: p.unit, sell_price: Number(p.sell_price), cost_price: Number(p.cost_price), qty: 1 }];
     });
   };
-  const setQty = (id: string, qty: number) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, qty } : i).filter((i) => i.qty > 0));
-  const setPrice = (id: string, sell_price: number) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, sell_price } : i));
+  const setQty = (id: string, qty: number | string) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, qty } : i));
+  const setPrice = (id: string, sell_price: number | string) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, sell_price } : i));
   const removeItem = (id: string) => setCart((c) => c.filter((i) => i.product_id !== id));
 
-  const subtotal = cart.reduce((s, i) => s + i.qty * i.sell_price, 0);
+  const subtotal = cart.reduce((s, i) => s + (Number(i.qty) || 0) * (Number(i.sell_price) || 0), 0);
   const discountNum = Math.max(0, Math.min(Number(discount || 0), subtotal));
   const total = +(subtotal - discountNum).toFixed(2);
 
@@ -165,12 +165,12 @@ const POS = () => {
                 </div>
                 <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">
-                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(i.qty - 0.5).toFixed(3))}><Minus className="h-3 w-3" /></Button>
-                    <Input className="h-7 w-16 text-center" type="number" step="0.001" value={i.qty} onChange={(e) => setQty(i.product_id, +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(i.qty + 0.5).toFixed(3))}><Plus className="h-3 w-3" /></Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(Number(i.qty) - 0.5).toFixed(3))}><Minus className="h-3 w-3" /></Button>
+                    <Input className="h-7 w-16 text-center" type="number" step="0.001" value={i.qty} onChange={(e) => setQty(i.product_id, e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(Number(i.qty) + 0.5).toFixed(3))}><Plus className="h-3 w-3" /></Button>
                   </div>
-                  <Input className="h-7" type="number" step="0.01" value={i.sell_price} onChange={(e) => setPrice(i.product_id, +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                  <div className="text-right font-medium text-sm w-20">{fmt(i.qty * i.sell_price)}</div>
+                  <Input className="h-7" type="number" step="0.01" value={i.sell_price} onChange={(e) => setPrice(i.product_id, e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                  <div className="text-right font-medium text-sm w-20">{fmt((Number(i.qty) || 0) * (Number(i.sell_price) || 0))}</div>
                 </div>
               </div>
             ))}

@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 type Product = { id: string; name: string; unit: string; cost_price: number; stock_qty: number };
 type Supplier = { id: string; name: string };
-type Item = { product_id: string; product_name: string; unit: string; cost_price: number; qty: number };
+type Item = { product_id: string; product_name: string; unit: string; cost_price: number | string; qty: number | string };
 
 const Purchases = () => {
   const { user } = useAuth();
@@ -40,7 +40,7 @@ const Purchases = () => {
   };
   useEffect(() => { if (user) load(); }, [user]);
 
-  const total = items.reduce((s, i) => s + i.qty * i.cost_price, 0);
+  const total = items.reduce((s, i) => s + (Number(i.qty) || 0) * (Number(i.cost_price) || 0), 0);
 
   // Set default amount paid only when total or payment mode changes, 
   // but don't force it if the user is typing or if we are EDITING.
@@ -66,7 +66,7 @@ const Purchases = () => {
     setItems((arr) => [...arr, { product_id: p.id, product_name: p.name, unit: p.unit, cost_price: Number(p.cost_price), qty: 1 }]);
     setProductPick("");
   };
-  const updateItem = (id: string, k: "qty" | "cost_price", v: number) =>
+  const updateItem = (id: string, k: "qty" | "cost_price", v: number | string) =>
     setItems((arr) => arr.map((i) => i.product_id === id ? { ...i, [k]: v } : i));
   const removeItem = (id: string) => setItems((arr) => arr.filter((i) => i.product_id !== id));
 
@@ -120,7 +120,7 @@ const Purchases = () => {
     const { error } = await supabase.rpc("record_purchase", {
       p_supplier_id: supplierId === "none" || !supplierId ? null : supplierId,
       p_payment_mode: paymentMode, p_amount_paid: Number(amountPaid || 0),
-      p_note: editingId ? "Updated purchase" : null, p_items: items as any,
+      p_note: editingId ? "Updated purchase" : null, p_items: items.map(i => ({ ...i, qty: Number(i.qty) || 0, cost_price: Number(i.cost_price) || 0 })) as any,
     });
     if (error) return toast.error(error.message);
     toast.success(editingId ? "Purchase updated" : "Purchase recorded");
@@ -172,9 +172,9 @@ const Purchases = () => {
             {items.map((i) => (
               <div key={i.product_id} className="grid grid-cols-[1fr_90px_110px_90px_auto] gap-2 items-center bg-secondary p-2 rounded-lg">
                 <div className="font-medium truncate">{i.product_name} <span className="text-xs text-muted-foreground">/{i.unit}</span></div>
-                <Input type="number" step="0.001" value={i.qty} onChange={(e) => updateItem(i.product_id, "qty", +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                <Input type="number" step="0.01" value={i.cost_price} onChange={(e) => updateItem(i.product_id, "cost_price", +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                <div className="text-right text-sm font-medium">{fmt(i.qty * i.cost_price)}</div>
+                <Input type="number" step="0.001" value={i.qty} onChange={(e) => updateItem(i.product_id, "qty", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                <Input type="number" step="0.01" value={i.cost_price} onChange={(e) => updateItem(i.product_id, "cost_price", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                <div className="text-right text-sm font-medium">{fmt((Number(i.qty) || 0) * (Number(i.cost_price) || 0))}</div>
                 <Button size="icon" variant="ghost" onClick={() => removeItem(i.product_id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
               </div>
             ))}

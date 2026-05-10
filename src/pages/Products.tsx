@@ -60,7 +60,15 @@ const Products = () => {
 
   const save = async () => {
     if (!edit.name.trim()) return toast.error("Name required");
-    const payload = { ...edit, user_id: user!.id, name: edit.name.trim() };
+    const payload = { 
+      ...edit, 
+      user_id: user!.id, 
+      name: edit.name.trim(),
+      stock_qty: edit.stock_qty === "" ? 0 : Number(edit.stock_qty),
+      cost_price: edit.cost_price === "" ? 0 : Number(edit.cost_price),
+      sell_price: edit.sell_price === "" ? 0 : Number(edit.sell_price),
+      low_stock_threshold: edit.low_stock_threshold === "" ? 0 : Number(edit.low_stock_threshold)
+    };
     const { error } = edit.id
       ? await supabase.from("products").update(payload).eq("id", edit.id)
       : await supabase.from("products").insert(payload);
@@ -155,13 +163,13 @@ const Products = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div><Label>Stock Qty</Label><Input type="number" step="0.001" value={edit.stock_qty} onChange={(e) => setEdit({ ...edit, stock_qty: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
+                  <div><Label>Stock Qty</Label><Input type="number" step="0.001" value={edit.stock_qty} onChange={(e) => setEdit({ ...edit, stock_qty: e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Cost Price (Rs.)</Label><Input type="number" step="0.01" value={edit.cost_price} onChange={(e) => setEdit({ ...edit, cost_price: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
-                  <div><Label>Sell Price (Rs.)</Label><Input type="number" step="0.01" value={edit.sell_price} onChange={(e) => setEdit({ ...edit, sell_price: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
+                  <div><Label>Cost Price (Rs.)</Label><Input type="number" step="0.01" value={edit.cost_price} onChange={(e) => setEdit({ ...edit, cost_price: e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
+                  <div><Label>Sell Price (Rs.)</Label><Input type="number" step="0.01" value={edit.sell_price} onChange={(e) => setEdit({ ...edit, sell_price: e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
                 </div>
-                <div><Label>Low-stock alert at</Label><Input type="number" step="0.001" value={edit.low_stock_threshold} onChange={(e) => setEdit({ ...edit, low_stock_threshold: +e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
+                <div><Label>Low-stock alert at</Label><Input type="number" step="0.001" value={edit.low_stock_threshold} onChange={(e) => setEdit({ ...edit, low_stock_threshold: e.target.value })} onWheel={(e) => e.currentTarget.blur()} /></div>
                 <div className="flex items-center gap-2 pt-1">
                   <input
                     type="checkbox"
