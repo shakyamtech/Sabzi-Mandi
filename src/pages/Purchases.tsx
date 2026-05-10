@@ -172,8 +172,8 @@ const Purchases = () => {
             {items.map((i) => (
               <div key={i.product_id} className="grid grid-cols-[1fr_90px_110px_90px_auto] gap-2 items-center bg-secondary p-2 rounded-lg">
                 <div className="font-medium truncate">{i.product_name} <span className="text-xs text-muted-foreground">/{i.unit}</span></div>
-                <Input type="number" step="0.001" value={i.qty} onChange={(e) => updateItem(i.product_id, "qty", +e.target.value)} />
-                <Input type="number" step="0.01" value={i.cost_price} onChange={(e) => updateItem(i.product_id, "cost_price", +e.target.value)} />
+                <Input type="number" step="0.001" value={i.qty} onChange={(e) => updateItem(i.product_id, "qty", +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                <Input type="number" step="0.01" value={i.cost_price} onChange={(e) => updateItem(i.product_id, "cost_price", +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
                 <div className="text-right text-sm font-medium">{fmt(i.qty * i.cost_price)}</div>
                 <Button size="icon" variant="ghost" onClick={() => removeItem(i.product_id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
               </div>
@@ -189,7 +189,7 @@ const Purchases = () => {
                 <SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="credit">Credit</SelectItem></SelectContent>
               </Select>
             </div>
-            <div><Label>Amount Paid</Label><Input type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} /></div>
+            <div><Label>Amount Paid</Label><Input type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} onWheel={(e) => e.currentTarget.blur()} /></div>
             <div className="flex items-center justify-between bg-gradient-primary text-primary-foreground rounded-lg px-3 py-2">
               <span>Total</span><span className="font-display text-xl">{fmt(total)}</span>
             </div>
