@@ -57,11 +57,12 @@ export const AppShell = () => {
             });
     }, [user]);
 
-    const handleUpdateProfile = async (type: "name" | "password") => {
+    const handleSave = async () => {
         if (!password) return toast.error("Please enter your current password to confirm");
+        if (!newName.trim()) return toast.error("Shop name cannot be empty");
         
         setBusy(true);
-        // Verify current password
+        // 1. Verify current password
         const { error: authError } = await supabase.auth.signInWithPassword({
             email: user?.email || "",
             password: password
@@ -72,30 +73,35 @@ export const AppShell = () => {
             return toast.error("Invalid current password. Please try again.");
         }
 
-        if (type === "name") {
-            if (!newName.trim()) { setBusy(false); return toast.error("Shop name cannot be empty"); }
-            const { error } = await supabase.from("profiles").update({ 
+        try {
+            // 2. Update Shop Name
+            const { error: profileError } = await supabase.from("profiles").update({ 
                 shop_name: newName 
             }).eq("id", user?.id);
             
-            if (error) toast.error(error.message);
-            else {
-                setShopName(newName);
-                toast.success("Shop name updated!");
-                setSettingsOpen(false);
-            }
-        } else if (type === "password") {
-            if (newPassword.length < 6) { setBusy(false); return toast.error("New password must be at least 6 characters"); }
-            const { error } = await supabase.auth.updateUser({ password: newPassword });
-            if (error) toast.error(error.message);
-            else {
-                toast.success("Password changed successfully!");
-                setNewPassword("");
-            }
-        }
+            if (profileError) throw profileError;
+            setShopName(newName);
 
-        setBusy(false);
-        setPassword("");
+            // 3. Update Password if provided
+            if (newPassword.trim()) {
+                if (newPassword.length < 6) {
+                    toast.error("New password must be at least 6 characters. Name updated, but password was not.");
+                } else {
+                    const { error: passError } = await supabase.auth.updateUser({ password: newPassword });
+                    if (passError) throw passError;
+                    toast.success("Password updated!");
+                    setNewPassword("");
+                }
+            }
+
+            toast.success("Changes saved successfully!");
+            setSettingsOpen(false);
+        } catch (err: any) {
+            toast.error(err.message || "An error occurred");
+        } finally {
+            setBusy(false);
+            setPassword("");
+        }
     };
 
     return (
@@ -170,23 +176,13 @@ export const AppShell = () => {
                                                 <p className="text-[10px] text-muted-foreground">Required for any account changes.</p>
                                             </div>
 
-                                            <div className="flex gap-2">
-                                                <Button 
-                                                    className="flex-1 bg-gradient-primary text-primary-foreground"
-                                                    onClick={() => handleUpdateProfile("name")}
-                                                    disabled={busy}
-                                                >
-                                                    {busy ? "Updating..." : "Save Changes"}
-                                                </Button>
-                                                <Button 
-                                                    variant="outline"
-                                                    className="flex-1"
-                                                    onClick={() => handleUpdateProfile("password")}
-                                                    disabled={busy || !newPassword}
-                                                >
-                                                    Update Password
-                                                </Button>
-                                            </div>
+                                            <Button 
+                                                className="w-full bg-gradient-primary text-primary-foreground h-11 font-semibold"
+                                                onClick={handleSave}
+                                                disabled={busy}
+                                            >
+                                                {busy ? "Saving Changes..." : "Save All Changes"}
+                                            </Button>
                                         </div>
                                     </DialogContent>
                                 </Dialog>
