@@ -162,6 +162,7 @@ export const AppShell = () => {
                                                         value={panNo} 
                                                         onChange={(e) => setPanNo(e.target.value)} 
                                                         placeholder="Enter PAN number"
+                                                        autoComplete="off"
                                                     />
                                                 </div>
                                                 <div className="space-y-2 pt-2 border-t">
