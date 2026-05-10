@@ -29,9 +29,15 @@ export const AppShell = () => {
   const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setShopName("My Shop");
+      return;
+    }
     supabase.from("profiles").select("shop_name").eq("id", user.id).maybeSingle()
-      .then(({ data }) => { if (data?.shop_name) setShopName(data.shop_name); });
+      .then(({ data }) => { 
+        if (data?.shop_name) setShopName(data.shop_name);
+        else setShopName("My Shop");
+      });
   }, [user]);
 
   return (

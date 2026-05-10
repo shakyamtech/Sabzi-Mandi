@@ -109,10 +109,24 @@ const Cashbook = () => {
     setOpen(false); resetForm(); load();
   };
 
-  const remove = async (id: string) => {
-    const { error } = await supabase.from("cash_transactions").delete().eq("id", id);
-    if (error) return toast.error(error.message);
-    toast.success("Entry deleted"); load();
+  const remove = async (row: any) => {
+    if (row.reference_id) {
+      if (row.category === "sale") {
+        const { error } = await supabase.rpc("delete_sale", { p_sale_id: row.reference_id });
+        if (error) return toast.error(error.message);
+      } else if (row.category === "purchase") {
+        const { error } = await supabase.rpc("delete_purchase", { p_purchase_id: row.reference_id });
+        if (error) return toast.error(error.message);
+      } else {
+        // Just delete the transaction if it's some other auto-entry
+        const { error } = await supabase.from("cash_transactions").delete().eq("id", row.id);
+        if (error) return toast.error(error.message);
+      }
+    } else {
+      const { error } = await supabase.from("cash_transactions").delete().eq("id", row.id);
+      if (error) return toast.error(error.message);
+    }
+    toast.success("Entry deleted and records synced"); load();
   };
 
   const printBook = async () => {
@@ -221,7 +235,7 @@ const Cashbook = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => remove(r.id)}>Delete</AlertDialogAction>
+                      <AlertDialogAction onClick={() => remove(r)}>Delete</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
