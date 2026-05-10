@@ -143,10 +143,10 @@ const POS = () => {
                 <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">
                     <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(i.qty - 0.5).toFixed(3))}><Minus className="h-3 w-3" /></Button>
-                    <Input className="h-7 w-16 text-center" type="number" step="0.001" value={i.qty} onChange={(e) => setQty(i.product_id, +e.target.value)} />
+                    <Input className="h-7 w-16 text-center" type="number" step="0.001" value={i.qty} onChange={(e) => setQty(i.product_id, +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
                     <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(i.qty + 0.5).toFixed(3))}><Plus className="h-3 w-3" /></Button>
                   </div>
-                  <Input className="h-7" type="number" step="0.01" value={i.sell_price} onChange={(e) => setPrice(i.product_id, +e.target.value)} />
+                  <Input className="h-7" type="number" step="0.01" value={i.sell_price} onChange={(e) => setPrice(i.product_id, +e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
                   <div className="text-right font-medium text-sm w-20">{fmt(i.qty * i.sell_price)}</div>
                 </div>
               </div>
@@ -178,7 +178,7 @@ const POS = () => {
               </div>
               <div>
                 <Label className="text-xs">Amount Paid</Label>
-                <Input type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} />
+                <Input type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
               </div>
             </div>
             {paymentMode === "cash" && (
@@ -190,6 +190,7 @@ const POS = () => {
                   placeholder="e.g. 500"
                   value={tendered}
                   onChange={(e) => setTendered(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                 />
               </div>
             )}
@@ -201,6 +202,7 @@ const POS = () => {
                 placeholder="0"
                 value={discount}
                 onChange={(e) => setDiscount(e.target.value)}
+                onWheel={(e) => e.currentTarget.blur()}
               />
             </div>
           </div>
