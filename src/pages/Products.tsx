@@ -203,13 +203,16 @@ const Products = () => {
           }
 
           const displayStock = Math.max(0, (possibleStock === Infinity ? 0 : possibleStock));
-          const low = Number(displayStock) <= Number(p.low_stock_threshold);
+          const isLow = displayStock > 0 && displayStock <= Number(p.low_stock_threshold);
+          const isEmpty = displayStock <= 0;
 
           return (
-            <Card key={p.id} className={`p-4 shadow-card border-2 transition-smooth ${low ? "bg-red-50/30 border-red-100" : "border-transparent"}`}>
+            <Card key={p.id} className={`p-4 shadow-card border-2 transition-smooth ${
+              isEmpty ? "bg-red-50/50 border-red-200" : isLow ? "bg-orange-50/50 border-orange-200" : "border-transparent"
+            }`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className={`font-display text-lg ${low ? "text-red-900" : ""}`}>{p.name}</div>
+                  <div className={`font-display text-lg ${isEmpty ? "text-red-900" : isLow ? "text-orange-900" : ""}`}>{p.name}</div>
                   <div className="text-xs text-muted-foreground">per {p.unit}</div>
                 </div>
                 <div className="flex gap-1">
@@ -222,16 +225,18 @@ const Products = () => {
               </div>
               <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
                 <div><div className="text-muted-foreground text-xs">Cost</div><div>{fmt(p.cost_price)}</div></div>
-                <div><div className="text-muted-foreground text-xs">Sell</div><div className={`font-medium ${low ? "text-red-700" : "text-primary"}`}>{fmt(p.sell_price)}</div></div>
+                <div><div className="text-muted-foreground text-xs">Sell</div><div className={`font-medium ${isEmpty ? "text-red-700" : isLow ? "text-orange-700" : "text-primary"}`}>{fmt(p.sell_price)}</div></div>
               </div>
               <div className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 border ${
-                  low 
-                    ? "bg-red-100 border-red-200 text-red-900 font-bold" 
+                isEmpty 
+                  ? "bg-red-100 border-red-200 text-red-900 font-bold" 
+                  : isLow
+                    ? "bg-orange-100 border-orange-200 text-orange-900 font-bold"
                     : "bg-secondary border-transparent"
-                }`}>
+              }`}>
                 <span className="text-xs">{ingredients.length > 0 ? "Possible Stock" : "Stock"}</span>
                 <span className="font-medium flex items-center gap-1">
-                  {low && <AlertTriangle className="h-3.5 w-3.5 text-red-600" />}
+                  {isEmpty ? <AlertTriangle className="h-3.5 w-3.5 text-red-600" /> : isLow ? <AlertTriangle className="h-3.5 w-3.5 text-orange-600" /> : null}
                   {fmtQty(displayStock)} {p.unit}
                 </span>
               </div>

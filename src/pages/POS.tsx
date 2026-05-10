@@ -129,14 +129,20 @@ const POS = () => {
                   p.stock_qty <= 0
                     ? "bg-red-100 border-red-300 opacity-80 cursor-not-allowed"
                     : p.stock_qty <= (p.low_stock_threshold || 5)
-                      ? "bg-red-50 border-red-200 active:scale-95" 
+                      ? "bg-orange-50 border-orange-200 active:scale-95" 
                       : "bg-card border-transparent active:scale-95"
                 }`}>
-                <div className={`font-display text-base truncate ${p.stock_qty <= (p.low_stock_threshold || 5) ? "text-red-900" : ""}`}>{p.name}</div>
-                <div className={`text-xs ${p.stock_qty <= (p.low_stock_threshold || 5) ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                <div className={`font-display text-base truncate ${
+                  p.stock_qty <= 0 ? "text-red-900" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-900" : ""
+                }`}>{p.name}</div>
+                <div className={`text-xs ${
+                  p.stock_qty <= 0 ? "text-red-600 font-bold" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-600 font-medium" : "text-muted-foreground"
+                }`}>
                   {p.stock_qty <= 0 ? "OUT OF STOCK" : `${fmtQty(p.stock_qty)} ${p.unit} left`}
                 </div>
-                <div className={`mt-2 font-semibold ${p.stock_qty <= (p.low_stock_threshold || 5) ? "text-red-700" : "text-primary"}`}>{fmt(p.sell_price)}</div>
+                <div className={`mt-2 font-semibold ${
+                  p.stock_qty <= 0 ? "text-red-700" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-700" : "text-primary"
+                }`}>{fmt(p.sell_price)}</div>
               </button>
             ))}
             {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground py-8">No products. Add some first.</div>}
