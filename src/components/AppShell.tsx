@@ -45,16 +45,29 @@ export const AppShell = () => {
             setShopName("My Shop");
             return;
         }
-        supabase.from("profiles").select("shop_name").eq("id", user.id).maybeSingle()
-            .then(({ data }) => { 
-                if (data?.shop_name) {
-                    setShopName(data.shop_name);
-                    setNewName(data.shop_name);
-                } else {
-                    setShopName("My Shop");
-                    setNewName("My Shop");
-                }
-            });
+        
+        const loadProfile = async () => {
+            const { data, error } = await supabase.from("profiles").select("shop_name").eq("id", user.id).maybeSingle();
+            
+            if (data?.shop_name) {
+                setShopName(data.shop_name);
+                setNewName(data.shop_name);
+            } else {
+                // If profile missing, try to create it from metadata
+                const metaShop = user.user_metadata?.shop_name || "My Shop";
+                setShopName(metaShop);
+                setNewName(metaShop);
+                
+                // Save it to DB so it persists on next refresh
+                await supabase.from("profiles").upsert({
+                    id: user.id,
+                    shop_name: metaShop,
+                    full_name: user.user_metadata?.full_name || ""
+                });
+            }
+        };
+
+        loadProfile();
     }, [user]);
 
     const handleSave = async () => {
