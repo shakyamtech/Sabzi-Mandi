@@ -249,47 +249,50 @@ export const AppShell = () => {
       </aside>
 
       {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between border-b border-sidebar-border shadow-sm">
-        <div className="flex items-center gap-2">
+      <div className="md:hidden fixed top-0 inset-x-0 z-50 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between border-b border-sidebar-border shadow-md">
+        <div className="flex items-center gap-3">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-9 w-9">
-                <Menu className="h-5 w-5" />
+              <Button size="icon" variant="ghost" className="h-10 w-10 active:scale-95">
+                <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0 bg-sidebar border-r-sidebar-border">
-              <SheetHeader className="px-6 py-6 border-b border-sidebar-border">
-                <SheetTitle className="flex items-center gap-2 text-sidebar-foreground">
-                  <div className="h-8 w-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-                    <Sprout className="h-4 w-4 text-sidebar-primary-foreground" />
+            <SheetContent side="left" className="w-[80%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border">
+              <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-lg">
+                    <Sprout className="h-6 w-6 text-sidebar-primary-foreground" />
                   </div>
-                  Sabzi
-                </SheetTitle>
-              </SheetHeader>
-              <nav className="flex-1 px-3 py-4 space-y-1">
+                  <div>
+                    <div className="font-display text-xl">Sabzi</div>
+                    <div className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider font-bold">Navigation</div>
+                  </div>
+                </div>
+              </div>
+              <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto max-h-[calc(100vh-180px)]">
                 {navItems.map((n) => (
                   <NavLink key={n.to} to={n.to} end={n.end}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium ${
-                        isActive ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground/80"
+                      `flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${
+                        isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
                       }`
                     }
                   >
-                    <n.icon className="h-4 w-4" /> {n.label}
+                    <n.icon className="h-5 w-5" /> {n.label}
                   </NavLink>
                 ))}
               </nav>
-              <div className="p-4 border-t border-sidebar-border mt-auto">
-                <Button variant="ghost" className="w-full justify-start text-sidebar-foreground/80"
+              <div className="p-6 border-t border-sidebar-border mt-auto">
+                <Button variant="outline" className="w-full justify-start gap-3 h-12 rounded-xl"
                   onClick={async () => { await signOut(); navigate("/auth"); }}>
-                  <LogOut className="h-4 w-4 mr-2" /> Sign out
+                  <LogOut className="h-5 w-5" /> Sign out
                 </Button>
               </div>
             </SheetContent>
           </Sheet>
-          <span className="font-display text-lg">Sabzi</span>
+          <span className="font-display text-xl tracking-tight">Sabzi</span>
         </div>
-        <div className="text-xs text-sidebar-foreground/60 font-medium truncate max-w-[120px]">{shopName}</div>
+        <div className="text-[10px] font-bold bg-sidebar-accent px-2 py-1 rounded text-sidebar-foreground/60 truncate max-w-[120px] uppercase tracking-tighter">{shopName}</div>
       </div>
 
       {/* Mobile bottom nav (Quick Access) */}
