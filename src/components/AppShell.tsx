@@ -268,14 +268,14 @@ export const AppShell = () => {
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border flex flex-col [&>button]:text-white [&>button]:opacity-70 hover:[&>button]:opacity-100">
                 <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-lg">
-                      <Sprout className="h-6 w-6 text-sidebar-primary-foreground" />
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shrink-0">
+                      <Sprout className="h-7 w-7 text-sidebar-primary-foreground" />
                     </div>
-                    <div>
-                      <SheetHeader className="text-left">
-                        <SheetTitle className="font-display text-xl text-sidebar-foreground">Sabzi</SheetTitle>
-                        <SheetDescription className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider font-bold">ver.1.0</SheetDescription>
+                    <div className="min-w-0">
+                      <SheetHeader className="text-left p-0">
+                        <SheetTitle className="font-display text-xl text-sidebar-foreground truncate max-w-[180px]">{shopName}</SheetTitle>
+                        <SheetDescription className="text-[9px] text-sidebar-foreground/40 uppercase tracking-widest font-bold mt-1">Sabzi App ver.1.0</SheetDescription>
                       </SheetHeader>
                     </div>
                   </div>
