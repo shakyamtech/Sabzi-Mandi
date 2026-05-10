@@ -30,6 +30,7 @@ const POS = () => {
   const [tendered, setTendered] = useState<string>("");
   const [discount, setDiscount] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [tempAmount, setTempAmount] = useState<{id: string, val: string} | null>(null);
 
   const load = async () => {
     const [{ data: p }, { data: c }] = await Promise.all([
@@ -51,9 +52,17 @@ const POS = () => {
   };
   const setQty = (id: string, qty: number | string) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, qty } : i));
   const setPrice = (id: string, sell_price: number | string) => setCart((c) => c.map((i) => i.product_id === id ? { ...i, sell_price } : i));
+  const setItemAmount = (id: string, amount: string) => {
+    setCart((c) => c.map((i) => {
+      if (i.product_id !== id) return i;
+      const price = Number(i.sell_price) || 0;
+      const newQty = price > 0 ? +(Number(amount) / price).toFixed(4) : 0;
+      return { ...i, qty: newQty === 0 ? "" : newQty };
+    }));
+  };
   const removeItem = (id: string) => setCart((c) => c.filter((i) => i.product_id !== id));
 
-  const subtotal = cart.reduce((s, i) => s + (Number(i.qty) || 0) * (Number(i.sell_price) || 0), 0);
+  const subtotal = cart.reduce((s, i) => s + +((Number(i.qty) || 0) * (Number(i.sell_price) || 0)).toFixed(2), 0);
   const discountNum = Math.max(0, Math.min(Number(discount || 0), subtotal));
   const total = +(subtotal - discountNum).toFixed(2);
 
@@ -159,14 +168,35 @@ const POS = () => {
                   <div className="font-medium truncate">{i.product_name}</div>
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeItem(i.product_id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                 </div>
-                <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 mt-1">
-                  <div className="flex items-center gap-1">
-                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(Number(i.qty) - 0.5).toFixed(3))}><Minus className="h-3 w-3" /></Button>
-                    <Input className="h-7 w-16 text-center" type="number" step="0.001" value={i.qty} onChange={(e) => setQty(i.product_id, e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                    <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(Number(i.qty) + 0.5).toFixed(3))}><Plus className="h-3 w-3" /></Button>
+                <div className="grid grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-1 mt-1 items-end">
+                  <div className="space-y-0.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase px-1">Qty</Label>
+                    <div className="flex items-center gap-1">
+                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(Number(i.qty) - 0.5).toFixed(3))}><Minus className="h-3 w-3" /></Button>
+                      <Input className="h-7 w-16 text-center text-xs" type="number" step="0.001" value={i.qty ?? ""} onChange={(e) => setQty(i.product_id, e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty(i.product_id, +(Number(i.qty) + 0.5).toFixed(3))}><Plus className="h-3 w-3" /></Button>
+                    </div>
                   </div>
-                  <Input className="h-7" type="number" step="0.01" value={i.sell_price} onChange={(e) => setPrice(i.product_id, e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                  <div className="text-right font-medium text-sm w-20">{fmt((Number(i.qty) || 0) * (Number(i.sell_price) || 0))}</div>
+                  <div className="space-y-0.5">
+                    <Label className="text-[10px] text-muted-foreground uppercase px-1">Price</Label>
+                    <Input className="h-7 text-xs" type="number" step="0.01" value={i.sell_price ?? ""} onChange={(e) => setPrice(i.product_id, e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                  </div>
+                  <div className="space-y-0.5">
+                    <Label className="text-[10px] text-primary uppercase font-bold px-1">Total Rs.</Label>
+                    <Input 
+                      className="h-7 text-xs font-bold border-primary/30 bg-primary/5 focus-visible:ring-primary" 
+                      type="number" 
+                      step="1" 
+                      value={tempAmount?.id === i.product_id ? tempAmount.val : ((Number(i.qty) || 0) * (Number(i.sell_price) || 0)).toFixed(2)} 
+                      onChange={(e) => {
+                        setTempAmount({ id: i.product_id, val: e.target.value });
+                        setItemAmount(i.product_id, e.target.value);
+                      }} 
+                      onFocus={(e) => setTempAmount({ id: i.product_id, val: e.target.value })}
+                      onBlur={() => setTempAmount(null)}
+                      onWheel={(e) => e.currentTarget.blur()} 
+                    />
+                  </div>
                 </div>
               </div>
             ))}
