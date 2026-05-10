@@ -121,11 +121,16 @@ const POS = () => {
           <Input className="mb-3" placeholder="Search vegetable..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {filtered.map((p) => (
-              <button key={p.id} onClick={() => addToCart(p)}
-                className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border active:scale-95 ${
-                  p.stock_qty < 5 
-                    ? "bg-red-50 border-red-200" 
-                    : "bg-card border-transparent"
+              <button 
+                key={p.id} 
+                onClick={() => addToCart(p)}
+                disabled={p.stock_qty <= 0}
+                className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${
+                  p.stock_qty <= 0
+                    ? "bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale"
+                    : p.stock_qty < 5 
+                      ? "bg-red-50 border-red-200 active:scale-95" 
+                      : "bg-card border-transparent active:scale-95"
                 }`}>
                 <div className={`font-display text-base truncate ${p.stock_qty < 5 ? "text-red-900" : ""}`}>{p.name}</div>
                 <div className={`text-xs ${p.stock_qty < 5 ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
