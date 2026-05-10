@@ -12,7 +12,7 @@ import { Plus, Trash2, BookOpen, ArrowLeft, Wallet, Printer } from "lucide-react
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { printHTML, escapeHtml } from "@/lib/print";
-import { getShopName } from "@/lib/shop";
+import { getShopInfo } from "@/lib/shop";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
@@ -94,15 +94,19 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
         <PageHeader title={selected.name} subtitle={selected.phone ?? ""} actions={
           <div className="flex gap-2">
           <Button variant="outline" onClick={async () => {
-            const shopName = await getShopName();
+            const shop = await getShopInfo();
             const rowsHtml = entries.map((e) => `<tr>
               <td>${format(new Date(e.created_at), "dd MMM, hh:mm a")}</td>
               <td style="text-transform:capitalize">${escapeHtml(e.entry_type.replace("_", " "))}${e.note ? ` — ${escapeHtml(e.note)}` : ""}</td>
               <td>${fmt(e.amount)}</td>
             </tr>`).join("");
             const body = `
-              <div class="center"><h1 style="font-size:22px">${escapeHtml(shopName)}</h1><h2 style="font-size:18px">${escapeHtml(selected.name)}</h2>
-                <div class="muted">${type === "customer" ? "Customer" : "Supplier"} Ledger · ${format(new Date(), "dd MMM yyyy")}</div></div>
+              <div class="center">
+                <h1 style="font-size:22px; margin-bottom: 4px">${escapeHtml(shop.name)}</h1>
+                ${shop.pan ? `<div class="muted">PAN: ${escapeHtml(shop.pan)}</div>` : ""}
+                <h2 style="font-size:18px; margin-top: 8px">${escapeHtml(selected.name)}</h2>
+                <div class="muted">${type === "customer" ? "Customer" : "Supplier"} Ledger · ${format(new Date(), "dd MMM yyyy")}</div>
+              </div>
               <hr/>
               <div class="row total"><span>Outstanding ${dueLabel}</span><span>${fmt(Math.abs(Number(selected.balance)))}</span></div>
               <table><thead><tr><th>Date</th><th>Detail</th><th>Amount</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;

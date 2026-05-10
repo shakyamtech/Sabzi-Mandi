@@ -14,7 +14,7 @@ import { Plus, ArrowDownCircle, ArrowUpCircle, Wallet, Trash2, Printer } from "l
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
-import { getShopName } from "@/lib/shop";
+import { getShopInfo } from "@/lib/shop";
 import { format } from "date-fns";
 
 const categories = [
@@ -130,14 +130,19 @@ const Cashbook = () => {
   };
 
   const printBook = async () => {
-    const shopName = await getShopName();
+    const shop = await getShopInfo();
     const rowsHtml = filtered.map((r) => `<tr>
       <td>${format(new Date(r.created_at), "dd MMM, hh:mm a")}</td>
       <td style="text-transform:capitalize">${escapeHtml(r.category.replace("_", " "))}${r.note ? ` — ${escapeHtml(r.note)}` : ""}</td>
       <td style="color:${r.direction === "in" ? "#0a7d3a" : "#b91c1c"}">${r.direction === "in" ? "+" : "−"}${fmt(r.amount)}</td>
     </tr>`).join("");
     const body = `
-      <div class="center"><h1 style="font-size:22px">${escapeHtml(shopName)}</h1><h2 style="font-size:16px;font-weight:600">Cashbook</h2><div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div></div>
+      <div class="center">
+        <h1 style="font-size:22px; margin-bottom: 4px">${escapeHtml(shop.name)}</h1>
+        ${shop.pan ? `<div class="muted">PAN: ${escapeHtml(shop.pan)}</div>` : ""}
+        <h2 style="font-size:16px; font-weight:600; margin-top: 8px">Cashbook</h2>
+        <div class="muted">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div>
+      </div>
       <hr/>
       <div class="row"><span>Cash In</span><span>${fmt(totalIn)}</span></div>
       <div class="row"><span>Cash Out</span><span>${fmt(totalOut)}</span></div>
