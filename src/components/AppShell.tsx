@@ -31,6 +31,7 @@ export const AppShell = () => {
   const { isAdmin } = useIsAdmin();
     const [shopName, setShopName] = useState("My Shop");
     const [newName, setNewName] = useState("");
+    const [fullName, setFullName] = useState("");
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [busy, setBusy] = useState(false);
@@ -42,19 +43,17 @@ export const AppShell = () => {
             setShopName("My Shop");
             return;
         }
-        supabase.from("profiles").select("shop_name").eq("id", user.id).maybeSingle()
+        supabase.from("profiles").select("shop_name, full_name").eq("id", user.id).maybeSingle()
             .then(({ data }) => { 
-                if (data?.shop_name) {
-                    setShopName(data.shop_name);
-                    setNewName(data.shop_name);
-                } else {
-                    setShopName("My Shop");
-                    setNewName("My Shop");
+                if (data) {
+                    setShopName(data.shop_name || "My Shop");
+                    setNewName(data.shop_name || "My Shop");
+                    setFullName(data.full_name || "");
                 }
             });
     }, [user]);
 
-    const handleUpdateProfile = async (type: "name" | "password") => {
+    const handleUpdateProfile = async (type: "info" | "password") => {
         if (!password) return toast.error("Please enter your current password to confirm");
         
         setBusy(true);
@@ -69,13 +68,18 @@ export const AppShell = () => {
             return toast.error("Invalid current password. Please try again.");
         }
 
-        if (type === "name") {
+        if (type === "info") {
             if (!newName.trim()) { setBusy(false); return toast.error("Shop name cannot be empty"); }
-            const { error } = await supabase.from("profiles").update({ shop_name: newName }).eq("id", user?.id);
+            const { error } = await supabase.from("profiles").update({ 
+                shop_name: newName,
+                full_name: fullName 
+            }).eq("id", user?.id);
+            
             if (error) toast.error(error.message);
             else {
                 setShopName(newName);
-                toast.success("Shop name updated!");
+                toast.success("Profile updated!");
+                setSettingsOpen(false);
             }
         } else if (type === "password") {
             if (newPassword.length < 6) { setBusy(false); return toast.error("New password must be at least 6 characters"); }
@@ -89,7 +93,6 @@ export const AppShell = () => {
 
         setBusy(false);
         setPassword("");
-        if (type === "name") setSettingsOpen(false);
     };
 
     return (
@@ -114,6 +117,14 @@ export const AppShell = () => {
                                         <DialogHeader><DialogTitle>Account Settings</DialogTitle></DialogHeader>
                                         <div className="space-y-6 py-2">
                                             <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label>Full Name</Label>
+                                                    <Input 
+                                                        value={fullName} 
+                                                        onChange={(e) => setFullName(e.target.value)} 
+                                                        placeholder="Your full name"
+                                                    />
+                                                </div>
                                                 <div className="space-y-2">
                                                     <Label>Shop Name</Label>
                                                     <Input 
@@ -147,10 +158,10 @@ export const AppShell = () => {
                                             <div className="flex gap-2">
                                                 <Button 
                                                     className="flex-1 bg-gradient-primary text-primary-foreground"
-                                                    onClick={() => handleUpdateProfile("name")}
+                                                    onClick={() => handleUpdateProfile("info")}
                                                     disabled={busy}
                                                 >
-                                                    {busy ? "Updating..." : "Update Shop Name"}
+                                                    {busy ? "Updating..." : "Save Profile Info"}
                                                 </Button>
                                                 <Button 
                                                     variant="outline"
