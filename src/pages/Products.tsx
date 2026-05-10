@@ -60,9 +60,9 @@ const Products = () => {
 
   const save = async () => {
     if (!edit.name.trim()) return toast.error("Name required");
-    const payload = { 
-      ...edit, 
-      user_id: user!.id, 
+    const payload = {
+      ...edit,
+      user_id: user!.id,
       name: edit.name.trim(),
       stock_qty: edit.stock_qty === "" ? 0 : Number(edit.stock_qty),
       cost_price: edit.cost_price === "" ? 0 : Number(edit.cost_price),
@@ -215,9 +215,8 @@ const Products = () => {
           const isEmpty = displayStock <= 0;
 
           return (
-            <Card key={p.id} className={`p-4 shadow-card border-2 transition-smooth ${
-              isEmpty ? "bg-red-50/50 border-red-200" : isLow ? "bg-orange-50/50 border-orange-200" : "border-transparent"
-            }`}>
+            <Card key={p.id} className={`p-4 shadow-card border-2 transition-smooth ${isEmpty ? "bg-red-50/50 border-red-200" : isLow ? "bg-orange-50/50 border-orange-200" : "border-transparent"
+              }`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className={`font-display text-lg ${isEmpty ? "text-red-900" : isLow ? "text-orange-900" : ""}`}>{p.name}</div>
@@ -235,13 +234,12 @@ const Products = () => {
                 <div><div className="text-muted-foreground text-xs">Cost</div><div>{fmt(p.cost_price)}</div></div>
                 <div><div className="text-muted-foreground text-xs">Sell</div><div className={`font-medium ${isEmpty ? "text-red-700" : isLow ? "text-orange-700" : "text-primary"}`}>{fmt(p.sell_price)}</div></div>
               </div>
-              <div className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 border ${
-                isEmpty 
-                  ? "bg-red-100 border-red-200 text-red-900 font-bold" 
+              <div className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 border ${isEmpty
+                  ? "bg-red-100 border-red-200 text-red-900 font-bold"
                   : isLow
                     ? "bg-orange-100 border-orange-200 text-orange-900 font-bold"
                     : "bg-secondary border-transparent"
-              }`}>
+                }`}>
                 <span className="text-xs">{ingredients.length > 0 ? "Possible Stock" : "Stock"}</span>
                 <span className="font-medium flex items-center gap-1">
                   {isEmpty ? <AlertTriangle className="h-3.5 w-3.5 text-red-600" /> : isLow ? <AlertTriangle className="h-3.5 w-3.5 text-orange-600" /> : null}

@@ -44,11 +44,11 @@ const Purchases = () => {
 
   // Set default amount paid only when total or payment mode changes, 
   // but don't force it if the user is typing or if we are EDITING.
-  useEffect(() => { 
+  useEffect(() => {
     if (editingId) return; // Don't auto-fill if we are editing an existing record
-    
+
     if (paymentMode === "cash") {
-      setAmountPaid(total.toFixed(2)); 
+      setAmountPaid(total.toFixed(2));
     } else {
       if (Number(amountPaid) === total) setAmountPaid("0");
     }

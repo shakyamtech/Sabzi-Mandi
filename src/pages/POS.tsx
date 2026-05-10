@@ -89,7 +89,7 @@ const POS = () => {
     const rows = cart.map((i) => `<tr><td>${escapeHtml(i.product_name)}</td><td>${fmtQty(i.qty)} ${escapeHtml(i.unit)}</td><td>${fmt(i.sell_price)}</td><td>${fmt(i.qty * i.sell_price)}</td></tr>`).join("");
     const changeLine = paymentMode === "cash" && Number(tendered || 0) >= total
       ? `<div class="row"><span>Tendered</span><span>${fmt(Number(tendered))}</span></div><div class="row"><span>Change</span><span>${fmt(Number(tendered) - total)}</span></div>` : "";
-    
+
     const body = `
       <div class="center">
         <h2>${escapeHtml(shop.name)}</h2>
@@ -121,28 +121,24 @@ const POS = () => {
           <Input className="mb-3" placeholder="Search vegetable..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {filtered.map((p) => (
-              <button 
-                key={p.id} 
+              <button
+                key={p.id}
                 onClick={() => addToCart(p)}
                 disabled={p.stock_qty <= 0}
-                className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${
-                  p.stock_qty <= 0
+                className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${p.stock_qty <= 0
                     ? "bg-red-100 border-red-300 opacity-80 cursor-not-allowed"
                     : p.stock_qty <= (p.low_stock_threshold || 5)
-                      ? "bg-orange-50 border-orange-200 active:scale-95" 
+                      ? "bg-orange-50 border-orange-200 active:scale-95"
                       : "bg-card border-transparent active:scale-95"
-                }`}>
-                <div className={`font-display text-base truncate ${
-                  p.stock_qty <= 0 ? "text-red-900" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-900" : ""
-                }`}>{p.name}</div>
-                <div className={`text-xs ${
-                  p.stock_qty <= 0 ? "text-red-600 font-bold" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-600 font-medium" : "text-muted-foreground"
-                }`}>
+                  }`}>
+                <div className={`font-display text-base truncate ${p.stock_qty <= 0 ? "text-red-900" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-900" : ""
+                  }`}>{p.name}</div>
+                <div className={`text-xs ${p.stock_qty <= 0 ? "text-red-600 font-bold" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-600 font-medium" : "text-muted-foreground"
+                  }`}>
                   {p.stock_qty <= 0 ? "OUT OF STOCK" : `${fmtQty(p.stock_qty)} ${p.unit} left`}
                 </div>
-                <div className={`mt-2 font-semibold ${
-                  p.stock_qty <= 0 ? "text-red-700" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-700" : "text-primary"
-                }`}>{fmt(p.sell_price)}</div>
+                <div className={`mt-2 font-semibold ${p.stock_qty <= 0 ? "text-red-700" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-700" : "text-primary"
+                  }`}>{fmt(p.sell_price)}</div>
               </button>
             ))}
             {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground py-8">No products. Add some first.</div>}
