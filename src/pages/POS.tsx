@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
 import { getShopInfo } from "@/lib/shop";
 
-type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number };
+type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number; low_stock_threshold: number };
 type Customer = { id: string; name: string };
 type CartItem = { product_id: string; product_name: string; unit: string; sell_price: number; cost_price: number; qty: number };
 
@@ -128,15 +128,15 @@ const POS = () => {
                 className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${
                   p.stock_qty <= 0
                     ? "bg-red-100 border-red-300 opacity-80 cursor-not-allowed"
-                    : p.stock_qty < 5 
+                    : p.stock_qty <= (p.low_stock_threshold || 5)
                       ? "bg-red-50 border-red-200 active:scale-95" 
                       : "bg-card border-transparent active:scale-95"
                 }`}>
-                <div className={`font-display text-base truncate ${p.stock_qty < 5 ? "text-red-900" : ""}`}>{p.name}</div>
-                <div className={`text-xs ${p.stock_qty < 5 ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+                <div className={`font-display text-base truncate ${p.stock_qty <= (p.low_stock_threshold || 5) ? "text-red-900" : ""}`}>{p.name}</div>
+                <div className={`text-xs ${p.stock_qty <= (p.low_stock_threshold || 5) ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
                   {p.stock_qty <= 0 ? "OUT OF STOCK" : `${fmtQty(p.stock_qty)} ${p.unit} left`}
                 </div>
-                <div className={`mt-2 font-semibold ${p.stock_qty < 5 ? "text-red-700" : "text-primary"}`}>{fmt(p.sell_price)}</div>
+                <div className={`mt-2 font-semibold ${p.stock_qty <= (p.low_stock_threshold || 5) ? "text-red-700" : "text-primary"}`}>{fmt(p.sell_price)}</div>
               </button>
             ))}
             {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground py-8">No products. Add some first.</div>}
