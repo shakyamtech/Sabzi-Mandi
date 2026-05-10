@@ -275,7 +275,7 @@ export const AppShell = () => {
                     <div>
                       <SheetHeader className="text-left">
                         <SheetTitle className="font-display text-xl text-sidebar-foreground">Sabzi</SheetTitle>
-                        <SheetDescription className="sr-only">Mobile navigation menu for Sabzi</SheetDescription>
+                        <SheetDescription className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider font-bold">ver.1.0</SheetDescription>
                       </SheetHeader>
                     </div>
                   </div>
@@ -305,6 +305,7 @@ export const AppShell = () => {
             <span className="font-display text-xl tracking-tight">Sabzi</span>
           </div>
           <div className="flex items-center gap-2">
+            <div className="text-[9px] font-black bg-sidebar-primary text-sidebar-primary-foreground px-1.5 py-0.5 rounded uppercase">ver.1.0</div>
             <div className="text-[10px] font-bold bg-sidebar-accent px-2 py-1 rounded text-sidebar-foreground/60 truncate max-w-[150px] uppercase tracking-tighter">{shopName}</div>
           </div>
         </div>
