@@ -253,11 +253,11 @@ export const AppShell = () => {
         <div className="flex items-center gap-3">
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-10 w-10 active:scale-95">
+              <Button size="icon" variant="ghost" id="mobile-menu-trigger" className="h-10 w-10 active:scale-95">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[80%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border">
+            <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border flex flex-col">
               <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-lg">
@@ -265,15 +265,18 @@ export const AppShell = () => {
                   </div>
                   <div>
                     <div className="font-display text-xl">Sabzi</div>
-                    <div className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider font-bold">Navigation</div>
+                    <div className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider font-bold">Official App v2.0</div>
                   </div>
                 </div>
               </div>
-              <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto max-h-[calc(100vh-180px)]">
+              <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
                 {navItems.map((n) => (
                   <NavLink key={n.to} to={n.to} end={n.end}
+                    onClick={() => {
+                        // Small delay to allow sheet to close if needed, though NavLink handles it
+                    }}
                     className={({ isActive }) =>
-                      `flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${
+                      `flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all ${
                         isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
                       }`
                     }
@@ -282,8 +285,8 @@ export const AppShell = () => {
                   </NavLink>
                 ))}
               </nav>
-              <div className="p-6 border-t border-sidebar-border mt-auto">
-                <Button variant="outline" className="w-full justify-start gap-3 h-12 rounded-xl"
+              <div className="p-6 border-t border-sidebar-border bg-sidebar-accent/10">
+                <Button variant="outline" className="w-full justify-start gap-3 h-12 rounded-xl border-sidebar-border text-sidebar-foreground/80"
                   onClick={async () => { await signOut(); navigate("/auth"); }}>
                   <LogOut className="h-5 w-5" /> Sign out
                 </Button>
@@ -292,25 +295,28 @@ export const AppShell = () => {
           </Sheet>
           <span className="font-display text-xl tracking-tight">Sabzi</span>
         </div>
-        <div className="text-[10px] font-bold bg-sidebar-accent px-2 py-1 rounded text-sidebar-foreground/60 truncate max-w-[120px] uppercase tracking-tighter">{shopName}</div>
+        <div className="flex items-center gap-2">
+            <div className="text-[9px] font-black bg-sidebar-primary text-sidebar-primary-foreground px-1.5 py-0.5 rounded uppercase">v2</div>
+            <div className="text-[10px] font-bold bg-sidebar-accent px-2 py-1 rounded text-sidebar-foreground/60 truncate max-w-[100px] uppercase tracking-tighter">{shopName}</div>
+        </div>
       </div>
 
       {/* Mobile bottom nav (Quick Access) */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-4">
-        {[nav[1], nav[2], nav[6], nav[0]].map((n) => (
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5 h-16">
+        {[nav[0], nav[1], nav[2], nav[6]].map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-3 text-[10px] transition-colors ${isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50"}`}>
-            <n.icon className="h-5 w-5" />{n.label}
+              `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}>
+            <n.icon className="h-5 w-5" />
+            <span className="text-[9px] font-medium">{n.label}</span>
           </NavLink>
         ))}
-        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-          <DialogTrigger asChild>
-            <button className="flex flex-col items-center gap-1 py-3 text-[10px] text-sidebar-foreground/50">
-              <Settings className="h-5 w-5" />Settings
-            </button>
-          </DialogTrigger>
-        </Dialog>
+        <SheetTrigger asChild>
+          <button className="flex flex-col items-center justify-center gap-1 text-sidebar-foreground/40 active:bg-sidebar-accent/30">
+            <Menu className="h-5 w-5" />
+            <span className="text-[9px] font-medium">More</span>
+          </button>
+        </SheetTrigger>
       </nav>
 
       <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
