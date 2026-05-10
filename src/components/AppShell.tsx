@@ -116,7 +116,10 @@ export const AppShell = () => {
                             <div className="font-display text-lg leading-tight">Sabzi</div>
                             <div className="flex items-center gap-1.5">
                                 <div className="text-xs text-sidebar-foreground/60 truncate max-w-[140px]">{shopName}</div>
-                                <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                                <Dialog open={settingsOpen} onOpenChange={(v) => {
+                                    setSettingsOpen(v);
+                                    if (v) setNewName(shopName);
+                                }}>
                                     <DialogTrigger asChild>
                                         <button className="text-sidebar-foreground/40 hover:text-sidebar-primary transition-colors">
                                             <Settings className="h-3 w-3" />
