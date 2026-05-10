@@ -1,10 +1,6 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import {
-  LayoutDashboard, ShoppingCart, Package, Users, Truck,
-  BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
-  Eye, EyeOff,
+  Eye, EyeOff, Menu
 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -253,25 +249,65 @@ export const AppShell = () => {
       </aside>
 
       {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between border-b border-sidebar-border shadow-sm">
         <div className="flex items-center gap-2">
-          <Sprout className="h-5 w-5 text-sidebar-primary" />
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 p-0 bg-sidebar border-r-sidebar-border">
+              <SheetHeader className="px-6 py-6 border-b border-sidebar-border">
+                <SheetTitle className="flex items-center gap-2 text-sidebar-foreground">
+                  <div className="h-8 w-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
+                    <Sprout className="h-4 w-4 text-sidebar-primary-foreground" />
+                  </div>
+                  Sabzi
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex-1 px-3 py-4 space-y-1">
+                {navItems.map((n) => (
+                  <NavLink key={n.to} to={n.to} end={n.end}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium ${
+                        isActive ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground/80"
+                      }`
+                    }
+                  >
+                    <n.icon className="h-4 w-4" /> {n.label}
+                  </NavLink>
+                ))}
+              </nav>
+              <div className="p-4 border-t border-sidebar-border mt-auto">
+                <Button variant="ghost" className="w-full justify-start text-sidebar-foreground/80"
+                  onClick={async () => { await signOut(); navigate("/auth"); }}>
+                  <LogOut className="h-4 w-4 mr-2" /> Sign out
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
           <span className="font-display text-lg">Sabzi</span>
         </div>
-        <Button size="sm" variant="ghost" onClick={async () => { await signOut(); navigate("/auth"); }}>
-          <LogOut className="h-4 w-4" />
-        </Button>
+        <div className="text-xs text-sidebar-foreground/60 font-medium truncate max-w-[120px]">{shopName}</div>
       </div>
 
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5">
-        {navItems.slice(0, 5).map((n) => (
+      {/* Mobile bottom nav (Quick Access) */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-4">
+        {[nav[1], nav[2], nav[6], nav[0]].map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-2 text-[10px] ${isActive ? "text-sidebar-primary" : "text-sidebar-foreground/70"}`}>
-            <n.icon className="h-4 w-4" />{n.label.split(" ")[0]}
+              `flex flex-col items-center gap-1 py-3 text-[10px] transition-colors ${isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50"}`}>
+            <n.icon className="h-5 w-5" />{n.label}
           </NavLink>
         ))}
+        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <DialogTrigger asChild>
+            <button className="flex flex-col items-center gap-1 py-3 text-[10px] text-sidebar-foreground/50">
+              <Settings className="h-5 w-5" />Settings
+            </button>
+          </DialogTrigger>
+        </Dialog>
       </nav>
 
       <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
