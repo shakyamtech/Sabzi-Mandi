@@ -133,8 +133,8 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-3">
-                <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ramesh Kumar" /></div>
-                <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Sharma Vegetable Mart" /></div>
+                <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" /></div>
+                <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Enter your shop name" /></div>
                 <div><Label>PAN Number</Label><Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number" /></div>
                 <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
                 {PasswordField}
