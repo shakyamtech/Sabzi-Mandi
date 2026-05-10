@@ -313,8 +313,8 @@ export const AppShell = () => {
         </div>
 
       {/* Mobile bottom nav (Quick Access) */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-4 h-16">
-        {[nav[0], nav[1], nav[2], nav[6]].map((n) => (
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5 h-16">
+        {[nav[0], nav[1], nav[2], nav[6], nav[7]].map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}>
