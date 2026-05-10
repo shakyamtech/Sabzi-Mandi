@@ -5,7 +5,7 @@ import {
   BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
   Eye, EyeOff, Menu
 } from "lucide-react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +17,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,14 +64,12 @@ export const AppShell = () => {
                 setNewName(data.shop_name || "My Shop");
                 setPanNo(data.pan_no || "");
             } else {
-                // If profile missing, try to create it from metadata
                 const metaShop = user.user_metadata?.shop_name || "My Shop";
                 const metaPan = user.user_metadata?.pan_no || "";
                 setShopName(metaShop);
                 setNewName(metaShop);
                 setPanNo(metaPan);
                 
-                // Save it to DB so it persists on next refresh
                 await supabase.from("profiles").upsert({
                     id: user.id,
                     shop_name: metaShop,
@@ -90,7 +87,6 @@ export const AppShell = () => {
         if (!newName.trim()) return toast.error("Shop name cannot be empty");
         
         setBusy(true);
-        // 1. Verify current password
         const { error: authError } = await supabase.auth.signInWithPassword({
             email: user?.email || "",
             password: password
@@ -102,7 +98,6 @@ export const AppShell = () => {
         }
 
         try {
-            // 2. Update Profile (Name & PAN)
             const { error: profileError } = await supabase.from("profiles").update({ 
                 shop_name: newName,
                 pan_no: panNo
@@ -111,7 +106,6 @@ export const AppShell = () => {
             if (profileError) throw profileError;
             setShopName(newName);
 
-            // 3. Update Password if provided
             if (newPassword.trim()) {
                 if (newPassword.length < 6) {
                     toast.error("New password must be at least 6 characters. Name updated, but password was not.");
@@ -135,306 +129,202 @@ export const AppShell = () => {
 
     return (
         <div className="flex min-h-screen bg-background">
-            <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground">
+            <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
                 <div className="px-6 py-6 border-b border-sidebar-border">
                     <div className="flex items-center gap-2">
                         <div className="h-9 w-9 rounded-xl bg-sidebar-primary flex items-center justify-center">
                             <Sprout className="h-5 w-5 text-sidebar-primary-foreground" />
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                             <div className="font-display text-lg leading-tight">Sabzi</div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="text-xs text-sidebar-foreground/60 truncate max-w-[140px]">{shopName}</div>
-                                <Dialog open={settingsOpen} onOpenChange={(v) => {
-                                    setSettingsOpen(v);
-                                    if (v) setNewName(shopName);
-                                }} modal={false}>
-                                    <DialogTrigger asChild>
-                                        <button className="text-sidebar-foreground/40 hover:text-sidebar-primary transition-colors">
-                                            <Settings className="h-3 w-3" />
-                                        </button>
-                                    </DialogTrigger>
-                                    <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
-                                        <DialogHeader>
-                                            <DialogTitle>Account Settings</DialogTitle>
-                                            <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
-                                        </DialogHeader>
-                                        <div className="space-y-6 py-2">
-                                            <div className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <Label>Shop Name</Label>
-                                                    <Input 
-                                                        value={newName} 
-                                                        onChange={(e) => setNewName(e.target.value)} 
-                                                        placeholder="E.g. Sharma Vegetable Mart"
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>PAN Number</Label>
-                                                    <Input 
-                                                        value={panNo} 
-                                                        onChange={(e) => setPanNo(e.target.value)} 
-                                                        placeholder="Enter PAN number"
-                                                        autoComplete="off"
-                                                    />
-                                                </div>
-                                                <div className="space-y-2 pt-2 border-t">
-                                                    <Label>Change Password (Optional)</Label>
-                                                    <div className="relative">
-                                                        <Input 
-                                                            type={showNewPassword ? "text" : "password"}
-                                                            value={newPassword} 
-                                                            onChange={(e) => setNewPassword(e.target.value)} 
-                                                            placeholder="Enter NEW password"
-                                                            autoComplete="new-password"
-                                                            className="pr-10"
-                                                        />
-                                                        <button 
-                                                            type="button"
-                                                            onClick={() => setShowNewPassword(!showNewPassword)}
-                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                                                        >
-                                                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2 pt-2 border-t">
-                                                <Label className="text-primary font-bold">Confirm with Current Password</Label>
-                                                <div className="relative">
-                                                    <Input 
-                                                        type={showPassword ? "text" : "password"}
-                                                        value={password} 
-                                                        onChange={(e) => setPassword(e.target.value)} 
-                                                        placeholder="Enter your CURRENT password"
-                                                        autoComplete="current-password"
-                                                        className="pr-10"
-                                                    />
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                                                    >
-                                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                                    </button>
-                                                </div>
-                                                <p className="text-[10px] text-muted-foreground">Required for any account changes.</p>
-                                            </div>
-
-                                            <Button 
-                                                className="w-full bg-gradient-primary text-primary-foreground h-11 font-semibold"
-                                                onClick={handleSave}
-                                                disabled={busy}
-                                            >
-                                                {busy ? "Saving Changes..." : "Save All Changes"}
-                                            </Button>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
+                            <div className="flex items-center gap-1.5 overflow-hidden">
+                                <div className="text-xs text-sidebar-foreground/60 truncate max-w-[120px]">{shopName}</div>
+                                <button 
+                                    onClick={() => {
+                                        setNewName(shopName);
+                                        setSettingsOpen(true);
+                                    }}
+                                    className="text-sidebar-foreground/40 hover:text-sidebar-primary transition-colors shrink-0"
+                                >
+                                    <Settings className="h-3 w-3" />
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-smooth ${
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-primary"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                }`
-              }
-            >
-              <n.icon className="h-4 w-4" /> {n.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="p-3 border-t border-sidebar-border">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-            onClick={async () => { await signOut(); navigate("/auth"); }}
-          >
-            <LogOut className="h-4 w-4 mr-2" /> Sign out
-          </Button>
-        </div>
-      </aside>
-
-        {/* Mobile top bar */}
-        <div className="md:hidden fixed top-0 inset-x-0 z-50 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between border-b border-sidebar-border shadow-md">
-          <div className="flex items-center gap-3">
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-10 w-10 active:scale-95">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border flex flex-col [&>button]:text-white [&>button]:opacity-70 hover:[&>button]:opacity-100">
-                <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shrink-0">
-                      <Sprout className="h-7 w-7 text-sidebar-primary-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <SheetTitle className="font-display text-xl text-sidebar-foreground">Sabzi</SheetTitle>
-                        <span className="text-[9px] text-sidebar-foreground/30 font-black uppercase tracking-widest shrink-0">ver.1.0</span>
-                      </div>
-                      <div className="text-[11px] font-bold text-sidebar-foreground/60 uppercase tracking-tight truncate mt-0.5">{shopName}</div>
-                      <SheetDescription className="sr-only">Mobile menu for Sabzi</SheetDescription>
-                    </div>
-                  </div>
-                </div>
-                <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-                  {navItems.map((n) => (
-                    <NavLink key={n.to} to={n.to} end={n.end}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={({ isActive }) =>
-                        `flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all ${
-                          isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
-                        }`
-                      }
-                    >
-                      <n.icon className="h-5 w-5" /> {n.label}
-                    </NavLink>
-                  ))}
+                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                    {navItems.map((n) => (
+                        <NavLink
+                            key={n.to}
+                            to={n.to}
+                            end={n.end}
+                            className={({ isActive }) =>
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-smooth ${
+                                    isActive
+                                        ? "bg-sidebar-accent text-sidebar-primary"
+                                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                                }`
+                            }
+                        >
+                            <n.icon className="h-4 w-4" /> {n.label}
+                        </NavLink>
+                    ))}
                 </nav>
-                <div className="p-6 border-t border-sidebar-border mt-auto">
-                  <Button className="w-full justify-start gap-3 h-12 rounded-xl shadow-lg bg-[#FACC15] hover:bg-[#EAB308] text-black border-none font-bold"
-                    onClick={async () => { await signOut(); navigate("/auth"); }}>
-                    <LogOut className="h-5 w-5" /> Sign out
-                  </Button>
+                <div className="p-3 border-t border-sidebar-border mt-auto">
+                    <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                        onClick={async () => { await signOut(); navigate("/auth"); }}
+                    >
+                        <LogOut className="h-4 w-4 mr-2" /> Sign out
+                    </Button>
                 </div>
-              </SheetContent>
-            </Sheet>
-            <div className="text-sm font-bold bg-sidebar-accent px-3 py-1.5 rounded-lg text-sidebar-foreground truncate max-w-[220px] uppercase tracking-tight">{shopName}</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Dialog open={settingsOpen} onOpenChange={(v) => {
-              setSettingsOpen(v);
-              if (v) {
-                setNewName(shopName);
-              }
-            }} modal={false}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 text-sidebar-foreground/40 active:text-sidebar-foreground">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
-                <DialogHeader>
-                  <DialogTitle>Account Settings</DialogTitle>
-                  <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6 py-2">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Shop Name</Label>
-                      <Input autoFocus={false} value={newName} onChange={(e) => setNewName(e.target.value)} />
+            </aside>
+
+            {/* Mobile top bar */}
+            <div className="md:hidden fixed top-0 inset-x-0 z-50 bg-sidebar text-sidebar-foreground px-4 py-3 flex items-center justify-between border-b border-sidebar-border shadow-md">
+                <div className="flex items-center gap-3">
+                    <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                        <SheetTrigger asChild>
+                            <Button size="icon" variant="ghost" className="h-10 w-10 active:scale-95">
+                                <Menu className="h-6 w-6" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border flex flex-col [&>button]:text-white [&>button]:opacity-70 hover:[&>button]:opacity-100">
+                            <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shrink-0">
+                                        <Sprout className="h-7 w-7 text-sidebar-primary-foreground" />
+                                    </div>
+                                    <div>
+                                        <div className="font-display text-xl leading-tight text-sidebar-foreground">Sabzi</div>
+                                        <div className="text-xs text-sidebar-foreground/60 uppercase tracking-tight truncate mt-0.5">{shopName}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+                                {navItems.map((n) => (
+                                    <NavLink key={n.to} to={n.to} end={n.end} onClick={() => setMobileMenuOpen(false)}
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all ${
+                                                isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
+                                            }`
+                                        }
+                                    >
+                                        <n.icon className="h-5 w-5" /> {n.label}
+                                    </NavLink>
+                                ))}
+                            </nav>
+                            <div className="p-6 border-t border-sidebar-border mt-auto">
+                                <Button className="w-full justify-start gap-3 h-12 rounded-xl shadow-lg bg-[#FACC15] hover:bg-[#EAB308] text-black border-none font-bold"
+                                    onClick={async () => { await signOut(); navigate("/auth"); }}>
+                                    <LogOut className="h-5 w-5" /> Sign out
+                                </Button>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                    <div className="text-sm font-bold bg-sidebar-accent px-3 py-1.5 rounded-lg text-sidebar-foreground truncate max-w-[220px] uppercase tracking-tight">{shopName}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-10 w-10 text-sidebar-foreground/40"
+                        onClick={() => {
+                            setNewName(shopName);
+                            setSettingsOpen(true);
+                        }}
+                    >
+                        <Settings className="h-5 w-5" />
+                    </Button>
+                </div>
+            </div>
+
+            <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0 bg-background overflow-x-hidden">
+                <Outlet />
+            </main>
+
+            {/* Mobile bottom nav (Quick Access) */}
+            <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5 h-16">
+              {[nav[0], nav[1], nav[2], nav[6], nav[7]].map((n) => (
+                <NavLink key={n.to} to={n.to} end={n.end}
+                  className={({ isActive }) =>
+                    `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}>
+                  <n.icon className="h-5 w-5" />
+                  <span className="text-[9px] font-medium">{n.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+
+            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <DialogHeader>
+                        <DialogTitle>Account Settings</DialogTitle>
+                        <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Shop Name</Label>
+                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter shop name..." />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>PAN Number</Label>
+                            <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number..." />
+                        </div>
+
+                        <div className="pt-2 border-t space-y-4">
+                            <div className="font-medium text-sm text-muted-foreground">Verify Identity</div>
+                            <div className="space-y-2">
+                                <Label>Current Password</Label>
+                                <div className="relative">
+                                    <Input 
+                                        type={showPassword ? "text" : "password"} 
+                                        value={password} 
+                                        onChange={(e) => setPassword(e.target.value)} 
+                                        placeholder="Required to save changes"
+                                        autoFocus={false}
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-2 border-t space-y-4">
+                            <div className="font-medium text-sm text-muted-foreground">Change Password (Optional)</div>
+                            <div className="space-y-2">
+                                <Label>New Password</Label>
+                                <div className="relative">
+                                    <Input 
+                                        type={showNewPassword ? "text" : "password"} 
+                                        value={newPassword} 
+                                        onChange={(e) => setNewPassword(e.target.value)} 
+                                        placeholder="Leave blank to keep current"
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>PAN Number</Label>
-                      <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} />
-                    </div>
-                  </div>
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-sidebar-foreground/40 active:text-sidebar-foreground" onClick={() => { setNewName(shopName); setNewPan(shopDetails?.pan || ""); setSettingsOpen(true); }}>
-              <Settings className="h-5 w-5" />
-            </Button>
-          </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSave} disabled={busy} className="bg-primary text-primary-foreground">
+                            {busy ? "Saving..." : "Save Changes"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
-
-      {/* Mobile bottom nav (Quick Access) */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5 h-16">
-        {[nav[0], nav[1], nav[2], nav[6], nav[7]].map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.end}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}>
-            <n.icon className="h-5 w-5" />
-            <span className="text-[9px] font-medium">{n.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-
-      <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0">
-        <Outlet />
-      </main>
-
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>Account Settings</DialogTitle>
-            <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Shop Name</Label>
-              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter shop name..." />
-            </div>
-            <div className="space-y-2">
-              <Label>PAN Number</Label>
-              <Input value={newPan} onChange={(e) => setNewPan(e.target.value)} placeholder="Enter PAN number..." />
-            </div>
-
-            <div className="pt-2 border-t space-y-4">
-              <div className="font-medium text-sm text-muted-foreground">Verify Identity</div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label>Current Password</Label>
-                </div>
-                <div className="relative">
-                  <Input 
-                    type={showPassword ? "text" : "password"} 
-                    value={currentPassword} 
-                    onChange={(e) => setCurrentPassword(e.target.value)} 
-                    placeholder="Required to save changes"
-                    autoFocus={false}
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t space-y-4">
-              <div className="font-medium text-sm text-muted-foreground">Change Password (Optional)</div>
-              <div className="space-y-2">
-                <Label>New Password</Label>
-                <div className="relative">
-                  <Input 
-                    type={showNewPassword ? "text" : "password"} 
-                    value={newPassword} 
-                    onChange={(e) => setNewPassword(e.target.value)} 
-                    placeholder="Leave blank to keep current"
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={loading} className="bg-primary text-primary-foreground">
-              {loading ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </SidebarProvider>
-  );
+    );
 };
