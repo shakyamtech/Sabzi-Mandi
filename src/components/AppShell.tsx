@@ -2,12 +2,16 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck,
-  BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield,
+  BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -50,7 +54,42 @@ export const AppShell = () => {
             </div>
             <div>
               <div className="font-display text-lg leading-tight">Sabzi</div>
-              <div className="text-xs text-sidebar-foreground/60 truncate max-w-[160px]">{shopName}</div>
+              <div className="flex items-center gap-1.5">
+                <div className="text-xs text-sidebar-foreground/60 truncate max-w-[140px]">{shopName}</div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="text-sidebar-foreground/40 hover:text-sidebar-primary transition-colors">
+                      <Settings className="h-3 w-3" />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Shop Settings</DialogTitle></DialogHeader>
+                    <div className="space-y-4 py-2">
+                      <div className="space-y-2">
+                        <Label>Shop Name</Label>
+                        <Input 
+                          value={shopName} 
+                          onChange={(e) => setShopName(e.target.value)} 
+                          placeholder="E.g. Sharma Vegetable Mart"
+                        />
+                      </div>
+                      <Button 
+                        className="w-full bg-gradient-primary text-primary-foreground"
+                        onClick={async () => {
+                          const { error } = await supabase
+                            .from("profiles")
+                            .update({ shop_name: shopName })
+                            .eq("id", user?.id);
+                          if (error) toast.error(error.message);
+                          else toast.success("Shop name updated!");
+                        }}
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </div>
         </div>
