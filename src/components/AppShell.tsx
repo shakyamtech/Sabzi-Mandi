@@ -49,6 +49,7 @@ export const AppShell = () => {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [newUserCount, setNewUserCount] = useState(0);
+    const [prevUserCount, setPrevUserCount] = useState<number | null>(null);
     const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield, badge: newUserCount }] : nav;
 
     useEffect(() => {
@@ -58,21 +59,27 @@ export const AppShell = () => {
             const yesterday = new Date();
             yesterday.setHours(yesterday.getHours() - 24);
             
-            // Count profiles created in the last 24 hours
             const { count, error } = await supabase
                 .from("profiles")
                 .select("*", { count: "exact", head: true })
                 .gte("created_at", yesterday.toISOString());
             
             if (!error && count !== null) {
+                // If count increased, play sound and notify
+                if (prevUserCount !== null && count > prevUserCount) {
+                    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+                    audio.play().catch(() => {});
+                    toast.success("New shopkeeper joined the system! 🎉");
+                }
                 setNewUserCount(count);
+                setPrevUserCount(count);
             }
         };
 
         fetchNewUsers();
-        const interval = setInterval(fetchNewUsers, 5 * 60 * 1000); // Check every 5 mins
+        const interval = setInterval(fetchNewUsers, 5 * 60 * 1000); 
         return () => clearInterval(interval);
-    }, [isAdmin]);
+    }, [isAdmin, prevUserCount]);
 
     useEffect(() => {
         if (!user) {
