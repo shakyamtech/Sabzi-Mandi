@@ -56,20 +56,20 @@ export const AppShell = () => {
         if (!isAdmin) return;
         
         const fetchNewUsers = async () => {
-            const yesterday = new Date();
-            yesterday.setHours(yesterday.getHours() - 24);
+            // Use UTC to avoid timezone confusion with Supabase
+            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             
             const { count, error } = await supabase
                 .from("profiles")
                 .select("*", { count: "exact", head: true })
-                .gte("created_at", yesterday.toISOString());
+                .gte("created_at", yesterday);
             
             if (!error && count !== null) {
-                // If count increased, play sound and notify
+                // If count is > 0, we found new users today!
                 if (prevUserCount !== null && count > prevUserCount) {
                     const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
                     audio.play().catch(() => {});
-                    toast.success("New shopkeeper joined the system! 🎉");
+                    toast.success(`${count} users joined in the last 24h! 🎉`);
                 }
                 setNewUserCount(count);
                 setPrevUserCount(count);
