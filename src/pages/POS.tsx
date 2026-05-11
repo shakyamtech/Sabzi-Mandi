@@ -56,7 +56,8 @@ const POS = () => {
     setCart((c) => c.map((i) => {
       if (i.product_id !== id) return i;
       const price = Number(i.sell_price) || 0;
-      const newQty = price > 0 ? +(Number(amount) / price).toFixed(4) : 0;
+      // Increased precision to 6 decimals to avoid 500.01 issues
+      const newQty = price > 0 ? +(Number(amount) / price).toFixed(6) : 0;
       return { ...i, qty: newQty === 0 ? "" : newQty };
     }));
   };
@@ -64,10 +65,11 @@ const POS = () => {
 
   const subtotal = cart.reduce((s, i) => s + +((Number(i.qty) || 0) * (Number(i.sell_price) || 0)).toFixed(2), 0);
   const discountNum = Math.max(0, Math.min(Number(discount || 0), subtotal));
-  const total = +(subtotal - discountNum).toFixed(2);
+  // Round to nearest whole Rupee to fix Ajit's issue
+  const total = Math.round(subtotal - discountNum);
 
   useEffect(() => {
-    if (paymentMode === "cash") setAmountPaid(total.toFixed(2));
+    if (paymentMode === "cash") setAmountPaid(total.toString());
     else if (paymentMode === "credit") setAmountPaid("0");
   }, [paymentMode, total]);
 

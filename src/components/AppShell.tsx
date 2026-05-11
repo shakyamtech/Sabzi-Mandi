@@ -282,6 +282,7 @@ export const AppShell = () => {
                                         value={password} 
                                         onChange={(e) => setPassword(e.target.value)} 
                                         placeholder="Required to save changes"
+                                        autoComplete="off"
                                         autoFocus={false}
                                     />
                                     <button 
@@ -305,6 +306,7 @@ export const AppShell = () => {
                                         value={newPassword} 
                                         onChange={(e) => setNewPassword(e.target.value)} 
                                         placeholder="Leave blank to keep current"
+                                        autoComplete="new-password"
                                     />
                                     <button 
                                         type="button"

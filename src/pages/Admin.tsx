@@ -88,47 +88,85 @@ const Admin = () => {
         </Button>
       </div>
 
-      <div className="grid gap-3">
+      <div className="grid gap-4">
         {users.map((u) => (
-          <Card key={u.id} className="p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
+          <Card key={u.id} className="p-4 shadow-card border-0 overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+              <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium truncate">{u.email}</span>
-                  {u.roles.includes("admin") && <Badge variant="default">admin</Badge>}
+                  <span className="font-display font-semibold text-base truncate max-w-full">{u.email}</span>
+                  {u.roles.includes("admin") && (
+                    <Badge variant="default" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors">
+                      <Shield className="h-3 w-3 mr-1" /> admin
+                    </Badge>
+                  )}
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  {u.full_name || "—"} · <span className="italic">{u.shop_name || "—"}</span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Joined {format(new Date(u.created_at), "dd MMM yyyy")}
-                  {u.last_sign_in_at && ` · Last seen ${format(new Date(u.last_sign_in_at), "dd MMM yyyy")}`}
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-medium text-foreground/80">{u.full_name || "Anonymous User"}</span>
+                    <span className="text-muted-foreground/40">|</span>
+                    <span className="italic text-primary/70">{u.shop_name || "No Shop Name"}</span>
+                  </div>
+                  
+                  <div className="text-[11px] text-muted-foreground flex flex-wrap gap-x-2 gap-y-0.5 items-center">
+                    <span className="flex items-center gap-1">
+                      <span className="opacity-50">Joined</span>
+                      {format(new Date(u.created_at), "dd MMM yyyy")}
+                    </span>
+                    {u.last_sign_in_at && (
+                      <>
+                        <span className="opacity-30 hidden sm:inline">•</span>
+                        <span className="flex items-center gap-1">
+                          <span className="opacity-50">Active</span>
+                          {format(new Date(u.last_sign_in_at), "dd MMM yyyy")}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2 flex-wrap">
+
+              <div className="flex items-center gap-2 pt-3 md:pt-0 border-t md:border-t-0 border-sidebar-border/50">
                 <Dialog open={editing?.id === u.id} onOpenChange={(o) => !o && setEditing(null)}>
                   <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" onClick={() => { setEditing(u); setEditName(u.full_name); setEditShop(u.shop_name); }}>
-                      <Pencil className="h-3 w-3 mr-1" /> Edit
+                    <Button size="sm" variant="outline" className="flex-1 md:flex-none h-9" onClick={() => { setEditing(u); setEditName(u.full_name); setEditShop(u.shop_name); }}>
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <DialogHeader><DialogTitle>Edit user</DialogTitle></DialogHeader>
-                    <div className="space-y-3">
-                      <div><Label>Full name</Label><Input value={editName} onChange={(e) => setEditName(e.target.value)} /></div>
-                      <div><Label>Shop name</Label><Input value={editShop} onChange={(e) => setEditShop(e.target.value)} /></div>
-                      <Button onClick={saveProfile} className="w-full">Save</Button>
+                    <DialogHeader>
+                      <DialogTitle>Edit User Profile</DialogTitle>
+                      <DialogDescription>Update the full name and shop name for {u.email}.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Full Name</Label>
+                        <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Enter full name..." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Shop Name</Label>
+                        <Input value={editShop} onChange={(e) => setEditShop(e.target.value)} placeholder="Enter shop name..." />
+                      </div>
+                      <Button onClick={saveProfile} className="w-full bg-primary text-primary-foreground h-11 font-semibold">Save Changes</Button>
                     </div>
                   </DialogContent>
                 </Dialog>
 
-                <Button size="sm" variant="outline" onClick={() => toggleAdmin(u)}>
-                  {u.roles.includes("admin") ? <><ShieldOff className="h-3 w-3 mr-1" /> Revoke</> : <><Shield className="h-3 w-3 mr-1" /> Make admin</>}
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className={`flex-1 md:flex-none h-9 transition-all ${u.roles.includes("admin") ? "border-orange-200 text-orange-600 hover:bg-orange-50" : "border-primary/20 text-primary hover:bg-primary/5"}`}
+                  onClick={() => toggleAdmin(u)}
+                >
+                  {u.roles.includes("admin") ? <><ShieldOff className="h-3.5 w-3.5 mr-1.5" /> Revoke</> : <><Shield className="h-3.5 w-3.5 mr-1.5" /> Make Admin</>}
                 </Button>
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive"><Trash2 className="h-3 w-3 mr-1" /> Delete</Button>
+                    <Button size="sm" variant="ghost" className="flex-1 md:flex-none h-9 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -139,7 +177,7 @@ const Admin = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => del(u)} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                      <AlertDialogAction onClick={() => del(u)} className="bg-destructive text-destructive-foreground">Delete User</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -147,7 +185,12 @@ const Admin = () => {
             </div>
           </Card>
         ))}
-        {!users.length && !busy && <Card className="p-8 text-center text-muted-foreground">No users.</Card>}
+        {!users.length && !busy && (
+          <Card className="p-12 text-center text-muted-foreground bg-secondary/30 border-2 border-dashed border-sidebar-border">
+            <RefreshCw className="h-8 w-8 mx-auto mb-3 opacity-20" />
+            No users found in the system.
+          </Card>
+        )}
       </div>
     </div>
   );
