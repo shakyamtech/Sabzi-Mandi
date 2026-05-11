@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
 import { getShopInfo } from "@/lib/shop";
 
-type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number; low_stock_threshold: number };
+type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number; low_stock_threshold: number; is_manufactured: boolean };
 type Customer = { id: string; name: string };
 type CartItem = { product_id: string; product_name: string; unit: string; sell_price: number | string; cost_price: number; qty: number | string };
 
@@ -22,6 +22,7 @@ const POS = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState("");
   const [customerId, setCustomerId] = useState<string>("walk-in");
@@ -33,11 +34,14 @@ const POS = () => {
   const [tempAmount, setTempAmount] = useState<{id: string, val: string} | null>(null);
 
   const load = async () => {
-    const [{ data: p }, { data: c }] = await Promise.all([
+    const [{ data: p }, { data: c }, { data: ing }] = await Promise.all([
       supabase.from("products").select("*").order("name"),
       supabase.from("customers").select("id,name").order("name"),
+      supabase.from("product_ingredients" as any).select("*")
     ]);
-    setProducts((p ?? []) as any); setCustomers((c ?? []) as any);
+    setProducts((p ?? []) as any); 
+    setCustomers((c ?? []) as any);
+    setIngredients(ing ?? []);
   };
   useEffect(() => { if (user) load(); }, [user]);
 
@@ -160,27 +164,50 @@ const POS = () => {
         <div>
           <Input className="mb-3" placeholder="Search vegetable..." value={search} onChange={(e) => setSearch(e.target.value)} />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {filtered.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => addToCart(p)}
-                disabled={p.stock_qty <= 0}
-                className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${p.stock_qty <= 0
-                    ? "bg-red-100 border-red-300 opacity-80 cursor-not-allowed"
-                    : p.stock_qty <= (p.low_stock_threshold || 5)
-                      ? "bg-orange-50 border-orange-200 active:scale-95"
-                      : "bg-card border-transparent active:scale-95"
-                  }`}>
-                <div className={`font-display text-base truncate ${p.stock_qty <= 0 ? "text-red-900" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-900" : ""
-                  }`}>{p.name}</div>
-                <div className={`text-xs ${p.stock_qty <= 0 ? "text-red-600 font-bold" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-600 font-medium" : "text-muted-foreground"
-                  }`}>
-                  {p.stock_qty <= 0 ? "OUT OF STOCK" : `${fmtQty(p.stock_qty)} ${p.unit} left`}
-                </div>
-                <div className={`mt-2 font-semibold ${p.stock_qty <= 0 ? "text-red-700" : p.stock_qty <= (p.low_stock_threshold || 5) ? "text-orange-700" : "text-primary"
-                  }`}>{fmt(p.sell_price)}</div>
-              </button>
-            ))}
+            {filtered.map((p) => {
+              // Calculate possible stock from ingredients if it has a recipe
+              let possibleFromIng = Infinity;
+              const recipe = ingredients.filter(i => i.product_id === p.id);
+              
+              if (recipe.length > 0) {
+                recipe.forEach(ri => {
+                  const ingProd = products.find(prod => prod.id === ri.ingredient_id);
+                  if (ingProd) {
+                    const canMake = Math.floor(ingProd.stock_qty / ri.quantity);
+                    if (canMake < possibleFromIng) possibleFromIng = canMake;
+                  }
+                });
+              } else {
+                possibleFromIng = 0;
+              }
+
+              const totalAvailable = p.stock_qty + (possibleFromIng === Infinity ? 0 : possibleFromIng);
+              const isLow = totalAvailable > 0 && totalAvailable <= (p.low_stock_threshold || 5);
+              const isOut = totalAvailable <= 0;
+
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => addToCart(p)}
+                  disabled={isOut}
+                  className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${isOut
+                      ? "bg-red-100 border-red-300 opacity-80 cursor-not-allowed"
+                      : isLow
+                        ? "bg-orange-50 border-orange-200 active:scale-95"
+                        : "bg-card border-transparent active:scale-95"
+                    }`}>
+                  <div className={`font-display text-base truncate ${isOut ? "text-red-900" : isLow ? "text-orange-900" : ""
+                    }`}>{p.name}</div>
+                  <div className={`text-xs ${isOut ? "text-red-600 font-bold" : isLow ? "text-orange-600 font-medium" : "text-muted-foreground"
+                    }`}>
+                    {isOut ? "OUT OF STOCK" : `${fmtQty(totalAvailable)} ${p.unit} total`}
+                    {recipe.length > 0 && p.stock_qty > 0 && <span className="block opacity-60 text-[10px]">({fmtQty(p.stock_qty)} ready)</span>}
+                  </div>
+                  <div className={`mt-2 font-semibold ${isOut ? "text-red-700" : isLow ? "text-orange-700" : "text-primary"
+                    }`}>{fmt(p.sell_price)}</div>
+                </button>
+              );
+            })}
             {filtered.length === 0 && <div className="col-span-full text-center text-muted-foreground py-8">No products. Add some first.</div>}
           </div>
         </div>
