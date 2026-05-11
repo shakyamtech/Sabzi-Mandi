@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmt, fmtQty } from "@/lib/format";
 import { Plus, Pencil, Trash2, AlertTriangle, ChefHat } from "lucide-react";
@@ -143,7 +143,12 @@ const Products = () => {
               <Button className="bg-gradient-primary text-primary-foreground shadow-soft"><Plus className="h-4 w-4 mr-1" /> Add Product</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{edit.id ? "Edit Product" : "New Product"}</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>{edit.id ? "Edit Product" : "New Product"}</DialogTitle>
+                <DialogDescription>
+                  {edit.id ? "Update the details for this product." : "Add a new vegetable or item to your inventory."}
+                </DialogDescription>
+              </DialogHeader>
               <div className="space-y-3">
                 <div><Label>Name</Label><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} placeholder="Enter vegetable or item name..." /></div>
                 <div className="grid grid-cols-2 gap-3">
@@ -255,7 +260,10 @@ const Products = () => {
       <Dialog open={recipeOpen} onOpenChange={setRecipeOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Recipe for {activeProduct?.name}</DialogTitle>
+            <DialogTitle>Recipe for {activeProduct?.name || "Product"}</DialogTitle>
+            <DialogDescription>
+              Manage the ingredients required to manufacture this item.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">

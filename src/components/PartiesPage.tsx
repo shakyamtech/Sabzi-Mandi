@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { fmt } from "@/lib/format";
 import { Plus, Trash2, BookOpen, ArrowLeft, Wallet, Printer } from "lucide-react";
 import { toast } from "sonner";
@@ -167,7 +167,12 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
         {/* Payment Dialog for Ledger View */}
         <Dialog open={payOpen} onOpenChange={setPayOpen}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Record {type === "customer" ? "Payment Received" : "Payment Made"} — {selected.name}</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Record {type === "customer" ? "Payment Received" : "Payment Made"} — {selected.name}</DialogTitle>
+              <DialogDescription>
+                Enter the amount and any notes for this transaction to update the ledger.
+              </DialogDescription>
+            </DialogHeader>
             <div className="space-y-3">
               <div><Label>Amount</Label><Input type="number" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} autoFocus /></div>
               <div><Label>Note</Label><Input value={payNote} placeholder="Optional note" onChange={(e) => setPayNote(e.target.value)} /></div>
@@ -185,7 +190,12 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button className="bg-gradient-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />Add</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>New {type}</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>New {type}</DialogTitle>
+              <DialogDescription>
+                Enter the contact details for this {type}.
+              </DialogDescription>
+            </DialogHeader>
             <div className="space-y-3">
               <div><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
               <div><Label>Phone</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
@@ -230,7 +240,12 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
         {/* Global Payment Dialog (Shared between Card and Ledger views) */}
         <Dialog open={payOpen} onOpenChange={setPayOpen}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Record {type === "customer" ? "Payment Received" : "Payment Made"} {selected ? `— ${selected.name}` : ""}</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Record {type === "customer" ? "Payment Received" : "Payment Made"} {selected ? `— ${selected.name}` : ""}</DialogTitle>
+              <DialogDescription>
+                Process a payment entry for this {type}.
+              </DialogDescription>
+            </DialogHeader>
             <div className="space-y-3">
               <div><Label>Amount</Label><Input type="number" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} autoFocus /></div>
               <div><Label>Note</Label><Input value={payNote} placeholder="Optional note" onChange={(e) => setPayNote(e.target.value)} /></div>
