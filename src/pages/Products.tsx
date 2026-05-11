@@ -230,7 +230,15 @@ const Products = () => {
                 </div>
                 <div className="flex gap-1">
                   {p.is_manufactured && (
-                    <Button size="icon" variant="ghost" onClick={() => loadRecipe(p)} title="Manage Recipe"><ChefHat className="h-4 w-4 text-orange-500" /></Button>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      onClick={() => loadRecipe(p)} 
+                      title="Manage Recipe"
+                      className="hover:bg-orange-500 hover:text-white text-orange-500 transition-colors"
+                    >
+                      <ChefHat className="h-4 w-4" />
+                    </Button>
                   )}
                   <Button size="icon" variant="ghost" onClick={() => { setEdit(p); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => remove(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
