@@ -17,6 +17,7 @@ import Cashbook from "./pages/Cashbook";
 import Reports from "./pages/Reports";
 import BalanceSheet from "./pages/BalanceSheet";
 import Admin from "./pages/Admin";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound.tsx";
 
 import { SplashScreen } from "@/components/SplashScreen";
@@ -44,6 +45,7 @@ const App = () => {
               <AuthProvider>
                 <Routes>
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/pos" element={<POS />} />

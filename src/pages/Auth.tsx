@@ -104,6 +104,17 @@ const Auth = () => {
     navigate("/");
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) return toast.error("Please enter your email address first.");
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Password reset link sent! Please check your email.");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
       <div className="w-full max-w-md">
@@ -125,9 +136,16 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-3">
                 <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-                {PasswordField}
+                <div>
+                  {PasswordField}
+                  <div className="flex justify-end mt-1">
+                    <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:underline font-medium">
+                      Forgot password?
+                    </button>
+                  </div>
+                </div>
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">
-                  {loading ? "Signing in..." : "Sign in"}
+                  {loading ? "Processing..." : "Sign in"}
                 </Button>
               </form>
             </TabsContent>
