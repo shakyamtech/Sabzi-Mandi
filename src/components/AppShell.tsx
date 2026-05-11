@@ -48,7 +48,31 @@ export const AppShell = () => {
     const [busy, setBusy] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
+    const [newUserCount, setNewUserCount] = useState(0);
+    const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield, badge: newUserCount }] : nav;
+
+    useEffect(() => {
+        if (!isAdmin) return;
+        
+        const fetchNewUsers = async () => {
+            const yesterday = new Date();
+            yesterday.setHours(yesterday.getHours() - 24);
+            
+            // Count profiles created in the last 24 hours
+            const { count, error } = await supabase
+                .from("profiles")
+                .select("*", { count: "exact", head: true })
+                .gte("created_at", yesterday.toISOString());
+            
+            if (!error && count !== null) {
+                setNewUserCount(count);
+            }
+        };
+
+        fetchNewUsers();
+        const interval = setInterval(fetchNewUsers, 5 * 60 * 1000); // Check every 5 mins
+        return () => clearInterval(interval);
+    }, [isAdmin]);
 
     useEffect(() => {
         if (!user) {
@@ -167,6 +191,11 @@ export const AppShell = () => {
                             }
                         >
                             <n.icon className="h-4 w-4" /> {n.label}
+                            {n.badge > 0 && (
+                                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-soft animate-pulse">
+                                    {n.badge}
+                                </span>
+                            )}
                         </NavLink>
                     ))}
                 </nav>
@@ -213,6 +242,11 @@ export const AppShell = () => {
                                         }
                                     >
                                         <n.icon className="h-5 w-5" /> {n.label}
+                                        {n.badge > 0 && (
+                                            <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-white text-destructive text-[12px] font-bold shadow-lg animate-pulse">
+                                                {n.badge}
+                                            </span>
+                                        )}
                                     </NavLink>
                                 ))}
                             </nav>
