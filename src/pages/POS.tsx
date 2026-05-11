@@ -75,52 +75,81 @@ const POS = () => {
 
   const checkout = async () => {
     if (cart.length === 0) return toast.error("Cart is empty");
-    const paid = Number(amountPaid || 0);
-    if (paymentMode === "credit" && customerId === "walk-in") return toast.error("Pick a customer for credit sale");
-    setBusy(true);
-    const ratio = subtotal > 0 ? total / subtotal : 1;
-    const itemsToSend = cart.map((i) => ({ ...i, sell_price: +(i.sell_price * ratio).toFixed(4) }));
-    const noteWithDiscount = discountNum > 0 ? `Discount: ${fmt(discountNum)}` : null;
-    const { error } = await supabase.rpc("checkout_sale", {
-      p_customer_id: customerId === "walk-in" ? null : customerId,
-      p_payment_mode: paymentMode,
-      p_amount_paid: paid,
-      p_note: noteWithDiscount,
-      p_items: itemsToSend as any,
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success(`Sale complete — ${fmt(total)}`);
-    const change = Number(tendered || 0) - paid;
-    if (paymentMode === "cash" && change > 0) toast.success(`Return change: ${fmt(change)}`);
+    
+    try {
+      const paid = Number(amountPaid || 0);
+      if (paymentMode === "credit" && customerId === "walk-in") return toast.error("Pick a customer for credit sale");
+      
+      setBusy(true);
+      const ratio = subtotal > 0 ? total / subtotal : 1;
+      
+      // Ensure all numbers are valid before sending to database
+      const itemsToSend = cart.map((i) => {
+        const qty = Number(i.qty) || 0;
+        const price = Number(i.sell_price) || 0;
+        if (qty <= 0) throw new Error(`Invalid quantity for ${i.product_name}`);
+        
+        return { 
+          ...i, 
+          qty,
+          sell_price: +(price * ratio).toFixed(4) 
+        };
+      });
 
-    // Build & print receipt
-    const shop = await getShopInfo();
-    const customerName = customerId === "walk-in" ? "Walk-in" : (customers.find((c) => c.id === customerId)?.name ?? "Walk-in");
-    const rows = cart.map((i) => `<tr><td>${escapeHtml(i.product_name)}</td><td>${fmtQty(i.qty)} ${escapeHtml(i.unit)}</td><td>${fmt(i.sell_price)}</td><td>${fmt(i.qty * i.sell_price)}</td></tr>`).join("");
-    const changeLine = paymentMode === "cash" && Number(tendered || 0) >= total
-      ? `<div class="row"><span>Tendered</span><span>${fmt(Number(tendered))}</span></div><div class="row"><span>Change</span><span>${fmt(Number(tendered) - total)}</span></div>` : "";
+      const noteWithDiscount = discountNum > 0 ? `Discount: ${fmt(discountNum)}` : null;
+      
+      const { error } = await supabase.rpc("checkout_sale", {
+        p_customer_id: customerId === "walk-in" ? null : customerId,
+        p_payment_mode: paymentMode,
+        p_amount_paid: paid,
+        p_note: noteWithDiscount,
+        p_items: itemsToSend as any,
+      });
 
-    const body = `
-      <div class="center">
-        <h2>${escapeHtml(shop.name)}</h2>
-        ${shop.pan ? `<div class="muted">PAN: ${escapeHtml(shop.pan)}</div>` : ""}
-        <div class="muted" style="margin-top: 4px">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div>
-      </div>
-      <hr/>
-      <div class="row"><span>Customer</span><span>${escapeHtml(customerName)}</span></div>
-      <div class="row"><span>Payment</span><span>${paymentMode}</span></div>
-      <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>
-      ${discountNum > 0 ? `<div class="row sub" style="margin-top:8px"><span>Subtotal</span><span>${fmt(subtotal)}</span></div><div class="row sub"><span>Discount</span><span>− ${fmt(discountNum)}</span></div>` : ""}
-      <div class="row total"><span>TOTAL</span><span>${fmt(total)}</span></div>
-      <div class="row sub"><span>Paid</span><span>${fmt(paid)}</span></div>
-      ${changeLine}
-      <hr/><div class="center muted">Thank you for shopping with us!</div>
-    `;
-    printHTML("Receipt", body);
+      if (error) throw error;
 
-    setCart([]); setAmountPaid(""); setTendered(""); setDiscount(""); setCustomerId("walk-in"); setPaymentMode("cash");
-    load();
+      toast.success(`Sale complete — ${fmt(total)}`);
+      const change = Number(tendered || 0) - paid;
+      if (paymentMode === "cash" && change > 0) toast.success(`Return change: ${fmt(change)}`);
+
+      // Build & print receipt safely
+      try {
+        const shop = await getShopInfo();
+        const customerName = customerId === "walk-in" ? "Walk-in" : (customers.find((c) => c.id === customerId)?.name ?? "Walk-in");
+        const rows = cart.map((i) => `<tr><td>${escapeHtml(i.product_name)}</td><td>${fmtQty(i.qty)} ${escapeHtml(i.unit)}</td><td>${fmt(i.sell_price)}</td><td>${fmt(Number(i.qty) * Number(i.sell_price))}</td></tr>`).join("");
+        const changeLine = paymentMode === "cash" && Number(tendered || 0) >= total
+          ? `<div class="row"><span>Tendered</span><span>${fmt(Number(tendered))}</span></div><div class="row"><span>Change</span><span>${fmt(Number(tendered) - total)}</span></div>` : "";
+
+        const body = `
+          <div class="center">
+            <h2>${escapeHtml(shop.name)}</h2>
+            ${shop.pan ? `<div class="muted">PAN: ${escapeHtml(shop.pan)}</div>` : ""}
+            <div class="muted" style="margin-top: 4px">${format(new Date(), "dd MMM yyyy, hh:mm a")}</div>
+          </div>
+          <hr/>
+          <div class="row"><span>Customer</span><span>${escapeHtml(customerName)}</span></div>
+          <div class="row"><span>Payment</span><span>${paymentMode}</span></div>
+          <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>
+          ${discountNum > 0 ? `<div class="row sub" style="margin-top:8px"><span>Subtotal</span><span>${fmt(subtotal)}</span></div><div class="row sub"><span>Discount</span><span>− ${fmt(discountNum)}</span></div>` : ""}
+          <div class="row total"><span>TOTAL</span><span>${fmt(total)}</span></div>
+          <div class="row sub"><span>Paid</span><span>${fmt(paid)}</span></div>
+          ${changeLine}
+          <hr/><div class="center muted">Thank you for shopping with us!</div>
+        `;
+        printHTML("Receipt", body);
+      } catch (printErr) {
+        console.error("Print error:", printErr);
+        toast.error("Sale saved, but receipt printing failed.");
+      }
+
+      setCart([]); setAmountPaid(""); setTendered(""); setDiscount(""); setCustomerId("walk-in"); setPaymentMode("cash");
+      load();
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      toast.error(err.message || "An unexpected error occurred during checkout");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

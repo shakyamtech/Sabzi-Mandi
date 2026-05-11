@@ -157,6 +157,7 @@ const Products = () => {
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="kg">kg</SelectItem>
+                        <SelectItem value="box">box</SelectItem>
                         <SelectItem value="g">gram</SelectItem>
                         <SelectItem value="Ltr">ltr</SelectItem>
                         <SelectItem value="ml">ml</SelectItem>
@@ -240,10 +241,10 @@ const Products = () => {
                 <div><div className="text-muted-foreground text-xs">Sell</div><div className={`font-medium ${isEmpty ? "text-red-700" : isLow ? "text-orange-700" : "text-primary"}`}>{fmt(p.sell_price)}</div></div>
               </div>
               <div className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 border ${isEmpty
-                  ? "bg-red-100 border-red-200 text-red-900 font-bold"
-                  : isLow
-                    ? "bg-orange-100 border-orange-200 text-orange-900 font-bold"
-                    : "bg-secondary border-transparent"
+                ? "bg-red-100 border-red-200 text-red-900 font-bold"
+                : isLow
+                  ? "bg-orange-100 border-orange-200 text-orange-900 font-bold"
+                  : "bg-secondary border-transparent"
                 }`}>
                 <span className="text-xs">{ingredients.length > 0 ? "Possible Stock" : "Stock"}</span>
                 <span className="font-medium flex items-center gap-1">
