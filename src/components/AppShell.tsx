@@ -199,7 +199,7 @@ export const AppShell = () => {
                         >
                             <n.icon className="h-4 w-4" /> {n.label}
                             {n.badge > 0 && (
-                                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-soft animate-pulse">
+                                <span className="ml-auto flex min-w-[1.25rem] h-5 px-1 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-soft animate-pulse">
                                     {n.badge}
                                 </span>
                             )}
