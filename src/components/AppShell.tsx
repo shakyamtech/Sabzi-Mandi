@@ -48,38 +48,7 @@ export const AppShell = () => {
     const [busy, setBusy] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [newUserCount, setNewUserCount] = useState(0);
-    const [prevUserCount, setPrevUserCount] = useState<number | null>(null);
-    const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield, badge: newUserCount }] : nav;
-
-    useEffect(() => {
-        if (!isAdmin) return;
-        
-        const fetchNewUsers = async () => {
-            // Use UTC to avoid timezone confusion with Supabase
-            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-            
-            const { count, error } = await supabase
-                .from("profiles")
-                .select("*", { count: "exact", head: true })
-                .gte("created_at", yesterday);
-            
-            if (!error && count !== null) {
-                // If count is > 0, we found new users today!
-                if (prevUserCount !== null && count > prevUserCount) {
-                    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-                    audio.play().catch(() => {});
-                    toast.success(`${count} users joined in the last 24h! 🎉`);
-                }
-                setNewUserCount(count);
-                setPrevUserCount(count);
-            }
-        };
-
-        fetchNewUsers();
-        const interval = setInterval(fetchNewUsers, 5 * 60 * 1000); 
-        return () => clearInterval(interval);
-    }, [isAdmin, prevUserCount]);
+    const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
 
     useEffect(() => {
         if (!user) {
@@ -198,11 +167,6 @@ export const AppShell = () => {
                             }
                         >
                             <n.icon className="h-4 w-4" /> {n.label}
-                            {n.badge > 0 && (
-                                <span className="ml-auto flex min-w-[1.25rem] h-5 px-1 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-soft animate-pulse">
-                                    {n.badge}
-                                </span>
-                            )}
                         </NavLink>
                     ))}
                 </nav>
@@ -249,11 +213,6 @@ export const AppShell = () => {
                                         }
                                     >
                                         <n.icon className="h-5 w-5" /> {n.label}
-                                        {n.badge > 0 && (
-                                            <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-white text-destructive text-[12px] font-bold shadow-lg animate-pulse">
-                                                {n.badge}
-                                            </span>
-                                        )}
                                     </NavLink>
                                 ))}
                             </nav>
