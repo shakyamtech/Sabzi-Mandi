@@ -41,7 +41,10 @@ const Admin = () => {
     try {
       const d = await call({ action: "list" });
       setUsers(d.users || []);
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { 
+      console.error("Admin Load Error:", e);
+      toast.error(e.message || "Failed to load users"); 
+    }
     setBusy(false);
   };
 
