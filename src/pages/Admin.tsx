@@ -76,16 +76,27 @@ const Admin = () => {
     } catch (e: any) { toast.error(e.message); }
   };
 
+  const testNotify = () => {
+    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+    audio.play().catch(() => toast.error("Browser blocked sound. Click the page first!"));
+    toast.success("New shopkeeper joined the system! 🎉");
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl flex items-center gap-2"><Shield className="h-6 w-6 text-primary" /> Admin</h1>
           <p className="text-sm text-muted-foreground">{users.length} user{users.length !== 1 && "s"}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={busy}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${busy ? "animate-spin" : ""}`} /> Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={testNotify} className="border-primary/20 text-primary hover:bg-primary/5">
+            Test Join Sound 🔔
+          </Button>
+          <Button variant="outline" size="sm" onClick={load} disabled={busy}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${busy ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
