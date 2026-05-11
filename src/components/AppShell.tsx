@@ -171,6 +171,7 @@ export const AppShell = () => {
                     ))}
                 </nav>
                 <div className="p-3 border-t border-sidebar-border mt-auto">
+                    <div className="px-3 py-2 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">Version 1.0.0</div>
                     <Button
                         variant="ghost"
                         className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -216,6 +217,7 @@ export const AppShell = () => {
                                 ))}
                             </nav>
                             <div className="p-6 border-t border-sidebar-border mt-auto">
+                                <div className="px-1 mb-4 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">Version 1.0.0</div>
                                 <Button className="w-full justify-start gap-3 h-12 rounded-xl shadow-lg bg-[#FACC15] hover:bg-[#EAB308] text-black border-none font-bold"
                                     onClick={async () => { await signOut(); navigate("/auth"); }}>
                                     <LogOut className="h-5 w-5" /> Sign out
