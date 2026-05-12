@@ -17,18 +17,22 @@ import { printHTML, escapeHtml } from "@/lib/print";
 import { getShopInfo } from "@/lib/shop";
 import { format } from "date-fns";
 
-const categories = [
+const inCategories = [
   "sale", 
+  "customer_payment", 
+  "opening", 
+  "other"
+];
+
+const outCategories = [
   "purchase", 
   "expense", 
   "salary", 
   "rent", 
   "electricity", 
   "maintenance", 
-  "customer_payment", 
   "supplier_payment", 
   "payment",
-  "opening", 
   "personal", 
   "other"
 ];
@@ -164,7 +168,7 @@ const Cashbook = () => {
             <div className="space-y-3">
               <div>
                 <Label>Type</Label>
-                <Select value={direction} onValueChange={(v: any) => setDirection(v)}>
+                <Select value={direction} onValueChange={(v: any) => { setDirection(v); setCategory(""); setPartyId(null); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="in">Cash In</SelectItem><SelectItem value="out">Cash Out</SelectItem></SelectContent>
                 </Select>
@@ -174,7 +178,11 @@ const Cashbook = () => {
                 <Label>Category</Label>
                 <Select value={category} onValueChange={(v) => { setCategory(v); setPartyId(null); }}>
                   <SelectTrigger><SelectValue placeholder="Select Category..." /></SelectTrigger>
-                  <SelectContent>{categories.map((c) => <SelectItem key={c} value={c}>{c.replace("_", " ")}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {(direction === "in" ? inCategories : outCategories).map((c) => (
+                      <SelectItem key={c} value={c}>{c.replace("_", " ")}</SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
 
