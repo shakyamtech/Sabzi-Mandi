@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { fmt } from "@/lib/format";
-import { Plus, Trash2, BookOpen, ArrowLeft, Wallet, Printer } from "lucide-react";
+import { Plus, Trash2, BookOpen, ArrowLeft, Wallet, Printer, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { printHTML, escapeHtml } from "@/lib/print";
@@ -191,7 +191,7 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
               <td>${format(new Date(e.created_at), "dd MMM, hh:mm a")}</td>
               <td style="text-transform:capitalize">
                 <strong>${escapeHtml(e.title)}</strong>
-                ${e.products ? `<br/><span style="font-size:11px;color:#555">📦 ${escapeHtml(e.products)}</span>` : ""}
+                ${e.products ? `<br/><span style="font-size:11px;color:#555">🛒 ${escapeHtml(e.products)}</span>` : ""}
                 ${e.note ? `<br/><span style="font-size:11px;color:#777">💬 ${escapeHtml(e.note)}</span>` : ""}
               </td>
               <td>${fmt(e.amount)}</td>
@@ -253,7 +253,7 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
                   <div className="text-sm font-medium capitalize truncate">{e.title}</div>
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {format(new Date(e.created_at), "dd MMM yyyy, hh:mm a")}
-                    {e.products ? <span className="font-medium text-foreground/80 block mt-0.5 truncate">📦 {e.products}</span> : null}
+                    {e.products ? <span className="font-medium text-foreground/80 flex items-center gap-1 mt-0.5 truncate"><ShoppingCart className="h-3 w-3 shrink-0 text-primary" /> <span>{e.products}</span></span> : null}
                     {e.note ? <span className="italic block text-[11px] mt-0.5 truncate">💬 {e.note}</span> : null}
                   </div>
                 </div>
