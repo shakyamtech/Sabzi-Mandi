@@ -41,6 +41,7 @@ export const AppShell = () => {
     const [shopName, setShopName] = useState("My Shop");
     const [newName, setNewName] = useState("");
     const [panNo, setPanNo] = useState("");
+    const [fullName, setFullName] = useState("");
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -57,23 +58,26 @@ export const AppShell = () => {
         }
         
         const loadProfile = async () => {
-            const { data, error } = await supabase.from("profiles").select("shop_name, pan_no").eq("id", user.id).maybeSingle();
+            const { data, error } = await supabase.from("profiles").select("shop_name, pan_no, full_name").eq("id", user.id).maybeSingle();
             
             if (data) {
-                setShopName(data.shop_name || "My Shop");
-                setNewName(data.shop_name || "My Shop");
-                setPanNo(data.pan_no || "");
+                setShopName(data.shop_name || user.user_metadata?.shop_name || "My Shop");
+                setNewName(data.shop_name || user.user_metadata?.shop_name || "My Shop");
+                setPanNo(data.pan_no || user.user_metadata?.pan_no || "");
+                setFullName(data.full_name || user.user_metadata?.full_name || "");
             } else {
                 const metaShop = user.user_metadata?.shop_name || "My Shop";
                 const metaPan = user.user_metadata?.pan_no || "";
+                const metaName = user.user_metadata?.full_name || "";
                 setShopName(metaShop);
                 setNewName(metaShop);
                 setPanNo(metaPan);
+                setFullName(metaName);
                 
                 await supabase.from("profiles").upsert({
                     id: user.id,
                     shop_name: metaShop,
-                    full_name: user.user_metadata?.full_name || "",
+                    full_name: metaName,
                     pan_no: metaPan
                 });
             }
@@ -100,21 +104,26 @@ export const AppShell = () => {
         try {
             const { error: profileError } = await supabase.from("profiles").update({ 
                 shop_name: newName,
-                pan_no: panNo
+                pan_no: panNo,
+                full_name: fullName
             }).eq("id", user?.id);
             
             if (profileError) throw profileError;
             setShopName(newName);
 
+            const updatePayload: any = { data: { full_name: fullName, shop_name: newName, pan_no: panNo } };
             if (newPassword.trim()) {
                 if (newPassword.length < 6) {
-                    toast.error("New password must be at least 6 characters. Name updated, but password was not.");
+                    toast.error("New password must be at least 6 characters. Profile updated, but password was not.");
                 } else {
-                    const { error: passError } = await supabase.auth.updateUser({ password: newPassword });
-                    if (passError) throw passError;
-                    toast.success("Password updated!");
-                    setNewPassword("");
+                    updatePayload.password = newPassword;
                 }
+            }
+            const { error: authMetaErr } = await supabase.auth.updateUser(updatePayload);
+            if (authMetaErr) throw authMetaErr;
+            if (updatePayload.password) {
+                toast.success("Password updated!");
+                setNewPassword("");
             }
 
             toast.success("Changes saved successfully!");
@@ -259,12 +268,20 @@ export const AppShell = () => {
             </nav>
 
             <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-                <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
-                    <DialogHeader>
+                <DialogContent className="max-h-[90vh] flex flex-col p-6" onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <DialogHeader className="shrink-0">
                         <DialogTitle>Account Settings</DialogTitle>
-                        <DialogDescription>Update your shop name, PAN number, or change your password.</DialogDescription>
+                        <DialogDescription>Update your profile details, view your login email, or change your password.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
+                    <div className="space-y-4 py-2 overflow-y-auto flex-1 pr-1">
+                        <div className="space-y-2">
+                            <Label>Email Address (Login ID)</Label>
+                            <Input value={user?.email || ""} readOnly className="bg-muted text-muted-foreground font-medium select-all" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>User Name (Full Name)</Label>
+                            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name..." />
+                        </div>
                         <div className="space-y-2">
                             <Label>Shop Name</Label>
                             <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter shop name..." />
