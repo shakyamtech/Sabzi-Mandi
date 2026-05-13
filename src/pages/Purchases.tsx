@@ -168,17 +168,35 @@ const Purchases = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {items.map((i) => (
-              <div key={i.product_id} className="grid grid-cols-[1fr_90px_110px_90px_auto] gap-2 items-center bg-secondary p-2 rounded-lg">
-                <div className="font-medium truncate">{i.product_name} <span className="text-xs text-muted-foreground">/{i.unit}</span></div>
-                <Input type="number" step="0.001" value={i.qty} onChange={(e) => updateItem(i.product_id, "qty", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                <Input type="number" step="0.01" value={i.cost_price} onChange={(e) => updateItem(i.product_id, "cost_price", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
-                <div className="text-right text-sm font-medium">{fmt((Number(i.qty) || 0) * (Number(i.cost_price) || 0))}</div>
-                <Button size="icon" variant="ghost" onClick={() => removeItem(i.product_id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+              <div key={i.product_id} className="bg-secondary p-3 rounded-xl space-y-2 sm:space-y-0 sm:grid sm:grid-cols-[1fr_100px_120px_100px_auto] sm:gap-3 sm:items-center shadow-soft transition-all">
+                <div className="flex items-center justify-between sm:justify-start gap-2 border-b sm:border-0 pb-2 sm:pb-0 border-border/40">
+                  <div className="font-semibold text-foreground truncate">{i.product_name} <span className="text-xs font-normal text-muted-foreground">/{i.unit}</span></div>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 sm:hidden text-destructive hover:bg-destructive/10" onClick={() => removeItem(i.product_id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-2 items-end sm:contents">
+                  <div className="space-y-1 sm:space-y-0">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase sm:hidden block">Qty</Label>
+                    <Input className="h-9 font-medium text-xs sm:text-sm bg-background" type="number" step="0.001" value={i.qty} onChange={(e) => updateItem(i.product_id, "qty", e.target.value)} placeholder="Qty" onWheel={(e) => e.currentTarget.blur()} />
+                  </div>
+                  <div className="space-y-1 sm:space-y-0">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase sm:hidden block">Cost Price</Label>
+                    <Input className="h-9 font-medium text-xs sm:text-sm bg-background" type="number" step="0.01" value={i.cost_price} onChange={(e) => updateItem(i.product_id, "cost_price", e.target.value)} placeholder="Price" onWheel={(e) => e.currentTarget.blur()} />
+                  </div>
+                  <div className="text-right sm:text-right space-y-1 sm:space-y-0">
+                    <Label className="text-[10px] font-bold text-primary uppercase sm:hidden block text-right">Total Rs.</Label>
+                    <div className="text-sm sm:text-base font-bold text-foreground sm:pt-0 pt-1.5">{fmt((Number(i.qty) || 0) * (Number(i.cost_price) || 0))}</div>
+                  </div>
+                </div>
+                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-9 w-9 text-destructive hover:bg-destructive/10" onClick={() => removeItem(i.product_id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
-            {items.length === 0 && <div className="text-center text-sm text-muted-foreground py-4">Pick a product to start</div>}
+            {items.length === 0 && <div className="text-center text-sm text-muted-foreground py-6 border-2 border-dashed border-border/60 rounded-xl">Pick a product to start</div>}
           </div>
 
           <div className="grid sm:grid-cols-3 gap-3 mt-4 items-end">
