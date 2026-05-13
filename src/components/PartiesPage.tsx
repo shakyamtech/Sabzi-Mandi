@@ -17,7 +17,16 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 
 type Party = { id: string; name: string; phone: string | null; balance: number };
-type Entry = { id: string; entry_type: string; amount: number; note: string | null; created_at: string };
+type Entry = { 
+  id: string; 
+  entry_type?: string; 
+  title: string;
+  amount: number; 
+  note?: string | null; 
+  created_at: string;
+  products?: string;
+  is_order?: boolean;
+};
 
 export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
   const { user } = useAuth();
@@ -60,9 +69,92 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
 
   const openLedger = async (p: Party) => {
     setSelected(p);
-    const { data } = await supabase.from("ledger_entries").select("*")
-      .eq("party_type", type).eq("party_id", p.id).order("created_at", { ascending: false });
-    setEntries((data ?? []) as any);
+    if (type === "customer") {
+      const [{ data: salesData }, { data: ledgerData }] = await Promise.all([
+        supabase.from("sales").select("id, total, payment_mode, created_at, note, sale_items(qty, sell_price, products(name, unit))").eq("customer_id", p.id).order("created_at", { ascending: false }),
+        supabase.from("ledger_entries").select("*").eq("party_type", type).eq("party_id", p.id).order("created_at", { ascending: false })
+      ]);
+
+      const items: Entry[] = [];
+      const saleIds = new Set<string>();
+
+      if (salesData) {
+        salesData.forEach((s: any) => {
+          saleIds.add(s.id);
+          const prods = (s.sale_items || []).map((si: any) => `${si.qty} ${si.products?.unit || ""} ${si.products?.name || ""}`.trim()).join(", ");
+          items.push({
+            id: s.id,
+            is_order: true,
+            title: `Sale (${s.payment_mode})`,
+            amount: Number(s.total),
+            created_at: s.created_at,
+            note: s.note,
+            products: prods
+          });
+        });
+      }
+
+      if (ledgerData) {
+        ledgerData.forEach((l: any) => {
+          if (l.reference_id && saleIds.has(l.reference_id)) return;
+          items.push({
+            id: l.id,
+            entry_type: l.entry_type,
+            is_order: false,
+            title: l.entry_type.replace("_", " "),
+            amount: Number(l.amount),
+            created_at: l.created_at,
+            note: l.note
+          });
+        });
+      }
+
+      items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setEntries(items);
+
+    } else {
+      const [{ data: purData }, { data: ledgerData }] = await Promise.all([
+        supabase.from("purchases").select("id, total, payment_mode, created_at, note, purchase_items(qty, cost_price, products(name, unit))").eq("supplier_id", p.id).order("created_at", { ascending: false }),
+        supabase.from("ledger_entries").select("*").eq("party_type", type).eq("party_id", p.id).order("created_at", { ascending: false })
+      ]);
+
+      const items: Entry[] = [];
+      const purIds = new Set<string>();
+
+      if (purData) {
+        purData.forEach((pu: any) => {
+          purIds.add(pu.id);
+          const prods = (pu.purchase_items || []).map((pi: any) => `${pi.qty} ${pi.products?.unit || ""} ${pi.products?.name || ""}`.trim()).join(", ");
+          items.push({
+            id: pu.id,
+            is_order: true,
+            title: `Purchase (${pu.payment_mode})`,
+            amount: Number(pu.total),
+            created_at: pu.created_at,
+            note: pu.note,
+            products: prods
+          });
+        });
+      }
+
+      if (ledgerData) {
+        ledgerData.forEach((l: any) => {
+          if (l.reference_id && purIds.has(l.reference_id)) return;
+          items.push({
+            id: l.id,
+            entry_type: l.entry_type,
+            is_order: false,
+            title: l.entry_type.replace("_", " "),
+            amount: Number(l.amount),
+            created_at: l.created_at,
+            note: l.note
+          });
+        });
+      }
+
+      items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setEntries(items);
+    }
   };
 
   const add = async () => {
@@ -97,7 +189,11 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
             const shop = await getShopInfo();
             const rowsHtml = entries.map((e) => `<tr>
               <td>${format(new Date(e.created_at), "dd MMM, hh:mm a")}</td>
-              <td style="text-transform:capitalize">${escapeHtml(e.entry_type.replace("_", " "))}${e.note ? ` — ${escapeHtml(e.note)}` : ""}</td>
+              <td style="text-transform:capitalize">
+                <strong>${escapeHtml(e.title)}</strong>
+                ${e.products ? `<br/><span style="font-size:11px;color:#555">📦 ${escapeHtml(e.products)}</span>` : ""}
+                ${e.note ? `<br/><span style="font-size:11px;color:#777">💬 ${escapeHtml(e.note)}</span>` : ""}
+              </td>
               <td>${fmt(e.amount)}</td>
             </tr>`).join("");
             const body = `
@@ -152,12 +248,16 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
           <div className="p-4 border-b font-display text-lg flex items-center gap-2"><BookOpen className="h-4 w-4" /> Ledger</div>
           <div className="divide-y">
             {entries.map((e) => (
-              <div key={e.id} className="p-3 flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium capitalize">{e.entry_type.replace("_", " ")}</div>
-                  <div className="text-xs text-muted-foreground">{format(new Date(e.created_at), "dd MMM yyyy, hh:mm a")}{e.note ? ` · ${e.note}` : ""}</div>
+              <div key={e.id} className="p-3 flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium capitalize truncate">{e.title}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {format(new Date(e.created_at), "dd MMM yyyy, hh:mm a")}
+                    {e.products ? <span className="font-medium text-foreground/80 block mt-0.5 truncate">📦 {e.products}</span> : null}
+                    {e.note ? <span className="italic block text-[11px] mt-0.5 truncate">💬 {e.note}</span> : null}
+                  </div>
                 </div>
-                <div className={`font-medium ${e.entry_type.includes("payment") ? "text-success" : "text-accent"}`}>{fmt(e.amount)}</div>
+                <div className={`font-medium shrink-0 ${e.title.toLowerCase().includes("payment") || e.title.toLowerCase().includes("cash") ? "text-success" : "text-accent"}`}>{fmt(e.amount)}</div>
               </div>
             ))}
             {entries.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No entries yet</div>}

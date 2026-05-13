@@ -49,16 +49,28 @@ const Cashbook = () => {
   const [category, setCategory] = useState("");
   const [partyId, setPartyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
+  const [salesDetails, setSalesDetails] = useState<Record<string, { customer: string; products: string }>>({});
 
   const load = async () => {
-    const [{ data: tx }, { data: cust }, { data: supp }] = await Promise.all([
+    const [{ data: tx }, { data: cust }, { data: supp }, { data: salesData }] = await Promise.all([
       supabase.from("cash_transactions").select("*").order("created_at", { ascending: false }).limit(200),
       supabase.from("customers").select("id, name").order("name"),
-      supabase.from("suppliers").select("id, name").order("name")
+      supabase.from("suppliers").select("id, name").order("name"),
+      supabase.from("sales").select("id, customers(name), sale_items(qty, products(name))").order("created_at", { ascending: false }).limit(200)
     ]);
     setRows(tx ?? []);
     setCustomers(cust ?? []);
     setSuppliers(supp ?? []);
+
+    const salesMap: Record<string, { customer: string; products: string }> = {};
+    if (salesData) {
+      salesData.forEach((s: any) => {
+        const custName = s.customers?.name || "Walk-in";
+        const prods = (s.sale_items || []).map((item: any) => item.products?.name).filter(Boolean).join(", ");
+        salesMap[s.id] = { customer: custName, products: prods };
+      });
+    }
+    setSalesDetails(salesMap);
   };
   useEffect(() => { if (user) load(); }, [user]);
 
@@ -220,17 +232,22 @@ const Cashbook = () => {
       </Tabs>
 
       <Card className="shadow-card border-0 divide-y">
-        {filtered.map((r) => (
+        {filtered.map((r) => {
+          const sDetail = r.category === "sale" && r.reference_id ? salesDetails[r.reference_id] : null;
+          return (
           <div key={r.id} className="p-3 flex items-center gap-3">
-            {r.direction === "in" ? <ArrowDownCircle className="h-5 w-5 text-success" /> : <ArrowUpCircle className="h-5 w-5 text-destructive" />}
+            {r.direction === "in" ? <ArrowDownCircle className="h-5 w-5 text-success shrink-0" /> : <ArrowUpCircle className="h-5 w-5 text-destructive shrink-0" />}
             <div className="flex-1 min-w-0">
               <div className="font-medium flex items-center gap-2">
-                <span className="capitalize">{r.party_name ? r.party_name : r.category.replace("_", " ")}</span>
-                {r.party_name && <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground font-normal uppercase tracking-wider">{r.category.replace("_", " ")}</span>}
+                <span className="capitalize truncate">
+                  {sDetail ? `${sDetail.customer} (Sale)` : r.party_name ? r.party_name : r.category.replace("_", " ")}
+                </span>
+                {r.party_name && !sDetail && <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground font-normal uppercase tracking-wider shrink-0">{r.category.replace("_", " ")}</span>}
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
                 {format(new Date(r.created_at), "dd MMM yyyy, hh:mm a")}
-                {r.note && <span className="italic ml-1"> · {r.note}</span>}
+                {sDetail?.products ? <span className="font-medium text-foreground/80 block mt-0.5 truncate">📦 {sDetail.products}</span> : null}
+                {r.note && <span className="italic block text-[11px] mt-0.5 truncate">💬 {r.note}</span>}
               </div>
             </div>
             <div className={`font-medium ${r.direction === "in" ? "text-success" : "text-destructive"}`}>{r.direction === "in" ? "+" : "-"}{fmt(r.amount)}</div>
@@ -255,7 +272,8 @@ const Cashbook = () => {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
         {filtered.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No entries</div>}
       </Card>
     </div>
