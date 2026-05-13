@@ -275,7 +275,7 @@ export const AppShell = () => {
                         <DialogTitle>Account Settings</DialogTitle>
                         <DialogDescription>Update your profile details, view your login email, or change your password.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-2 overflow-y-auto flex-1 pr-1">
+                    <div className="space-y-4 py-2 overflow-y-auto flex-1 px-1">
                         <div className="space-y-2">
                             <Label>Email Address (Login ID)</Label>
                             <Input value={user?.email || ""} readOnly className="bg-muted text-muted-foreground font-medium select-all" />
