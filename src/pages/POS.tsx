@@ -68,14 +68,20 @@ const POS = () => {
   const removeItem = (id: string) => setCart((c) => c.filter((i) => i.product_id !== id));
 
   const subtotal = cart.reduce((s, i) => s + +((Number(i.qty) || 0) * (Number(i.sell_price) || 0)).toFixed(2), 0);
-  const discountNum = Math.max(0, Math.min(Number(discount || 0), subtotal));
+  const typedDiscount = Number(discount || 0);
+  const paidVal = Number(amountPaid || 0);
+  
+  // If amount paid is entered less than subtotal (but greater than 0), automatically treat the unpaid remainder as discount if no explicit discount is typed
+  const autoDiscount = (typedDiscount === 0 && paidVal > 0 && paidVal < subtotal) ? +(subtotal - paidVal).toFixed(2) : 0;
+  const discountNum = Math.max(0, Math.min(typedDiscount > 0 ? typedDiscount : autoDiscount, subtotal));
   // Round to nearest whole Rupee to fix Ajit's issue
   const total = Math.round(subtotal - discountNum);
 
   useEffect(() => {
-    if (paymentMode === "cash") setAmountPaid(total.toString());
+    // Sync default amountPaid when payment mode switches or cart contents/subtotal changes
+    if (paymentMode === "cash") setAmountPaid(Math.round(subtotal - Number(discount || 0)).toString());
     else if (paymentMode === "credit") setAmountPaid("0");
-  }, [paymentMode, total]);
+  }, [paymentMode, subtotal, discount]);
 
   const checkout = async () => {
     if (cart.length === 0) return toast.error("Cart is empty");
