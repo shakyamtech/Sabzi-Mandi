@@ -18,7 +18,7 @@ import Reports from "./pages/Reports";
 import BalanceSheet from "./pages/BalanceSheet";
 import Admin from "./pages/Admin";
 import ResetPassword from "./pages/ResetPassword";
-import NotFound from "./pages/NotFound.tsx";
+import NotFound from "./pages/NotFound";
 
 import { SplashScreen } from "@/components/SplashScreen";
 import { useState, useEffect } from "react";

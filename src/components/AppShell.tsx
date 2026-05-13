@@ -201,6 +201,8 @@ export const AppShell = () => {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="w-[85%] max-w-[300px] p-0 bg-sidebar border-r-sidebar-border flex flex-col [&>button]:text-white [&>button]:opacity-70 hover:[&>button]:opacity-100">
+                            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                            <SheetDescription className="sr-only">Quick access links and account management</SheetDescription>
                             <div className="px-6 py-8 border-b border-sidebar-border bg-sidebar-accent/30">
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shrink-0">
