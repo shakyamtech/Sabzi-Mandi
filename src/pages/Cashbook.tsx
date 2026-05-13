@@ -49,25 +49,25 @@ const Cashbook = () => {
   const [category, setCategory] = useState("");
   const [partyId, setPartyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
-  const [salesDetails, setSalesDetails] = useState<Record<string, { customer: string; products: string }>>({});
+  const [salesDetails, setSalesDetails] = useState<Record<string, { customer: string; products: string; mode: string }>>({});
 
   const load = async () => {
     const [{ data: tx }, { data: cust }, { data: supp }, { data: salesData }] = await Promise.all([
       supabase.from("cash_transactions").select("*").order("created_at", { ascending: false }).limit(200),
       supabase.from("customers").select("id, name").order("name"),
       supabase.from("suppliers").select("id, name").order("name"),
-      supabase.from("sales").select("id, customers(name), sale_items(qty, products(name))").order("created_at", { ascending: false }).limit(200)
+      supabase.from("sales").select("id, payment_mode, customers(name), sale_items(qty, products(name))").order("created_at", { ascending: false }).limit(200)
     ]);
     setRows(tx ?? []);
     setCustomers(cust ?? []);
     setSuppliers(supp ?? []);
 
-    const salesMap: Record<string, { customer: string; products: string }> = {};
+    const salesMap: Record<string, { customer: string; products: string; mode: string }> = {};
     if (salesData) {
       salesData.forEach((s: any) => {
         const custName = s.customers?.name || "Walk-in";
         const prods = (s.sale_items || []).map((item: any) => item.products?.name).filter(Boolean).join(", ");
-        salesMap[s.id] = { customer: custName, products: prods };
+        salesMap[s.id] = { customer: custName, products: prods, mode: s.payment_mode || "cash" };
       });
     }
     setSalesDetails(salesMap);
@@ -247,7 +247,13 @@ const Cashbook = () => {
               <div className="text-xs text-muted-foreground mt-0.5">
                 {format(new Date(r.created_at), "dd MMM yyyy, hh:mm a")}
                 {sDetail?.products ? <span className="font-medium text-foreground/80 block mt-0.5 truncate">📦 {sDetail.products}</span> : null}
-                {r.note && <span className="italic block text-[11px] mt-0.5 truncate">💬 {r.note}</span>}
+                {sDetail ? (
+                  <span className="italic block text-[11px] mt-0.5 truncate capitalize">
+                    💬 Payment through {sDetail.mode}
+                  </span>
+                ) : r.note ? (
+                  <span className="italic block text-[11px] mt-0.5 truncate">💬 {r.note}</span>
+                ) : null}
               </div>
             </div>
             <div className={`font-medium ${r.direction === "in" ? "text-success" : "text-destructive"}`}>{r.direction === "in" ? "+" : "-"}{fmt(r.amount)}</div>
