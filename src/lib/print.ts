@@ -22,8 +22,9 @@ export const printHTML = (title: string, bodyHtml: string) => {
       @media print { body { padding: 8px; } @page { margin: 8mm; } }
     </style></head><body>${bodyHtml}</body></html>`);
   w.document.close();
+  w.document.title = title;
   w.focus();
-  setTimeout(() => { w.print(); }, 250);
+  setTimeout(() => { w.print(); }, 500);
 };
 
 export const escapeHtml = (s: string) =>

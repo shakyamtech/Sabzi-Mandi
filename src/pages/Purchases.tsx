@@ -18,6 +18,14 @@ type Product = { id: string; name: string; unit: string; cost_price: number; sto
 type Supplier = { id: string; name: string };
 type Item = { product_id: string; product_name: string; unit: string; cost_price: number | string; qty: number | string };
 
+const paymentModeLabels: Record<string, string> = {
+  cash: "Cash",
+  credit: "Credit",
+  esewa: "eSewa",
+  khalti: "Khalti",
+  bank: "Bank"
+};
+
 const Purchases = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -26,7 +34,7 @@ const Purchases = () => {
   const [showForm, setShowForm] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [supplierId, setSupplierId] = useState<string>("none");
-  const [paymentMode, setPaymentMode] = useState<"cash" | "credit">("cash");
+  const [paymentMode, setPaymentMode] = useState<string>("cash");
   const [amountPaid, setAmountPaid] = useState("0");
   const [productPick, setProductPick] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -59,17 +67,17 @@ const Purchases = () => {
   useEffect(() => {
     if (editingId) return; // Don't auto-fill if we are editing an existing record
 
-    if (paymentMode === "cash") {
+    if (paymentMode !== "credit") {
       setAmountPaid(total.toFixed(2));
     } else {
       if (Number(amountPaid) === total) setAmountPaid("0");
     }
   }, [paymentMode, editingId]);
 
-  // Update amount paid when items change ONLY if it's a cash purchase and NOT editing
+  // Update amount paid when items change ONLY if it's not a credit purchase and NOT editing
   useEffect(() => {
     if (editingId) return;
-    if (paymentMode === "cash") setAmountPaid(total.toFixed(2));
+    if (paymentMode !== "credit") setAmountPaid(total.toFixed(2));
   }, [total, editingId]);
 
   const addProduct = (id: string) => {
@@ -280,7 +288,13 @@ const Purchases = () => {
               <Label>Payment</Label>
               <Select value={paymentMode} onValueChange={(v: any) => setPaymentMode(v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="credit">Credit</SelectItem></SelectContent>
+                <SelectContent>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="credit">Credit</SelectItem>
+                  <SelectItem value="esewa">eSewa</SelectItem>
+                  <SelectItem value="khalti">Khalti</SelectItem>
+                  <SelectItem value="bank">Bank</SelectItem>
+                </SelectContent>
               </Select>
             </div>
             <div><Label>Amount Paid</Label><Input type="number" step="0.01" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} onWheel={(e) => e.currentTarget.blur()} /></div>
@@ -299,7 +313,7 @@ const Purchases = () => {
             <div key={h.id} className="p-3 flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="font-medium truncate">{h.suppliers?.name ?? "—"}</div>
-                <div className="text-xs text-muted-foreground">{format(new Date(h.created_at), "dd MMM yyyy, hh:mm a")} · {h.payment_mode}</div>
+                <div className="text-xs text-muted-foreground">{format(new Date(h.created_at), "dd MMM yyyy, hh:mm a")} · {paymentModeLabels[h.payment_mode] || h.payment_mode}</div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="font-medium">{fmt(h.total)}</div>

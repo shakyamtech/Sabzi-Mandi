@@ -178,7 +178,9 @@ const POS = () => {
           ${changeLine}
           <hr/><div class="center muted">Thank you for shopping with us!</div>
         `;
-        printHTML("Receipt", body);
+        const prefix = (shop.name || "SAB").trim().substring(0, 3).toUpperCase();
+        const fileName = `${prefix}_${customerName.replace(/[^a-zA-Z0-9]/g, "_")}`;
+        printHTML(fileName, body);
       } catch (printErr) {
         console.error("Print error:", printErr);
         toast.error("Sale saved, but receipt printing failed.");
