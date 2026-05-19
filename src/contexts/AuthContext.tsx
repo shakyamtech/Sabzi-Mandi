@@ -33,7 +33,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user: session?.user ?? null,
         session,
         loading,
-        signOut: async () => { await supabase.auth.signOut(); },
+        signOut: async () => {
+          try {
+            await supabase.auth.signOut();
+          } catch (e) {
+            console.warn("Sign out API error (likely deleted user):", e);
+          } finally {
+            // Force clear local storage keys associated with supabase auth
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && (key.includes("auth-token") || key.includes("supabase.auth"))) {
+                localStorage.removeItem(key);
+                i--; // Adjust index since we removed an item
+              }
+            }
+            setSession(null);
+          }
+        },
       }}
     >
       {children}
