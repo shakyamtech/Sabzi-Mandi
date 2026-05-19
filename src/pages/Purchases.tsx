@@ -140,9 +140,9 @@ const Purchases = () => {
 
   const saveNewProduct = async () => {
     if (!newProductName.trim()) return toast.error("Name required");
-    const { data, error } = await supabase.from("products").insert({ 
-      user_id: user!.id, 
-      name: newProductName.trim(), 
+    const { data, error } = await supabase.from("products").insert({
+      user_id: user!.id,
+      name: newProductName.trim(),
       unit: newProductUnit,
       cost_price: Number(newProductCostPrice) || 0,
       sell_price: Number(newProductSellPrice) || 0,
@@ -172,7 +172,7 @@ const Purchases = () => {
     if (paid > 0) {
       const { data: tx } = await supabase.from("cash_transactions").select("direction, amount");
       const currentBalance = tx?.reduce((s, r) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0) || 0;
-      
+
       let adjustedBalance = currentBalance;
       if (editingId) {
         const { data: currentPurchase } = await supabase.from("purchases").select("amount_paid").eq("id", editingId).maybeSingle();
@@ -414,7 +414,7 @@ const Purchases = () => {
                 checked={newProductIsManufactured}
                 onChange={(e) => setNewProductIsManufactured(e.target.checked)}
               />
-              <Label htmlFor="is_manufactured_purchases" className="cursor-pointer font-medium text-primary">Made in our Shop (Has Recipe)</Label>
+              <Label htmlFor="is_manufactured_purchases" className="cursor-pointer font-medium text-primary">Made in our Shop (Has Recipe) [optional]</Label>
             </div>
             <Button onClick={saveNewProduct} className="w-full bg-gradient-primary text-primary-foreground mt-2">Save</Button>
           </div>

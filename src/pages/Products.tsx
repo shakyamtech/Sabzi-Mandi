@@ -184,7 +184,7 @@ const Products = () => {
                     checked={edit.is_manufactured}
                     onChange={(e) => setEdit({ ...edit, is_manufactured: e.target.checked })}
                   />
-                  <Label htmlFor="is_manufactured" className="cursor-pointer font-medium text-primary">Made in our Shop (Has Recipe)</Label>
+                  <Label htmlFor="is_manufactured" className="cursor-pointer font-medium text-primary">Made in our Shop (Has Recipe) [optional]</Label>
                 </div>
                 <Button onClick={save} className="w-full bg-gradient-primary text-primary-foreground mt-2">Save</Button>
               </div>
@@ -230,10 +230,10 @@ const Products = () => {
                 </div>
                 <div className="flex gap-1">
                   {p.is_manufactured && (
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={() => loadRecipe(p)} 
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => loadRecipe(p)}
                       title="Manage Recipe"
                       className="hover:bg-orange-500 hover:text-white text-orange-500 transition-colors"
                     >
