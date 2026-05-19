@@ -106,6 +106,23 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    if (action === "reset_user_data") {
+      const { user_id } = body;
+      if (!user_id) return json({ error: "user_id required" }, 400);
+      // Reset all sales, purchases, cash transactions, ledger entries, and expenses
+      const tablesToWipe = ["sale_items", "sales", "purchase_items", "purchases", "cash_transactions", "ledger_entries", "expenses"];
+      for (const t of tablesToWipe) {
+        const { error } = await admin.from(t).delete().eq("user_id", user_id);
+        if (error) throw error;
+      }
+      // Reset customer and supplier balances to 0
+      const { error: custErr } = await admin.from("customers").update({ balance: 0 }).eq("user_id", user_id);
+      if (custErr) throw custErr;
+      const { error: suppErr } = await admin.from("suppliers").update({ balance: 0 }).eq("user_id", user_id);
+      if (suppErr) throw suppErr;
+      return json({ ok: true });
+    }
+
     return json({ error: "Unknown action" }, 400);
   } catch (e: any) {
     return json({ error: e.message || String(e) }, 500);

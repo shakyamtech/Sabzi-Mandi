@@ -13,7 +13,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Shield, Trash2, Pencil, RefreshCw, ShieldOff } from "lucide-react";
+import { Shield, Trash2, Pencil, RefreshCw, ShieldOff, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 
 type AdminUser = {
@@ -77,6 +77,19 @@ const Admin = () => {
       toast.success("User deleted");
       load();
     } catch (e: any) { toast.error(e.message); }
+  };
+
+  const resetData = async (u: AdminUser) => {
+    setBusy(true);
+    try {
+      await call({ action: "reset_user_data", user_id: u.id });
+      toast.success(`Data reset successfully for ${u.email}`);
+      load();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to reset user data");
+    } finally {
+      setBusy(false);
+    }
   };
 
 
@@ -167,6 +180,32 @@ const Admin = () => {
                 >
                   {u.roles.includes("admin") ? <><ShieldOff className="h-3.5 w-3.5 mr-1.5" /> Revoke</> : <><Shield className="h-3.5 w-3.5 mr-1.5" /> Make Admin</>}
                 </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 md:flex-none h-9 border-amber-200 text-amber-600 hover:bg-amber-50"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Reset Data
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reset data for {u.email}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all <strong>sales</strong>, <strong>purchases</strong>, <strong>cash transactions</strong>, <strong>ledger entries</strong>, and <strong>expenses</strong> for this user.
+                        <br /><br />
+                        <strong>What remains:</strong> Product catalog will be kept intact. Customer and Supplier lists will be preserved, but their ledger balances will be reset to 0. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => resetData(u)} className="bg-amber-600 hover:bg-amber-700 text-white">Reset Ledger & Sales</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
