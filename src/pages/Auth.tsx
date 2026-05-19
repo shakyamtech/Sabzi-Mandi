@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Sprout, Eye, EyeOff } from "lucide-react";
+import { Sprout, Eye, EyeOff, Leaf, ShoppingBag, BarChart3, Users, Sparkles, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 
@@ -28,7 +28,7 @@ const Auth = () => {
 
   const PasswordField = (
     <div>
-      <Label>Password</Label>
+      <Label className="text-foreground/90 font-medium mb-1.5 block">Password</Label>
       <div className="relative">
         <Input
           type={showPw ? "text" : "password"}
@@ -36,13 +36,13 @@ const Auth = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="pr-10"
+          className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
           autoComplete="current-password"
         />
         <button
           type="button"
           onClick={() => setShowPw((v) => !v)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
           aria-label={showPw ? "Hide password" : "Show password"}
         >
           {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -110,80 +110,265 @@ const Auth = () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
+    setLoading(true); // Keep it loading while they redirect
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Password reset link sent! Please check your email.");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow mb-3">
-            <Sprout className="h-7 w-7 text-primary-foreground" />
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-hero p-4 relative overflow-hidden font-sans">
+      
+      {/* Custom Styles for beautiful organic animations */}
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(6deg); }
+        }
+        @keyframes float-medium {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(15px) rotate(-8deg); }
+        }
+        @keyframes orbit {
+          0% { transform: rotate(0deg) translateX(80px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(80px) rotate(-360deg); }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.1); }
+        }
+        .animate-float-1 { animation: float-slow 7s ease-in-out infinite; }
+        .animate-float-2 { animation: float-medium 9s ease-in-out infinite; }
+        .animate-float-3 { animation: float-slow 6s ease-in-out infinite 1s; }
+        .animate-pulse-glow { animation: pulse-glow 10s ease-in-out infinite; }
+        .glass-panel {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+      `}</style>
+
+      {/* Decorative Glow Orbs in the background */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-300/30 blur-[120px] pointer-events-none animate-pulse-glow" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-lime-200/40 blur-[120px] pointer-events-none animate-pulse-glow" />
+      <div className="absolute top-[40%] right-[10%] w-[30%] h-[30%] rounded-full bg-orange-200/25 blur-[100px] pointer-events-none animate-pulse-glow" />
+
+      {/* Floating Organic Leaf SVGs */}
+      <div className="absolute top-[12%] left-[8%] animate-float-1 pointer-events-none opacity-40 md:opacity-100">
+        <div className="p-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 shadow-soft">
+          <Leaf className="h-7 w-7 text-emerald-600 fill-emerald-500/20" />
+        </div>
+      </div>
+      <div className="absolute bottom-[15%] left-[6%] animate-float-2 pointer-events-none opacity-40 md:opacity-100">
+        <div className="p-4 bg-lime-500/10 rounded-full border border-lime-500/20 shadow-soft">
+          <Sprout className="h-8 w-8 text-lime-600" />
+        </div>
+      </div>
+      <div className="absolute top-[18%] right-[8%] animate-float-3 pointer-events-none opacity-40 md:opacity-100">
+        <div className="p-3.5 bg-orange-500/10 rounded-full border border-orange-500/20 shadow-soft">
+          <Sparkles className="h-6 w-6 text-orange-500" />
+        </div>
+      </div>
+      <div className="absolute bottom-[20%] right-[6%] animate-float-1 pointer-events-none opacity-40 md:opacity-100">
+        <div className="p-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 shadow-soft">
+          <Leaf className="h-6 w-6 text-emerald-500 rotate-45" />
+        </div>
+      </div>
+
+      {/* Core Split Screen Layout for Desktop / Single Card on Mobile */}
+      <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center relative z-10">
+        
+        {/* Left Side: Premium Brand Presentation Panel (Hidden on mobile) */}
+        <div className="hidden lg:flex lg:col-span-6 flex-col justify-center pr-8 space-y-6 text-left">
+          <div className="flex items-center gap-2">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow transition-all duration-500 hover:scale-105">
+              <Sprout className="h-6 w-6 text-primary-foreground animate-pulse" />
+            </div>
+            <span className="font-display text-4xl font-bold tracking-tight text-foreground bg-gradient-primary bg-clip-text text-transparent">Sabzi</span>
           </div>
-          <h1 className="font-display text-3xl text-foreground">Sabzi</h1>
-          <p className="text-muted-foreground text-sm mt-1">Vegetable shop POS & inventory — done simply</p>
+
+          <div className="space-y-4">
+            <h2 className="font-display text-4xl font-bold leading-tight text-foreground">
+              Empowering your <span className="text-primary">Vegetable Shop</span> with zero effort.
+            </h2>
+            <p className="text-muted-foreground text-base leading-relaxed">
+              Ditch the paper registers. Manage dynamic inventory, billing transactions, party ledgers, and comprehensive financial balance sheets with a sleek Nepalese-focused custom platform.
+            </p>
+          </div>
+
+          {/* Premium Highlighting Highlights */}
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:bg-primary transition-all duration-300">
+                <ShoppingBag className="h-5 w-5 text-emerald-600 group-hover:text-primary-foreground" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground mb-1">Superfast POS</h3>
+              <p className="text-xs text-muted-foreground">Speed-billing with simple return calculation.</p>
+            </div>
+            <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
+              <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center mb-3 group-hover:bg-accent transition-all duration-300">
+                <BarChart3 className="h-5 w-5 text-orange-600 group-hover:text-accent-foreground" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground mb-1">Live Profit Sheet</h3>
+              <p className="text-xs text-muted-foreground">Keep real-time records of cash in & out flows.</p>
+            </div>
+            <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
+              <div className="h-10 w-10 rounded-lg bg-lime-500/10 flex items-center justify-center mb-3 group-hover:bg-lime-600 transition-all duration-300">
+                <Users className="h-5 w-5 text-lime-700 group-hover:text-white" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground mb-1">Party Ledger</h3>
+              <p className="text-xs text-muted-foreground">Track supplier payments and customer credit (Udhaar).</p>
+            </div>
+            <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:bg-primary transition-all duration-300">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 group-hover:text-primary-foreground" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground mb-1">Recipe System</h3>
+              <p className="text-xs text-muted-foreground">Auto-deduct stock for items crafted directly in-house.</p>
+            </div>
+          </div>
         </div>
 
-        <Card className="p-6 shadow-elegant">
-          <Tabs defaultValue="signin">
-            <TabsList className="grid grid-cols-2 w-full mb-4">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Create account</TabsTrigger>
-            </TabsList>
+        {/* Right Side: The Sign In / Sign Up Frosted Card */}
+        <div className="lg:col-span-6 w-full flex justify-center">
+          <div className="w-full max-w-md animate-fade-in-up">
+            
+            {/* Header for Mobile only */}
+            <div className="text-center mb-6 lg:hidden">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow mb-2">
+                <Sprout className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <h1 className="font-display text-3xl font-bold text-foreground">Sabzi</h1>
+              <p className="text-muted-foreground text-xs mt-1">Vegetable shop POS & inventory — done simply</p>
+            </div>
 
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-3">
-                <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-                <div>
-                  {PasswordField}
-                  <div className="flex justify-end mt-1">
-                    <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:underline font-medium">
-                      Forgot password?
-                    </button>
-                  </div>
-                </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">
-                  {loading ? "Processing..." : "Sign in"}
-                </Button>
-              </form>
-            </TabsContent>
+            <Card className="p-6 md:p-8 shadow-elegant border-white/40 glass-panel rounded-3xl transition-all duration-500 hover:shadow-glow/20">
+              
+              <div className="mb-6">
+                <h3 className="font-display text-xl font-bold text-foreground mb-1">Welcome to Sabzi</h3>
+                <p className="text-muted-foreground text-xs">Access your store dashboard & inventory statistics.</p>
+              </div>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-3">
-                <div><Label>Your name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" autoComplete="off" /></div>
-                <div><Label>Shop name</Label><Input value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Enter your shop name" autoComplete="off" /></div>
-                <div><Label>PAN Number</Label><Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number" autoComplete="off" /></div>
-                <div><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="off" /></div>
-                <div>
-                  <Label>Password</Label>
-                  <div className="relative">
-                    <Input
-                      type={showPw ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      className="pr-10"
-                      autoComplete="new-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPw((v) => !v)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
-                    >
-                      {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft">
-                  {loading ? "Creating..." : "Create account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </Card>
+              <Tabs defaultValue="signin" className="w-full">
+                <TabsList className="grid grid-cols-2 w-full mb-6 bg-emerald-100/50 p-1 rounded-xl">
+                  <TabsTrigger 
+                    value="signin" 
+                    className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                  >
+                    Sign in
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="signup" 
+                    className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                  >
+                    Create account
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="signin" className="focus-visible:outline-none focus-visible:ring-0">
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">Email</Label>
+                      <Input 
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        required 
+                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                        placeholder="yourname@domain.com"
+                      />
+                    </div>
+                    <div>
+                      {PasswordField}
+                      <div className="flex justify-end mt-1.5">
+                        <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:text-emerald-700 hover:underline font-semibold transition-colors">
+                          Forgot password?
+                        </button>
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
+                      {loading ? "Processing..." : "Sign in to Dashboard"}
+                    </Button>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="signup" className="focus-visible:outline-none focus-visible:ring-0">
+                  <form onSubmit={handleSignUp} className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+                    <div>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">Your name</Label>
+                      <Input 
+                        value={fullName} 
+                        onChange={(e) => setFullName(e.target.value)} 
+                        placeholder="e.g. Ram Prasad" 
+                        autoComplete="off"
+                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">Shop name</Label>
+                      <Input 
+                        value={shopName} 
+                        onChange={(e) => setShopName(e.target.value)} 
+                        placeholder="e.g. Kumari Vegetable Shop" 
+                        autoComplete="off"
+                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">PAN Number <span className="text-[10px] text-muted-foreground font-normal">(optional)</span></Label>
+                      <Input 
+                        value={panNo} 
+                        onChange={(e) => setPanNo(e.target.value)} 
+                        placeholder="9 digit Nepalese PAN" 
+                        autoComplete="off"
+                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">Email</Label>
+                      <Input 
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        required 
+                        autoComplete="off"
+                        placeholder="yourname@domain.com"
+                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">Password</Label>
+                      <div className="relative">
+                        <Input
+                          type={showPw ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          minLength={6}
+                          className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                          autoComplete="new-password"
+                          placeholder="At least 6 characters"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPw((v) => !v)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
+                        >
+                          {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
+                      {loading ? "Creating..." : "Create Account"}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            </Card>
+          </div>
+        </div>
+
       </div>
     </div>
   );
