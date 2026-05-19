@@ -12,6 +12,7 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Product = { id: string; name: string; unit: string; cost_price: number; stock_qty: number };
 type Supplier = { id: string; name: string };
@@ -29,6 +30,17 @@ const Purchases = () => {
   const [amountPaid, setAmountPaid] = useState("0");
   const [productPick, setProductPick] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
+  const [productDialogOpen, setProductDialogOpen] = useState(false);
+  const [newSupplierName, setNewSupplierName] = useState("");
+  const [newSupplierPhone, setNewSupplierPhone] = useState("");
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductUnit, setNewProductUnit] = useState("kg");
+  const [newProductCostPrice, setNewProductCostPrice] = useState("0");
+  const [newProductSellPrice, setNewProductSellPrice] = useState("0");
+  const [newProductStockQty, setNewProductStockQty] = useState("0");
+  const [newProductLowStockThreshold, setNewProductLowStockThreshold] = useState("5");
+  const [newProductIsManufactured, setNewProductIsManufactured] = useState(false);
 
   const load = async () => {
     const [{ data: p }, { data: s }, { data: h }] = await Promise.all([
@@ -107,6 +119,42 @@ const Purchases = () => {
     toast.success(`${pi.length} items loaded!`, { id: "load-items" });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const saveNewSupplier = async () => {
+    if (!newSupplierName.trim()) return toast.error("Name required");
+    const { data, error } = await supabase.from("suppliers").insert({ user_id: user!.id, name: newSupplierName.trim(), phone: newSupplierPhone.trim() || null }).select();
+    if (error) return toast.error(error.message);
+    toast.success("Supplier added");
+    setNewSupplierName(""); setNewSupplierPhone("");
+    setSupplierDialogOpen(false);
+    await load();
+    if (data && data[0]) setSupplierId(data[0].id);
+  };
+
+  const saveNewProduct = async () => {
+    if (!newProductName.trim()) return toast.error("Name required");
+    const { data, error } = await supabase.from("products").insert({ 
+      user_id: user!.id, 
+      name: newProductName.trim(), 
+      unit: newProductUnit,
+      cost_price: Number(newProductCostPrice) || 0,
+      sell_price: Number(newProductSellPrice) || 0,
+      stock_qty: Number(newProductStockQty) || 0,
+      low_stock_threshold: Number(newProductLowStockThreshold) || 5,
+      is_manufactured: newProductIsManufactured
+    }).select();
+    if (error) return toast.error(error.message);
+    toast.success("Product added");
+    setNewProductName("");
+    setNewProductUnit("kg");
+    setNewProductCostPrice("0");
+    setNewProductSellPrice("0");
+    setNewProductStockQty("0");
+    setNewProductLowStockThreshold("5");
+    setNewProductIsManufactured(false);
+    setProductDialogOpen(false);
+    await load();
+    if (data && data[0]) addProduct(data[0].id);
+  };
 
   const save = async () => {
     if (items.length === 0) return toast.error("Add items");
@@ -149,22 +197,32 @@ const Purchases = () => {
           <div className="grid sm:grid-cols-2 gap-3 mb-3">
             <div>
               <Label>Supplier</Label>
-              <Select value={supplierId} onValueChange={setSupplierId}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— none —</SelectItem>
-                  {suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={supplierId} onValueChange={setSupplierId}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— none —</SelectItem>
+                    {suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button size="icon" variant="outline" onClick={() => setSupplierDialogOpen(true)} title="Add New Supplier" className="shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div>
               <Label>Add product</Label>
-              <Select value={productPick} onValueChange={addProduct}>
-                <SelectTrigger><SelectValue placeholder="Choose..." /></SelectTrigger>
-                <SelectContent>
-                  {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={productPick} onValueChange={addProduct}>
+                  <SelectTrigger><SelectValue placeholder="Choose..." /></SelectTrigger>
+                  <SelectContent>
+                    {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button size="icon" variant="outline" onClick={() => setProductDialogOpen(true)} title="Add New Product" className="shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -251,6 +309,85 @@ const Purchases = () => {
           {history.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No purchases yet</div>}
         </div>
       </Card>
+
+      {/* Dialogs */}
+      <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Supplier</DialogTitle>
+            <DialogDescription>Add a new supplier accounts.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Name</Label><Input value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} /></div>
+            <div><Label>Phone</Label><Input value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} /></div>
+            <Button onClick={saveNewSupplier} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Product</DialogTitle>
+            <DialogDescription>Add a new vegetable or item to your inventory.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Name</Label>
+              <Input value={newProductName} onChange={(e) => setNewProductName(e.target.value)} placeholder="Enter vegetable or item name..." />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Unit</Label>
+                <Select value={newProductUnit} onValueChange={setNewProductUnit}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kg">kg</SelectItem>
+                    <SelectItem value="box">box</SelectItem>
+                    <SelectItem value="g">gram</SelectItem>
+                    <SelectItem value="Ltr">ltr</SelectItem>
+                    <SelectItem value="ml">ml</SelectItem>
+                    <SelectItem value="pcs">pcs</SelectItem>
+                    <SelectItem value="pkt">packet</SelectItem>
+                    <SelectItem value="cup">cup</SelectItem>
+                    <SelectItem value="jar">jar</SelectItem>
+                    <SelectItem value="dozen">dozen</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Stock Qty</Label>
+                <Input type="number" step="0.001" value={newProductStockQty} onChange={(e) => setNewProductStockQty(e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Cost Price (Rs.)</Label>
+                <Input type="number" step="0.01" value={newProductCostPrice} onChange={(e) => setNewProductCostPrice(e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+              </div>
+              <div>
+                <Label>Sell Price (Rs.)</Label>
+                <Input type="number" step="0.01" value={newProductSellPrice} onChange={(e) => setNewProductSellPrice(e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+              </div>
+            </div>
+            <div>
+              <Label>Low-stock alert at</Label>
+              <Input type="number" step="0.001" value={newProductLowStockThreshold} onChange={(e) => setNewProductLowStockThreshold(e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="is_manufactured_purchases"
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                checked={newProductIsManufactured}
+                onChange={(e) => setNewProductIsManufactured(e.target.checked)}
+              />
+              <Label htmlFor="is_manufactured_purchases" className="cursor-pointer font-medium text-primary">Made in our Shop (Has Recipe)</Label>
+            </div>
+            <Button onClick={saveNewProduct} className="w-full bg-gradient-primary text-primary-foreground mt-2">Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
