@@ -363,50 +363,44 @@ export const AppShell = () => {
                             <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number..." />
                         </div>
 
-                        <div className="pt-2 border-t space-y-4">
-                            <div className="font-medium text-sm text-muted-foreground">{t.currentPassword}</div>
-                            <div className="space-y-2">
-                                <Label>{t.currentPassword}</Label>
-                                <div className="relative">
-                                    <Input 
-                                        type={showPassword ? "text" : "password"} 
-                                        value={password} 
-                                        onChange={(e) => setPassword(e.target.value)} 
-                                        placeholder="Required to save changes"
-                                        autoComplete="off"
-                                        autoFocus={false}
-                                    />
-                                    <button 
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </button>
-                                </div>
+                        <div className="pt-2 border-t space-y-2">
+                            <Label>{t.currentPassword}</Label>
+                            <div className="relative">
+                                <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    placeholder="Required to save changes"
+                                    autoComplete="off"
+                                    autoFocus={false}
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
                             </div>
                         </div>
 
-                        <div className="pt-2 border-t space-y-4">
-                            <div className="font-medium text-sm text-muted-foreground">{t.newPassword} ({t.panOptional})</div>
-                            <div className="space-y-2">
-                                <Label>{t.newPassword}</Label>
-                                <div className="relative">
-                                    <Input 
-                                        type={showNewPassword ? "text" : "password"} 
-                                        value={newPassword} 
-                                        onChange={(e) => setNewPassword(e.target.value)} 
-                                        placeholder="Leave blank to keep current"
-                                        autoComplete="new-password"
-                                    />
-                                    <button 
-                                        type="button"
-                                        onClick={() => setShowNewPassword(!showNewPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </button>
-                                </div>
+                        <div className="pt-2 border-t space-y-2">
+                            <Label>{t.newPassword} <span className="text-muted-foreground/60 font-normal">{t.panOptional}</span></Label>
+                            <div className="relative">
+                                <Input 
+                                    type={showNewPassword ? "text" : "password"} 
+                                    value={newPassword} 
+                                    onChange={(e) => setNewPassword(e.target.value)} 
+                                    placeholder="Leave blank to keep current"
+                                    autoComplete="new-password"
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
                             </div>
                         </div>
                     </div>
