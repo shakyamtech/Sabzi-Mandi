@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
 import { getShopInfo } from "@/lib/shop";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const inCategories = [
   "sale", 
@@ -49,6 +50,11 @@ const Cashbook = () => {
   const [category, setCategory] = useState("");
   const [partyId, setPartyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
+  const [entryDate, setEntryDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const { lang, t } = useLanguage();
   const [salesDetails, setSalesDetails] = useState<Record<string, { customer: string; products: string; mode: string }>>({});
   const [purchaseDetails, setPurchaseDetails] = useState<Record<string, { supplier: string; mode: string }>>({});
 
@@ -85,18 +91,37 @@ const Cashbook = () => {
   };
   useEffect(() => { if (user) load(); }, [user]);
 
-  const balance = rows.reduce((s, r) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0);
-  const totalIn = rows.filter((r) => r.direction === "in").reduce((s, r) => s + Number(r.amount), 0);
-  const totalOut = rows.filter((r) => r.direction === "out").reduce((s, r) => s + Number(r.amount), 0);
-  const filtered = rows.filter((r) => filter === "all" || r.direction === filter);
+  const dateFilteredRows = rows.filter((r) => {
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const rowDate = new Date(r.created_at);
+      if (rowDate < start) return false;
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      const rowDate = new Date(r.created_at);
+      if (rowDate > end) return false;
+    }
+    return true;
+  });
+
+  const balance = dateFilteredRows.reduce((s, r) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0);
+  const totalIn = dateFilteredRows.filter((r) => r.direction === "in").reduce((s, r) => s + Number(r.amount), 0);
+  const totalOut = dateFilteredRows.filter((r) => r.direction === "out").reduce((s, r) => s + Number(r.amount), 0);
+  const filtered = dateFilteredRows.filter((r) => filter === "all" || r.direction === filter);
 
   const resetForm = () => { 
     setEditId(null); setAmount(""); setNote(""); setCategory(""); setDirection("in"); setPartyId(null);
+    setEntryDate(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
   };
 
   const openEdit = (r: any) => {
     setEditId(r.id); setDirection(r.direction); setAmount(String(r.amount));
-    setCategory(r.category); setNote(r.note ?? ""); setPartyId(r.party_id); setOpen(true);
+    setCategory(r.category); setNote(r.note ?? ""); setPartyId(r.party_id);
+    setEntryDate(format(new Date(r.created_at), "yyyy-MM-dd'T'HH:mm"));
+    setOpen(true);
   };
 
   const save = async () => {
@@ -118,7 +143,8 @@ const Cashbook = () => {
 
     const payload = {
       direction, amount: Number(amount), category, note: note || null,
-      party_id: partyId, party_name: pName
+      party_id: partyId, party_name: pName,
+      created_at: entryDate ? new Date(entryDate).toISOString() : new Date().toISOString()
     };
 
     if (editId) {
@@ -158,7 +184,13 @@ const Cashbook = () => {
 
   const printBook = async () => {
     const shop = await getShopInfo();
-    const rowsHtml = filtered.map((r) => `<tr>
+    const sortedPrintRows = [...filtered].sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortBy === "newest" ? dateB - dateA : dateA - dateB;
+    });
+    
+    const rowsHtml = sortedPrintRows.map((r) => `<tr>
       <td>${format(new Date(r.created_at), "dd MMM, hh:mm a")}</td>
       <td style="text-transform:capitalize">${escapeHtml(r.category.replace("_", " "))}${r.note ? ` — ${escapeHtml(r.note)}` : ""}</td>
       <td style="color:${r.direction === "in" ? "#0a7d3a" : "#b91c1c"}">${r.direction === "in" ? "+" : "−"}${fmt(r.amount)}</td>
@@ -224,6 +256,16 @@ const Cashbook = () => {
                 </div>
               )}
 
+              <div>
+                <Label>{lang === "NEP" ? "मिति र समय" : "Date & Time"}</Label>
+                <Input 
+                  type="datetime-local" 
+                  value={entryDate} 
+                  onChange={(e) => setEntryDate(e.target.value)} 
+                  className="bg-card"
+                />
+              </div>
+
               <div><Label>Note</Label><Input value={note} placeholder="Add a note (optional)" onChange={(e) => setNote(e.target.value)} /></div>
               <Button onClick={save} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
             </div>
@@ -237,17 +279,74 @@ const Cashbook = () => {
         <Card className="p-4 shadow-card border-0"><div className="text-xs text-muted-foreground uppercase">Cash Out</div><div className="font-display text-xl text-destructive mt-1">{fmt(totalOut)}</div></Card>
         <Card className="p-4 shadow-elegant border-0 bg-gradient-primary text-primary-foreground"><div className="text-xs uppercase opacity-80 flex items-center gap-1"><Wallet className="h-3 w-3" /> Balance</div><div className="font-display text-xl mt-1">{fmt(balance)}</div></Card>
       </div>
+      
+      {/* Date Range Filter Panel */}
+      <Card className="p-3 mb-4 shadow-card border-0 bg-card flex flex-wrap items-end gap-3">
+        <div className="space-y-1 flex-1 min-w-[140px]">
+          <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{lang === "NEP" ? "मिति देखि (From)" : "From Date"}</Label>
+          <Input 
+            type="date" 
+            value={startDate} 
+            onChange={(e) => setStartDate(e.target.value)} 
+            className="h-9 bg-background"
+          />
+        </div>
+        <div className="space-y-1 flex-1 min-w-[140px]">
+          <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{lang === "NEP" ? "मिति सम्म (To)" : "To Date"}</Label>
+          <Input 
+            type="date" 
+            value={endDate} 
+            onChange={(e) => setEndDate(e.target.value)} 
+            className="h-9 bg-background"
+          />
+        </div>
+        {(startDate || endDate) && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => { setStartDate(""); setEndDate(""); }}
+            className="h-9 px-3 text-xs font-bold text-destructive hover:bg-destructive/10 shrink-0"
+          >
+            {lang === "NEP" ? "रिसेट गर्नुहोस्" : "Clear Filters"}
+          </Button>
+        )}
+      </Card>
 
-      <Tabs value={filter} onValueChange={(v: any) => setFilter(v)} className="mb-3">
-        <TabsList><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="in">In</TabsTrigger><TabsTrigger value="out">Out</TabsTrigger></TabsList>
-      </Tabs>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+        <Tabs value={filter} onValueChange={(v: any) => setFilter(v)} className="w-fit">
+          <TabsList>
+            <TabsTrigger value="all">{lang === "NEP" ? "सबै" : "All"}</TabsTrigger>
+            <TabsTrigger value="in">{lang === "NEP" ? "भित्र" : "In"}</TabsTrigger>
+            <TabsTrigger value="out">{lang === "NEP" ? "बाहिर" : "Out"}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground font-medium">{lang === "NEP" ? "क्रमबद्ध:" : "Sort:"}</span>
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-[160px] h-9 bg-card">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{lang === "NEP" ? "नयाँ पहिले" : "Newest First"}</SelectItem>
+              <SelectItem value="oldest">{lang === "NEP" ? "पुरानो पहिले" : "Oldest First"}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       <Card className="shadow-card border-0 divide-y">
-        {filtered.map((r) => {
-          const sDetail = r.category === "sale" && r.reference_id ? salesDetails[r.reference_id] : null;
-          const pDetail = r.category === "purchase" && r.reference_id ? purchaseDetails[r.reference_id] : null;
-          return (
-          <div key={r.id} className="p-3 flex items-center gap-3">
+        {(() => {
+          const sortedAndFiltered = [...filtered].sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            return sortBy === "newest" ? dateB - dateA : dateA - dateB;
+          });
+          return sortedAndFiltered.map((r) => {
+            const sDetail = r.category === "sale" && r.reference_id ? salesDetails[r.reference_id] : null;
+            const pDetail = r.category === "purchase" && r.reference_id ? purchaseDetails[r.reference_id] : null;
+            return (
+            <div key={r.id} className="p-3 flex items-center gap-3 hover:bg-secondary/35 transition-colors cursor-pointer" onClick={() => openEdit(r)}>
             {r.direction === "in" ? <ArrowDownCircle className="h-5 w-5 text-success shrink-0" /> : <ArrowUpCircle className="h-5 w-5 text-destructive shrink-0" />}
             <div className="flex-1 min-w-0">
               <div className="font-medium flex items-center gap-2">
@@ -293,9 +392,10 @@ const Cashbook = () => {
                 </AlertDialog>
               </div>
             </div>
-          </div>
+            </div>
           );
-        })}
+          });
+        })()}
         {filtered.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No entries</div>}
       </Card>
     </div>
