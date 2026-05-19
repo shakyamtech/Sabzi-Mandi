@@ -20,6 +20,7 @@ import BalanceSheet from "./pages/BalanceSheet";
 import Admin from "./pages/Admin";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import { ThemeProvider } from "next-themes";
 
 import { SplashScreen } from "@/components/SplashScreen";
 import { useState, useEffect } from "react";
@@ -39,31 +40,33 @@ const App = () => {
       <SplashScreen />
       <TooltipProvider>
         {!loading && (
-          <LanguageProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <AuthProvider>
-                <Routes>
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/pos" element={<POS />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/suppliers" element={<Suppliers />} />
-                    <Route path="/purchases" element={<Purchases />} />
-                    <Route path="/cashbook" element={<Cashbook />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/balance-sheet" element={<BalanceSheet />} />
-                    <Route path="/admin" element={<Admin />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </AuthProvider>
-            </BrowserRouter>
-          </LanguageProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <LanguageProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <AuthProvider>
+                  <Routes>
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/pos" element={<POS />} />
+                      <Route path="/products" element={<Products />} />
+                      <Route path="/customers" element={<Customers />} />
+                      <Route path="/suppliers" element={<Suppliers />} />
+                      <Route path="/purchases" element={<Purchases />} />
+                      <Route path="/cashbook" element={<Cashbook />} />
+                      <Route path="/reports" element={<Reports />} />
+                      <Route path="/balance-sheet" element={<BalanceSheet />} />
+                      <Route path="/admin" element={<Admin />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AuthProvider>
+              </BrowserRouter>
+            </LanguageProvider>
+          </ThemeProvider>
         )}
       </TooltipProvider>
     </QueryClientProvider>
