@@ -126,6 +126,16 @@ Deno.serve(async (req) => {
         const { error } = await admin.auth.admin.updateUserById(user_id, { ban_duration: "none" });
         if (error) throw error;
       }
+    }
+
+    if (action === "change_password") {
+      const { user_id, new_password } = body;
+      if (!user_id) return json({ error: "user_id required" }, 400);
+      if (!new_password || new_password.length < 6) {
+        return json({ error: "Password must be at least 6 characters" }, 400);
+      }
+      const { error } = await admin.auth.admin.updateUserById(user_id, { password: new_password });
+      if (error) throw error;
       return json({ ok: true });
     }
 

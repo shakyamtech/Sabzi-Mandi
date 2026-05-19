@@ -29,6 +29,7 @@ const Admin = () => {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [editName, setEditName] = useState("");
   const [editShop, setEditShop] = useState("");
+  const [editPassword, setEditPassword] = useState("");
 
   const call = async (body: any) => {
     const { data, error } = await supabase.functions.invoke("admin-users", { body });
@@ -58,8 +59,16 @@ const Admin = () => {
     if (!editing) return;
     try {
       await call({ action: "update_profile", user_id: editing.id, full_name: editName, shop_name: editShop });
-      toast.success("Profile updated");
+      
+      if (editPassword) {
+        await call({ action: "change_password", user_id: editing.id, new_password: editPassword });
+        toast.success("Profile and password updated successfully");
+      } else {
+        toast.success("Profile updated successfully");
+      }
+      
       setEditing(null);
+      setEditPassword("");
       load();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -162,16 +171,16 @@ const Admin = () => {
               </div>
 
               <div className="flex items-center gap-2 pt-3 md:pt-0 border-t md:border-t-0 border-sidebar-border/50">
-                <Dialog open={editing?.id === u.id} onOpenChange={(o) => !o && setEditing(null)}>
+                <Dialog open={editing?.id === u.id} onOpenChange={(o) => { if (!o) { setEditing(null); setEditPassword(""); } }}>
                   <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="flex-1 md:flex-none h-9" onClick={() => { setEditing(u); setEditName(u.full_name); setEditShop(u.shop_name); }}>
+                    <Button size="sm" variant="outline" className="flex-1 md:flex-none h-9" onClick={() => { setEditing(u); setEditName(u.full_name); setEditShop(u.shop_name); setEditPassword(""); }}>
                       <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Edit User Profile</DialogTitle>
-                      <DialogDescription>Update the full name and shop name for {u.email}.</DialogDescription>
+                      <DialogDescription>Update profile details or assign a new password for {u.email}.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
@@ -181,6 +190,16 @@ const Admin = () => {
                       <div className="space-y-2">
                         <Label>Shop Name</Label>
                         <Input value={editShop} onChange={(e) => setEditShop(e.target.value)} placeholder="Enter shop name..." />
+                      </div>
+                      <div className="space-y-2 border-t pt-4">
+                        <Label>Set New Password</Label>
+                        <Input 
+                          type="password" 
+                          value={editPassword} 
+                          onChange={(e) => setEditPassword(e.target.value)} 
+                          placeholder="Leave blank to keep unchanged..." 
+                        />
+                        <p className="text-[10px] text-muted-foreground">Min 6 characters. This will override their current password immediately.</p>
                       </div>
                       <Button onClick={saveProfile} className="w-full bg-primary text-primary-foreground h-11 font-semibold">Save Changes</Button>
                     </div>
