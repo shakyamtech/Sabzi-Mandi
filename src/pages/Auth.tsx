@@ -199,29 +199,167 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Core Split Screen Layout for Desktop / Single Card on Mobile */}
-      <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-end relative z-10">
+      {/* Unified Vertical Layout (Branding on Top, Card in Center, Features at Bottom) */}
+      <div className="w-full max-w-4xl flex flex-col items-center gap-8 relative z-10 text-center animate-fade-in px-4">
         
-        {/* Left Side: Premium Brand Presentation Panel (Hidden on mobile) */}
-        <div className="hidden lg:flex lg:col-span-6 flex-col justify-center pr-8 space-y-6 text-left">
-          <div className="flex items-center gap-2">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow transition-all duration-500 hover:scale-105">
-              <Sprout className="h-6 w-6 text-primary-foreground animate-pulse" />
+        {/* Brand Header - only visible on large screens */}
+        <div className="hidden lg:flex flex-col items-center space-y-4 max-w-2xl">
+          <div className="flex items-center gap-3">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary shadow-glow transition-all duration-500 hover:scale-105">
+              <Sprout className="h-8 w-8 text-primary-foreground animate-pulse" />
             </div>
-            <span className="font-display text-4xl font-bold tracking-tight text-primary">Sabzi</span>
+            <span className="font-display text-4xl md:text-5xl font-bold tracking-tight text-primary">Sabzi</span>
           </div>
 
-          <div className="space-y-4">
-            <h2 className="font-display text-4xl font-bold leading-tight text-foreground">
+          <div className="space-y-2">
+            <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight text-foreground">
               {t.brandTitle}
             </h2>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm md:text-base max-w-xl leading-relaxed mx-auto">
               {t.brandDesc}
             </p>
           </div>
+        </div>
 
-          {/* Premium Highlighting Highlights */}
-          <div className="grid grid-cols-2 gap-4 pt-2">
+        {/* Centered Sign In / Sign Up Card */}
+        <div className="w-full max-w-md animate-fade-in-up">
+          <Card className="p-6 md:p-8 shadow-elegant border-white/40 glass-panel rounded-3xl transition-all duration-500 hover:shadow-glow/20">
+            
+            {/* Header for Mobile only */}
+            <div className="text-center mb-6 lg:hidden">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow mb-2">
+                <Sprout className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <h1 className="font-display text-3xl font-bold text-foreground">Sabzi</h1>
+              <p className="text-muted-foreground text-xs mt-1">{t.subtitle}</p>
+            </div>
+
+            <div className="mb-6 text-left hidden lg:block">
+              <h3 className="font-display text-xl font-bold text-foreground mb-1">{t.welcome}</h3>
+              <p className="text-muted-foreground text-xs">{t.access}</p>
+            </div>
+
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid grid-cols-2 w-full mb-6 bg-emerald-100/50 p-1 rounded-xl">
+                <TabsTrigger 
+                  value="signin" 
+                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                >
+                  {t.signin}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="signup" 
+                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                >
+                  {t.createAccount}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="signin" className="focus-visible:outline-none focus-visible:ring-0">
+                <form onSubmit={handleSignIn} className="space-y-4 text-left">
+                  <div>
+                    <Label className="text-foreground/90 font-medium mb-1.5 block">{t.email}</Label>
+                    <Input 
+                      type="email" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)} 
+                      required 
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      placeholder={t.emailPlaceholder}
+                    />
+                  </div>
+                  <div>
+                    {PasswordField}
+                    <div className="flex justify-end mt-1.5">
+                      <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:text-emerald-700 hover:underline font-semibold transition-colors">
+                        {t.forgotPw}
+                      </button>
+                    </div>
+                  </div>
+                  <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
+                    {loading ? t.processing : t.signInBtn}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="signup" className="focus-visible:outline-none focus-visible:ring-0">
+                <form onSubmit={handleSignUp} className="space-y-4 max-h-[380px] overflow-y-auto px-1.5 py-1 text-left">
+                  <div>
+                    <Label className="text-foreground/90 font-medium mb-1.5 block">{t.yourName}</Label>
+                    <Input 
+                      value={fullName} 
+                      onChange={(e) => setFullName(e.target.value)} 
+                      placeholder={t.namePlaceholder} 
+                      autoComplete="off"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-foreground/90 font-medium mb-1.5 block">{t.shopName}</Label>
+                    <Input 
+                      value={shopName} 
+                      onChange={(e) => setShopName(e.target.value)} 
+                      placeholder={t.shopPlaceholder} 
+                      autoComplete="off"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-foreground/90 font-medium mb-1.5 block">{t.panNo} <span className="text-[10px] text-muted-foreground font-normal">{t.panOptional}</span></Label>
+                    <Input 
+                      value={panNo} 
+                      onChange={(e) => setPanNo(e.target.value)} 
+                      placeholder={t.panPlaceholder} 
+                      autoComplete="off"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-foreground/90 font-medium mb-1.5 block">{t.email}</Label>
+                    <Input 
+                      type="email" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)} 
+                      required 
+                      autoComplete="off"
+                      placeholder={t.emailPlaceholder}
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-foreground/90 font-medium mb-1.5 block">{t.password}</Label>
+                    <div className="relative">
+                      <Input
+                        type={showPw ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                        autoComplete="new-password"
+                        placeholder={t.pwPlaceholder}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw((v) => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
+                      >
+                        {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
+                    {loading ? t.creating : t.createBtn}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </Card>
+        </div>
+
+        {/* Feature Cards Showcase */}
+        <div className="hidden lg:block w-full max-w-4xl pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
             <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
               <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:bg-primary transition-all duration-300">
                 <ShoppingBag className="h-5 w-5 text-emerald-600 group-hover:text-primary-foreground" />
@@ -250,145 +388,6 @@ const Auth = () => {
               <h3 className="font-bold text-sm text-foreground mb-1">{t.recipeTitle}</h3>
               <p className="text-xs text-muted-foreground">{t.recipeDesc}</p>
             </div>
-          </div>
-        </div>
-
-        {/* Right Side: The Sign In / Sign Up Frosted Card */}
-        <div className="lg:col-span-6 w-full flex justify-center">
-          <div className="w-full max-w-md animate-fade-in-up">
-            
-            {/* Header for Mobile only */}
-            <div className="text-center mb-6 lg:hidden">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow mb-2">
-                <Sprout className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <h1 className="font-display text-3xl font-bold text-foreground">Sabzi</h1>
-              <p className="text-muted-foreground text-xs mt-1">{t.subtitle}</p>
-            </div>
-
-            <Card className="p-6 md:p-8 shadow-elegant border-white/40 glass-panel rounded-3xl transition-all duration-500 hover:shadow-glow/20">
-              
-              <div className="mb-6">
-                <h3 className="font-display text-xl font-bold text-foreground mb-1">{t.welcome}</h3>
-                <p className="text-muted-foreground text-xs">{t.access}</p>
-              </div>
-
-              <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid grid-cols-2 w-full mb-6 bg-emerald-100/50 p-1 rounded-xl">
-                  <TabsTrigger 
-                    value="signin" 
-                    className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
-                  >
-                    {t.signin}
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="signup" 
-                    className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
-                  >
-                    {t.createAccount}
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="signin" className="focus-visible:outline-none focus-visible:ring-0">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.email}</Label>
-                      <Input 
-                        type="email" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                        required 
-                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
-                        placeholder={t.emailPlaceholder}
-                      />
-                    </div>
-                    <div>
-                      {PasswordField}
-                      <div className="flex justify-end mt-1.5">
-                        <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:text-emerald-700 hover:underline font-semibold transition-colors">
-                          {t.forgotPw}
-                        </button>
-                      </div>
-                    </div>
-                    <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
-                      {loading ? t.processing : t.signInBtn}
-                    </Button>
-                  </form>
-                </TabsContent>
-
-                <TabsContent value="signup" className="focus-visible:outline-none focus-visible:ring-0">
-                  <form onSubmit={handleSignUp} className="space-y-4 max-h-[380px] overflow-y-auto px-1.5 py-1">
-                    <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.yourName}</Label>
-                      <Input 
-                        value={fullName} 
-                        onChange={(e) => setFullName(e.target.value)} 
-                        placeholder={t.namePlaceholder} 
-                        autoComplete="off"
-                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.shopName}</Label>
-                      <Input 
-                        value={shopName} 
-                        onChange={(e) => setShopName(e.target.value)} 
-                        placeholder={t.shopPlaceholder} 
-                        autoComplete="off"
-                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.panNo} <span className="text-[10px] text-muted-foreground font-normal">{t.panOptional}</span></Label>
-                      <Input 
-                        value={panNo} 
-                        onChange={(e) => setPanNo(e.target.value)} 
-                        placeholder={t.panPlaceholder} 
-                        autoComplete="off"
-                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.email}</Label>
-                      <Input 
-                        type="email" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                        required 
-                        autoComplete="off"
-                        placeholder={t.emailPlaceholder}
-                        className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.password}</Label>
-                      <div className="relative">
-                        <Input
-                          type={showPw ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                          minLength={6}
-                          className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
-                          autoComplete="new-password"
-                          placeholder={t.pwPlaceholder}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPw((v) => !v)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
-                        >
-                          {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
-                      {loading ? t.creating : t.createBtn}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
-            </Card>
           </div>
         </div>
 
