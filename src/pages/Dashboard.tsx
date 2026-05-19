@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/PageHeader";
@@ -13,18 +13,36 @@ const Dashboard = () => {
     todaySales: 0, todayProfit: 0, cashBalance: 0,
     stockValue: 0, lowStock: 0, customerDues: 0, supplierDues: 0, productCount: 0,
   });
+  const [salesForTopItems, setSalesForTopItems] = useState<any[]>([]);
+  const [topItemsRange, setTopItemsRange] = useState<"today" | "weekly" | "monthly">("today");
 
   useEffect(() => {
     if (!user) return;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const iso = today.toISOString();
 
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+    const sinceIso = thirtyDaysAgo.toISOString();
+
     (async () => {
-      const [{ data: sales }, { data: products }, { data: cash }, { data: ledger }] = await Promise.all([
+      const [{ data: sales }, { data: products }, { data: cash }, { data: ledger }, { data: topSales }] = await Promise.all([
         supabase.from("sales").select("total, cost_total, created_at").gte("created_at", iso),
         supabase.from("products").select("stock_qty, cost_price, low_stock_threshold"),
         supabase.from("cash_transactions").select("direction, amount"),
         supabase.from("ledger_entries").select("party_id, party_type, entry_type, amount"),
+        supabase.from("sales").select(`
+          created_at,
+          sale_items (
+            qty,
+            line_total,
+            products (
+              name,
+              unit
+            )
+          )
+        `).gte("created_at", sinceIso),
       ]);
 
       const todaySales = (sales ?? []).reduce((s, r: any) => s + Number(r.total), 0);
@@ -64,8 +82,56 @@ const Dashboard = () => {
         todaySales, todayProfit, cashBalance, stockValue, lowStock,
         customerDues, supplierDues, productCount: products?.length ?? 0,
       });
+      if (topSales) {
+        setSalesForTopItems(topSales);
+      }
     })();
   }, [user]);
+
+  const topSellingItems = useMemo(() => {
+    // Set up thresholds
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    const threshold = 
+      topItemsRange === "today" 
+        ? startOfToday 
+        : topItemsRange === "weekly" 
+          ? sevenDaysAgo 
+          : thirtyDaysAgo;
+
+    const itemTotals: Record<string, { name: string; unit: string; qty: number; revenue: number }> = {};
+
+    salesForTopItems.forEach((sale) => {
+      const saleDate = new Date(sale.created_at);
+      if (saleDate >= threshold) {
+        (sale.sale_items || []).forEach((item: any) => {
+          const pName = item.products?.name || "Unknown Product";
+          const pUnit = item.products?.unit || "kg";
+          const qty = Number(item.qty || 0);
+          const revenue = Number(item.line_total || 0);
+
+          if (!itemTotals[pName]) {
+            itemTotals[pName] = { name: pName, unit: pUnit, qty: 0, revenue: 0 };
+          }
+          itemTotals[pName].qty += qty;
+          itemTotals[pName].revenue += revenue;
+        });
+      }
+    });
+
+    return Object.values(itemTotals)
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5);
+  }, [salesForTopItems, topItemsRange]);
 
   const cards = [
     { label: "Today's Sales", value: fmt(stats.todaySales), icon: ShoppingCart, accent: "bg-gradient-primary text-primary-foreground" },
@@ -123,15 +189,100 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      <div className="mt-6">
-        <Link to="/pos">
-          <Card className="p-6 shadow-elegant border-0 bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth">
-            <div className="flex items-center justify-between">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        {/* Top Selling Items Card */}
+        <Card className="p-6 shadow-card border-0 lg:col-span-2 flex flex-col justify-between">
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
               <div>
-                <div className="font-display text-2xl">Start Billing</div>
-                <div className="text-primary-foreground/80 text-sm mt-1">Open the POS to make a quick sale</div>
+                <h3 className="font-display text-lg font-bold">Top Selling Items</h3>
+                <p className="text-xs text-muted-foreground">Best performers by volume sold</p>
               </div>
-              <ShoppingCart className="h-10 w-10" />
+              <div className="flex items-center gap-1 bg-secondary/85 p-1 rounded-xl border border-sidebar-border/30 w-fit self-start sm:self-auto">
+                <button
+                  onClick={() => setTopItemsRange("today")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-205 ${topItemsRange === "today" ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Today
+                </button>
+                <button
+                  onClick={() => setTopItemsRange("weekly")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-205 ${topItemsRange === "weekly" ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Weekly
+                </button>
+                <button
+                  onClick={() => setTopItemsRange("monthly")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-205 ${topItemsRange === "monthly" ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Monthly
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {topSellingItems.map((item, idx) => {
+                const maxQty = topSellingItems[0]?.qty || 1;
+                const percent = Math.max(5, (item.qty / maxQty) * 100);
+                
+                // Rank styling
+                const ranks = [
+                  "bg-amber-400 text-amber-950 shadow-[0_2px_8px_rgba(251,191,36,0.3)]",
+                  "bg-slate-300 text-slate-800 shadow-[0_2px_8px_rgba(203,213,225,0.3)]",
+                  "bg-amber-600 text-amber-50 shadow-[0_2px_8px_rgba(217,119,6,0.3)]",
+                  "bg-secondary text-secondary-foreground",
+                  "bg-secondary text-secondary-foreground"
+                ];
+
+                return (
+                  <div key={item.name} className="space-y-1.5 group">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${ranks[idx]}`}>
+                          {idx + 1}
+                        </span>
+                        <span className="font-semibold text-foreground/90">{item.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-display font-bold text-foreground">{item.qty}</span>{" "}
+                        <span className="text-[10px] text-muted-foreground font-medium uppercase">{item.unit}</span>
+                        <span className="text-muted-foreground/30 mx-1.5">|</span>
+                        <span className="text-xs font-semibold text-primary">{fmt(item.revenue)}</span>
+                      </div>
+                    </div>
+                    {/* Visual Progress Bar */}
+                    <div className="h-2 w-full bg-secondary/60 rounded-full overflow-hidden">
+                      <div 
+                        style={{ width: `${percent}%` }}
+                        className="h-full bg-gradient-primary rounded-full transition-all duration-500 ease-out shadow-[0_0_8px_hsl(var(--primary)/0.2)]"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {topSellingItems.length === 0 && (
+                <div className="p-8 text-center text-muted-foreground text-sm border border-dashed border-sidebar-border/60 rounded-2xl bg-secondary/10">
+                  No sales recorded in this period.
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        {/* Start Billing Card */}
+        <Link to="/pos" className="block">
+          <Card className="p-6 shadow-elegant border-0 bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth h-full flex flex-col justify-between group overflow-hidden relative min-h-[220px]">
+            {/* Glowing background bubble */}
+            <div className="absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-white/10 blur-2xl group-hover:scale-125 transition-transform duration-500" />
+            
+            <div className="relative z-10 flex flex-col justify-between h-full">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-soft">
+                <ShoppingCart className="h-6 w-6 text-white" />
+              </div>
+              <div className="mt-8">
+                <h3 className="font-display text-2xl font-bold">Start Billing</h3>
+                <p className="text-primary-foreground/80 text-sm mt-1.5">Open the POS to make a quick sale and update inventory in real-time.</p>
+              </div>
             </div>
           </Card>
         </Link>
