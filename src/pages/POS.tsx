@@ -13,6 +13,7 @@ import { Plus, Minus, Trash2, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { printHTML, escapeHtml } from "@/lib/print";
 import { getShopInfo } from "@/lib/shop";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Product = { id: string; name: string; unit: string; cost_price: number; sell_price: number; stock_qty: number; low_stock_threshold: number; is_manufactured: boolean };
 type Customer = { id: string; name: string };
@@ -32,6 +33,9 @@ const POS = () => {
   const [discount, setDiscount] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [tempAmount, setTempAmount] = useState<{id: string, val: string} | null>(null);
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState("");
+  const [newCustomerPhone, setNewCustomerPhone] = useState("");
 
   const load = async () => {
     const [{ data: p }, { data: c }, { data: ing }] = await Promise.all([
@@ -87,8 +91,8 @@ const POS = () => {
   const total = Math.round(subtotal - discountNum);
 
   useEffect(() => {
-    // For cash mode, keep amountPaid perfectly synced to the dynamic discounted total
-    if (paymentMode === "cash") {
+    // For paid modes, keep amountPaid perfectly synced to the dynamic discounted total
+    if (paymentMode !== "credit") {
       setAmountPaid(total.toString());
     }
   }, [paymentMode, total]);
@@ -99,6 +103,17 @@ const POS = () => {
       setAmountPaid("0");
     }
   }, [paymentMode, subtotal]);
+
+  const saveNewCustomer = async () => {
+    if (!newCustomerName.trim()) return toast.error("Name required");
+    const { data, error } = await supabase.from("customers").insert({ user_id: user!.id, name: newCustomerName.trim(), phone: newCustomerPhone.trim() || null }).select();
+    if (error) return toast.error(error.message);
+    toast.success("Customer added");
+    setNewCustomerName(""); setNewCustomerPhone("");
+    setCustomerDialogOpen(false);
+    await load();
+    if (data && data[0]) setCustomerId(data[0].id);
+  };
 
   const checkout = async () => {
     if (cart.length === 0) return toast.error("Cart is empty");
@@ -287,13 +302,18 @@ const POS = () => {
           <div className="my-3 border-t pt-3 space-y-2">
             <div>
               <Label className="text-xs">Customer</Label>
-              <Select value={customerId} onValueChange={setCustomerId}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="walk-in">Walk-in</SelectItem>
-                  {customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select value={customerId} onValueChange={setCustomerId}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="walk-in">Walk-in</SelectItem>
+                    {customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button size="icon" variant="outline" onClick={() => setCustomerDialogOpen(true)} title="Add New Customer" className="shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -303,6 +323,9 @@ const POS = () => {
                   <SelectContent>
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="credit">Credit (Udhaar)</SelectItem>
+                    <SelectItem value="esewa">eSewa</SelectItem>
+                    <SelectItem value="khalti">Khalti</SelectItem>
+                    <SelectItem value="bank">Bank</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -366,6 +389,20 @@ const POS = () => {
           </Button>
         </Card>
       </div>
+      {/* Dialogs */}
+      <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Customer</DialogTitle>
+            <DialogDescription>Add a new customer accounts.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Name</Label><Input value={newCustomerName} onChange={(e) => setNewCustomerName(e.target.value)} /></div>
+            <div><Label>Phone</Label><Input value={newCustomerPhone} onChange={(e) => setNewCustomerPhone(e.target.value)} /></div>
+            <Button onClick={saveNewCustomer} className="w-full bg-gradient-primary text-primary-foreground">Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
