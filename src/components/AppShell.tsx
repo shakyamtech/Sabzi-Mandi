@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck,
   BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
-  Eye, EyeOff, Menu
+  Eye, EyeOff, Menu, RotateCcw, Trash2
 } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -149,6 +153,36 @@ export const AppShell = () => {
         } finally {
             setBusy(false);
             setPassword("");
+        }
+    };
+
+    const handleSelfReset = async () => {
+        if (!user?.id) return;
+        setBusy(true);
+        try {
+            // Delete all transaction tables for this user
+            const tablesToWipe = ["sale_items", "sales", "purchase_items", "purchases", "cash_transactions", "ledger_entries", "expenses"];
+            for (const t of tablesToWipe) {
+                const { error } = await supabase.from(t).delete().eq("user_id", user.id);
+                if (error) throw error;
+            }
+            
+            // Reset customer and supplier balances to 0
+            const { error: custErr } = await supabase.from("customers").update({ balance: 0 }).eq("user_id", user.id);
+            if (custErr) throw custErr;
+            
+            const { error: suppErr } = await supabase.from("suppliers").update({ balance: 0 }).eq("user_id", user.id);
+            if (suppErr) throw suppErr;
+
+            toast.success(lang === "NEP" ? "कारोबार र लेजर सफलतापूर्वक रिसेट गरियो!" : "All transactions and ledgers reset successfully!");
+            setSettingsOpen(false);
+            
+            // Reload window to refresh current page state
+            window.location.reload();
+        } catch (err: any) {
+            toast.error(err.message || "Failed to reset data");
+        } finally {
+            setBusy(false);
         }
     };
 
@@ -402,6 +436,52 @@ export const AppShell = () => {
                                     {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-destructive/20 mt-6 space-y-3 bg-destructive/5 -mx-6 px-6 py-4">
+                            <div className="text-sm font-semibold text-destructive flex items-center gap-1.5">
+                                <Trash2 className="h-4 w-4" />
+                                {lang === "NEP" ? "खतरा क्षेत्र (Danger Zone)" : "Danger Zone"}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {lang === "NEP" 
+                                    ? "आफ्नो पसलको सबै नाफा-नोक्सान, क्यासबुक, उधारो लेजर र खरिद/बिक्री डाटा रिसेट गर्नुहोस्। सामानको सूची (Products) सुरक्षित रहनेछ।"
+                                    : "Reset all your profit/loss, cashbook, credit ledgers, and sales/purchase data. Your product catalog will be preserved intact."}
+                            </p>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button 
+                                        type="button"
+                                        variant="outline" 
+                                        size="sm"
+                                        className="border-destructive/30 text-destructive hover:bg-destructive hover:text-white transition-all h-9 w-full"
+                                    >
+                                        <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                                        {lang === "NEP" ? "सबै कारोबार र लेजर रिसेट गर्नुहोस्" : "Reset All Ledgers & Sales"}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                            {lang === "NEP" ? "के तपाईं आफ्नो सबै डाटा रिसेट गर्न चाहनुहुन्छ?" : "Reset all your store transactions?"}
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {lang === "NEP"
+                                                ? "यसले तपाइँको पसलको सम्पूर्ण बिक्री, खरिद, क्यासबुक र लेजर इतिहास स्थायी रूपमा मेटाउनेछ। सामानहरू (Products) सुरक्षित रहनेछन्, र ग्राहक/सप्लायरको मौज्दात (Balance) ० हुनेछ। यो फिर्ता गर्न सकिने छैन।"
+                                                : "This will permanently delete all your sales, purchases, cash transactions, ledger entries, and expenses. Your products will be preserved, and customer/supplier balances will be reset to 0. This action cannot be undone."}
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
+                                        <AlertDialogAction 
+                                            onClick={handleSelfReset} 
+                                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                        >
+                                            {lang === "NEP" ? "डाटा रिसेट गर्नुहोस्" : "Reset Data"}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </div>
                     </div>
                     <DialogFooter>
