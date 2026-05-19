@@ -68,7 +68,8 @@ export const AppShell = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navTranslationKeys: Record<string, string> = {
@@ -121,7 +122,53 @@ export const AppShell = () => {
         loadProfile();
     }, [user]);
 
-    const handleSave = async () => {
+    const handleSaveProfile = async () => {
+        if (!password) return toast.error("Please enter your current password to confirm");
+        
+        setBusy(true);
+        const { error: authError } = await supabase.auth.signInWithPassword({
+            email: user?.email || "",
+            password: password
+        });
+
+        if (authError) {
+            setBusy(false);
+            return toast.error("Invalid current password. Please try again.");
+        }
+
+        try {
+            const { error: profileError } = await supabase.from("profiles").update({ 
+                full_name: fullName
+            }).eq("id", user?.id);
+            
+            if (profileError) throw profileError;
+
+            const updatePayload: any = { data: { full_name: fullName } };
+            if (newPassword.trim()) {
+                if (newPassword.length < 6) {
+                    toast.error("New password must be at least 6 characters. Profile updated, but password was not.");
+                } else {
+                    updatePayload.password = newPassword;
+                }
+            }
+            const { error: authMetaErr } = await supabase.auth.updateUser(updatePayload);
+            if (authMetaErr) throw authMetaErr;
+            if (updatePayload.password) {
+                toast.success("Password updated!");
+                setNewPassword("");
+            }
+
+            toast.success("Profile details updated successfully!");
+            setProfileOpen(false);
+        } catch (err: any) {
+            toast.error(err.message || "An error occurred");
+        } finally {
+            setBusy(false);
+            setPassword("");
+        }
+    };
+
+    const handleSaveShop = async () => {
         if (!password) return toast.error("Please enter your current password to confirm");
         if (!newName.trim()) return toast.error("Shop name cannot be empty");
         
@@ -139,30 +186,18 @@ export const AppShell = () => {
         try {
             const { error: profileError } = await supabase.from("profiles").update({ 
                 shop_name: newName,
-                pan_no: panNo,
-                full_name: fullName
+                pan_no: panNo
             }).eq("id", user?.id);
             
             if (profileError) throw profileError;
             setShopName(newName);
 
-            const updatePayload: any = { data: { full_name: fullName, shop_name: newName, pan_no: panNo } };
-            if (newPassword.trim()) {
-                if (newPassword.length < 6) {
-                    toast.error("New password must be at least 6 characters. Profile updated, but password was not.");
-                } else {
-                    updatePayload.password = newPassword;
-                }
-            }
+            const updatePayload: any = { data: { shop_name: newName, pan_no: panNo } };
             const { error: authMetaErr } = await supabase.auth.updateUser(updatePayload);
             if (authMetaErr) throw authMetaErr;
-            if (updatePayload.password) {
-                toast.success("Password updated!");
-                setNewPassword("");
-            }
 
-            toast.success("Changes saved successfully!");
-            setSettingsOpen(false);
+            toast.success("Shop settings saved successfully!");
+            setShopOpen(false);
         } catch (err: any) {
             toast.error(err.message || "An error occurred");
         } finally {
@@ -292,13 +327,13 @@ export const AppShell = () => {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => {
                             setNewName(shopName);
-                            setSettingsOpen(true);
+                            setProfileOpen(true);
                         }} className="cursor-pointer font-medium gap-2">
                             <User className="h-4 w-4 text-primary" /> {lang === "NEP" ? "प्रोफाइल सेटिङ" : "Profile Settings"}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                             setNewName(shopName);
-                            setSettingsOpen(true);
+                            setShopOpen(true);
                         }} className="cursor-pointer font-medium gap-2">
                             <Store className="h-4 w-4 text-primary" /> {lang === "NEP" ? "पसल सेटिङ" : "Shop Settings"}
                         </DropdownMenuItem>
@@ -424,13 +459,13 @@ export const AppShell = () => {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => {
                                 setNewName(shopName);
-                                setSettingsOpen(true);
+                                setProfileOpen(true);
                             }} className="cursor-pointer font-medium gap-2">
                                 <User className="h-4 w-4 text-primary" /> {lang === "NEP" ? "प्रोफाइल सेटिङ" : "Profile Settings"}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
                                 setNewName(shopName);
-                                setSettingsOpen(true);
+                                setShopOpen(true);
                             }} className="cursor-pointer font-medium gap-2">
                                 <Store className="h-4 w-4 text-primary" /> {lang === "NEP" ? "पसल सेटिङ" : "Shop Settings"}
                             </DropdownMenuItem>
@@ -484,10 +519,11 @@ export const AppShell = () => {
               })}
             </nav>
 
-            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+            {/* Profile Settings Modal */}
+            <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
                 <DialogContent className="max-h-[90vh] flex flex-col p-6" onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
                     <DialogHeader className="shrink-0">
-                        <DialogTitle>{t.fullShopName}</DialogTitle>
+                        <DialogTitle>{lang === "NEP" ? "प्रोफाइल सेटिङ" : "Profile Settings"}</DialogTitle>
                         <DialogDescription>{t.confirmPasswordToSave}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-2 overflow-y-auto flex-1 px-1">
@@ -498,14 +534,6 @@ export const AppShell = () => {
                         <div className="space-y-2">
                             <Label>{t.yourName}</Label>
                             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name..." />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>{t.shopName}</Label>
-                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter shop name..." />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>{t.panNo}</Label>
-                            <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number..." />
                         </div>
 
                         <div className="pt-2 border-t space-y-2">
@@ -545,6 +573,53 @@ export const AppShell = () => {
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 >
                                     {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setProfileOpen(false)}>{t.cancel}</Button>
+                        <Button onClick={handleSaveProfile} disabled={busy} className="bg-primary text-primary-foreground">
+                            {busy ? t.saving : t.saveChanges}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Shop Settings Modal */}
+            <Dialog open={shopOpen} onOpenChange={setShopOpen}>
+                <DialogContent className="max-h-[90vh] flex flex-col p-6" onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
+                    <DialogHeader className="shrink-0">
+                        <DialogTitle>{lang === "NEP" ? "पसल सेटिङ" : "Shop Settings"}</DialogTitle>
+                        <DialogDescription>{t.confirmPasswordToSave}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2 overflow-y-auto flex-1 px-1">
+                        <div className="space-y-2">
+                            <Label>{t.shopName}</Label>
+                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter shop name..." />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t.panNo}</Label>
+                            <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number..." />
+                        </div>
+
+                        <div className="pt-2 border-t space-y-2">
+                            <Label>{t.currentPassword}</Label>
+                            <div className="relative">
+                                <Input 
+                                    type={showPassword ? "text" : "password"} 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    placeholder="Required to save changes"
+                                    autoComplete="off"
+                                    autoFocus={false}
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
@@ -596,8 +671,8 @@ export const AppShell = () => {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setSettingsOpen(false)}>{t.cancel}</Button>
-                        <Button onClick={handleSave} disabled={busy} className="bg-primary text-primary-foreground">
+                        <Button variant="outline" onClick={() => setShopOpen(false)}>{t.cancel}</Button>
+                        <Button onClick={handleSaveShop} disabled={busy} className="bg-primary text-primary-foreground">
                             {busy ? t.saving : t.saveChanges}
                         </Button>
                     </DialogFooter>
