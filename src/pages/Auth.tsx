@@ -317,7 +317,7 @@ const Auth = () => {
                 </TabsContent>
 
                 <TabsContent value="signup" className="focus-visible:outline-none focus-visible:ring-0">
-                  <form onSubmit={handleSignUp} className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+                  <form onSubmit={handleSignUp} className="space-y-4 max-h-[380px] overflow-y-auto px-1.5 py-1">
                     <div>
                       <Label className="text-foreground/90 font-medium mb-1.5 block">{t.yourName}</Label>
                       <Input 
