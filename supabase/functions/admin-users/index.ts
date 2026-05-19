@@ -101,6 +101,9 @@ Deno.serve(async (req) => {
         const col = t === "profiles" ? "id" : "user_id";
         await admin.from(t).delete().eq(col, user_id);
       }
+      // Terminate any active sessions on all devices immediately
+      await admin.auth.admin.signOut(user_id).catch(() => {});
+      
       const { error } = await admin.auth.admin.deleteUser(user_id);
       if (error) throw error;
       return json({ ok: true });
