@@ -13,12 +13,13 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Shield, Trash2, Pencil, RefreshCw, ShieldOff, RotateCcw } from "lucide-react";
+import { Shield, Trash2, Pencil, RefreshCw, ShieldOff, RotateCcw, Ban, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 
 type AdminUser = {
   id: string; email: string; created_at: string; last_sign_in_at: string | null;
   full_name: string; shop_name: string; roles: string[];
+  banned_until?: string | null;
 };
 
 const Admin = () => {
@@ -79,6 +80,15 @@ const Admin = () => {
     } catch (e: any) { toast.error(e.message); }
   };
 
+  const toggleBan = async (u: AdminUser) => {
+    const currentlyBanned = u.banned_until && new Date(u.banned_until) > new Date();
+    try {
+      await call({ action: "ban_user", user_id: u.id, ban: !currentlyBanned });
+      toast.success(currentlyBanned ? "User access restored" : "User suspended successfully");
+      load();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
   const resetData = async (u: AdminUser) => {
     setBusy(true);
     try {
@@ -117,6 +127,11 @@ const Admin = () => {
                   {u.roles.includes("admin") && (
                     <Badge variant="default" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors">
                       <Shield className="h-3 w-3 mr-1" /> admin
+                    </Badge>
+                  )}
+                  {u.banned_until && new Date(u.banned_until) > new Date() && (
+                    <Badge variant="destructive" className="bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20 transition-colors font-bold uppercase tracking-wider text-[10px]">
+                      <Ban className="h-3 w-3 mr-1" /> Suspended
                     </Badge>
                   )}
                 </div>
@@ -180,6 +195,51 @@ const Admin = () => {
                 >
                   {u.roles.includes("admin") ? <><ShieldOff className="h-3.5 w-3.5 mr-1.5" /> Revoke</> : <><Shield className="h-3.5 w-3.5 mr-1.5" /> Make Admin</>}
                 </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className={`flex-1 md:flex-none h-9 transition-all ${
+                        u.banned_until && new Date(u.banned_until) > new Date() 
+                          ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50" 
+                          : "border-destructive/20 text-destructive hover:bg-destructive/5"
+                      }`}
+                    >
+                      {u.banned_until && new Date(u.banned_until) > new Date() ? (
+                        <><UserCheck className="h-3.5 w-3.5 mr-1.5" /> Unban</>
+                      ) : (
+                        <><Ban className="h-3.5 w-3.5 mr-1.5" /> Ban User</>
+                      )}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {u.banned_until && new Date(u.banned_until) > new Date() 
+                          ? `Unban user ${u.email}?` 
+                          : `Ban user ${u.email}?`
+                        }
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {u.banned_until && new Date(u.banned_until) > new Date() 
+                          ? "This will restore the user's access to the application immediately." 
+                          : "This will immediately terminate all active sessions on their devices and permanently block them from logging back in or signing up again. You can lift this suspension at any time."
+                        }
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => toggleBan(u)} 
+                        className={u.banned_until && new Date(u.banned_until) > new Date() ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-destructive text-destructive-foreground"}
+                      >
+                        {u.banned_until && new Date(u.banned_until) > new Date() ? "Restore Access" : "Suspend User"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>

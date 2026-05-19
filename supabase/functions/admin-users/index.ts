@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         arr.push(r.role);
         rMap.set(r.user_id, arr);
       });
-      const users = usersData.users.map((u) => ({
+      const users = usersData.users.map((u: any) => ({
         id: u.id,
         email: u.email,
         created_at: u.created_at,
@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
         full_name: pMap.get(u.id)?.full_name || "",
         shop_name: pMap.get(u.id)?.shop_name || "",
         roles: rMap.get(u.id) || [],
+        banned_until: u.banned_until || null,
       }));
       return json({ users });
     }
@@ -106,6 +107,25 @@ Deno.serve(async (req) => {
       
       const { error } = await admin.auth.admin.deleteUser(user_id);
       if (error) throw error;
+      return json({ ok: true });
+    }
+
+    if (action === "ban_user") {
+      const { user_id, ban } = body;
+      if (!user_id) return json({ error: "user_id required" }, 400);
+      if (user_id === callerId) return json({ error: "Cannot ban yourself" }, 400);
+      
+      if (ban) {
+        // Terminate any active sessions on all devices immediately
+        await admin.auth.admin.signOut(user_id).catch(() => {});
+        // Ban user for 100 years
+        const { error } = await admin.auth.admin.updateUserById(user_id, { ban_duration: "876600h" });
+        if (error) throw error;
+      } else {
+        // Lift the ban
+        const { error } = await admin.auth.admin.updateUserById(user_id, { ban_duration: "none" });
+        if (error) throw error;
+      }
       return json({ ok: true });
     }
 
