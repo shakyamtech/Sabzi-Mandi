@@ -160,6 +160,24 @@ const Purchases = () => {
     if (items.length === 0) return toast.error("Add items");
     if (paymentMode === "credit" && (supplierId === "none" || !supplierId)) return toast.error("Pick a supplier for credit");
 
+    const paid = Number(amountPaid || 0);
+    if (paid > 0) {
+      const { data: tx } = await supabase.from("cash_transactions").select("direction, amount");
+      const currentBalance = tx?.reduce((s, r) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0) || 0;
+      
+      let adjustedBalance = currentBalance;
+      if (editingId) {
+        const { data: currentPurchase } = await supabase.from("purchases").select("amount_paid").eq("id", editingId).maybeSingle();
+        if (currentPurchase) {
+          adjustedBalance += currentPurchase.amount_paid;
+        }
+      }
+
+      if (adjustedBalance < paid) {
+        return toast.error(`You don't have enough cash. Current balance: ${fmt(currentBalance)}. Please add opening balance or cash in Cashbook first.`, { duration: 6000 });
+      }
+    }
+
     if (editingId) {
       const { error: delErr } = await supabase.rpc("delete_purchase", { p_purchase_id: editingId });
       if (delErr) return toast.error("Failed to update: " + delErr.message);
@@ -167,7 +185,7 @@ const Purchases = () => {
 
     const { error } = await supabase.rpc("record_purchase", {
       p_supplier_id: supplierId === "none" || !supplierId ? null : supplierId,
-      p_payment_mode: paymentMode, p_amount_paid: Number(amountPaid || 0),
+      p_payment_mode: paymentMode, p_amount_paid: paid,
       p_note: editingId ? "Updated purchase" : null, p_items: items.map(i => ({ ...i, qty: Number(i.qty) || 0, cost_price: Number(i.cost_price) || 0 })) as any,
     });
     if (error) return toast.error(error.message);
