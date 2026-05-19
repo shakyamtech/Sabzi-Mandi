@@ -13,7 +13,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Shield, Trash2, Pencil, RefreshCw, ShieldOff, RotateCcw, Ban, UserCheck } from "lucide-react";
+import { Shield, Trash2, Pencil, RefreshCw, ShieldOff, RotateCcw, Ban, UserCheck, Search } from "lucide-react";
 import { format } from "date-fns";
 
 type AdminUser = {
@@ -30,6 +30,7 @@ const Admin = () => {
   const [editName, setEditName] = useState("");
   const [editShop, setEditShop] = useState("");
   const [editPassword, setEditPassword] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const call = async (body: any) => {
     const { data, error } = await supabase.functions.invoke("admin-users", { body });
@@ -112,12 +113,40 @@ const Admin = () => {
   };
 
 
+  const isOnline = (lastSignIn: string | null) => {
+    if (!lastSignIn) return false;
+    const diffMs = new Date().getTime() - new Date(lastSignIn).getTime();
+    // 5 minutes active session window
+    return diffMs < 5 * 60 * 1000;
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    const timeA = a.last_sign_in_at ? new Date(a.last_sign_in_at).getTime() : 0;
+    const timeB = b.last_sign_in_at ? new Date(b.last_sign_in_at).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  const filteredUsers = sortedUsers.filter((u) => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      u.email.toLowerCase().includes(query) ||
+      (u.full_name || "").toLowerCase().includes(query) ||
+      (u.shop_name || "").toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl flex items-center gap-2"><Shield className="h-6 w-6 text-primary" /> Admin</h1>
-          <p className="text-sm text-muted-foreground">{users.length} user{users.length !== 1 && "s"}</p>
+          <p className="text-sm text-muted-foreground">
+            {searchQuery 
+              ? `${filteredUsers.length} of ${users.length} users` 
+              : `${users.length} user${users.length !== 1 ? "s" : ""}`
+            }
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={load} disabled={busy}>
@@ -126,13 +155,32 @@ const Admin = () => {
         </div>
       </div>
 
+      {/* Search Input Bar */}
+      <div className="relative w-full">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search users by email, full name, or shop name..."
+          className="pl-10 h-11 w-full bg-white/80 backdrop-blur-md focus:bg-white shadow-soft transition-all duration-300 rounded-xl border-sidebar-border/40 focus:ring-primary/20"
+        />
+      </div>
+
       <div className="grid gap-4">
-        {users.map((u) => (
+        {filteredUsers.map((u) => (
           <Card key={u.id} className="p-4 shadow-card border-0 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-display font-semibold text-base truncate max-w-full">{u.email}</span>
+                  <div className="flex items-center gap-2">
+                    {isOnline(u.last_sign_in_at) && (
+                      <span className="relative flex h-2.5 w-2.5 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                      </span>
+                    )}
+                    <span className="font-display font-semibold text-base truncate max-w-full">{u.email}</span>
+                  </div>
                   {u.roles.includes("admin") && (
                     <Badge variant="default" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors">
                       <Shield className="h-3 w-3 mr-1" /> admin
@@ -309,10 +357,10 @@ const Admin = () => {
             </div>
           </Card>
         ))}
-        {!users.length && !busy && (
+        {!filteredUsers.length && !busy && (
           <Card className="p-12 text-center text-muted-foreground bg-secondary/30 border-2 border-dashed border-sidebar-border">
             <RefreshCw className="h-8 w-8 mx-auto mb-3 opacity-20" />
-            No users found in the system.
+            {searchQuery ? "No users matching your search." : "No users found in the system."}
           </Card>
         )}
       </div>
