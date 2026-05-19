@@ -200,7 +200,7 @@ const Auth = () => {
       </div>
 
       {/* Core Split Screen Layout for Desktop / Single Card on Mobile */}
-      <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center relative z-10">
+      <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-end relative z-10">
         
         {/* Left Side: Premium Brand Presentation Panel (Hidden on mobile) */}
         <div className="hidden lg:flex lg:col-span-6 flex-col justify-center pr-8 space-y-6 text-left">
