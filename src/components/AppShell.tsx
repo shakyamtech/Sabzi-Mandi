@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck,
   BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
-  Eye, EyeOff, Menu, RotateCcw, Trash2, User, Store, Palette, Sun, Moon, Laptop
+  Eye, EyeOff, Menu, RotateCcw, Trash2, User, Store, Palette, Sun, Moon, Laptop, Info
 } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,7 @@ export const AppShell = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const navTranslationKeys: Record<string, string> = {
     "Dashboard": t.dashboard,
@@ -351,6 +352,10 @@ export const AppShell = () => {
                             </DropdownMenuPortal>
                         </DropdownMenuSub>
                         
+                        <DropdownMenuItem onClick={() => setAboutOpen(true)} className="cursor-pointer font-medium gap-2">
+                            <Info className="h-4 w-4 text-primary" /> {lang === "NEP" ? "हाम्रो बारेमा" : "About App"}
+                        </DropdownMenuItem>
+                        
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={async () => { await signOut(); navigate("/auth"); }} className="cursor-pointer font-bold text-destructive hover:bg-destructive/10 hover:text-destructive gap-2">
                             <LogOut className="h-4 w-4" /> {t.signOut}
@@ -482,6 +487,10 @@ export const AppShell = () => {
                                     </DropdownMenuSubContent>
                                 </DropdownMenuPortal>
                             </DropdownMenuSub>
+                            
+                            <DropdownMenuItem onClick={() => setAboutOpen(true)} className="cursor-pointer font-medium gap-2">
+                                <Info className="h-4 w-4 text-primary" /> {lang === "NEP" ? "हाम्रो बारेमा" : "About App"}
+                            </DropdownMenuItem>
                             
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={async () => { await signOut(); navigate("/auth"); }} className="cursor-pointer font-bold text-destructive hover:bg-destructive/10 hover:text-destructive gap-2">
@@ -667,6 +676,56 @@ export const AppShell = () => {
                         <Button variant="outline" onClick={() => setShopOpen(false)}>{t.cancel}</Button>
                         <Button onClick={handleSaveShop} disabled={busy} className="bg-primary text-primary-foreground">
                             {busy ? t.saving : t.saveChanges}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* About Modal */}
+            <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
+                <DialogContent className="max-w-md p-6 flex flex-col items-center text-center">
+                    <DialogHeader className="w-full shrink-0 flex flex-col items-center">
+                        <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-2 shadow-soft animate-pulse">
+                            <Sprout className="h-9 w-9 text-primary" />
+                        </div>
+                        <DialogTitle className="text-xl font-display font-extrabold bg-gradient-primary bg-clip-text text-transparent">
+                            Sabzi - Mandi POS
+                        </DialogTitle>
+                        <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                            {lang === "NEP" ? "संस्करण १.२.१" : "Version 1.2.1"}
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="py-4 space-y-4 w-full">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            {lang === "NEP" 
+                                ? "सबै सब्जी तथा फलफूल पसलहरूका लागि आधुनिक, छिटो र सरल बिलिङ र लेजर व्यवस्थापन प्रणाली।"
+                                : "A premium, super-fast point-of-sale (POS) and ledger bookkeeping solution tailored perfectly for agricultural merchants."}
+                        </p>
+                        
+                        <div className="p-4 rounded-xl bg-secondary/60 border border-border/40 backdrop-blur-sm space-y-1">
+                            <div className="text-xs text-muted-foreground font-medium">
+                                {lang === "NEP" ? "द्वारा विकसित:" : "Developed By:"}
+                            </div>
+                            <div className="text-base font-extrabold text-foreground tracking-tight">
+                                Mahesh Shakya
+                            </div>
+                            <div className="text-xs text-primary font-medium">
+                                shakya.mahes@gmail.com
+                            </div>
+                        </div>
+                        
+                        <p className="text-[10px] text-muted-foreground/60 italic">
+                            © {new Date().getFullYear()} Sabzi Mandi POS · All Rights Reserved
+                        </p>
+                    </div>
+                    
+                    <DialogFooter className="w-full sm:justify-center">
+                        <Button 
+                            onClick={() => setAboutOpen(false)} 
+                            className="bg-primary text-primary-foreground font-semibold px-8"
+                        >
+                            {lang === "NEP" ? "बन्द गर्नुहोस्" : "Close"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
