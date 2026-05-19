@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Sprout, Eye, EyeOff, Leaf, ShoppingBag, BarChart3, Users, Sparkles, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const emailSchema = z.string().trim().email("Invalid email").max(255);
 const pwSchema = z.string().min(6, "Min 6 characters").max(100);
@@ -25,10 +26,15 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [panNo, setPanNo] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const { lang, setLang, t } = useLanguage();
+
+  const changeLang = (l: "ENG" | "NEP") => {
+    setLang(l);
+  };
 
   const PasswordField = (
     <div>
-      <Label className="text-foreground/90 font-medium mb-1.5 block">Password</Label>
+      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.password}</Label>
       <div className="relative">
         <Input
           type={showPw ? "text" : "password"}
@@ -38,6 +44,7 @@ const Auth = () => {
           minLength={6}
           className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
           autoComplete="current-password"
+          placeholder={t.pwPlaceholder}
         />
         <button
           type="button"
@@ -119,6 +126,22 @@ const Auth = () => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-hero p-4 relative overflow-hidden font-sans">
       
+      {/* Floating English / Nepali Language Switcher */}
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-1 bg-white/80 backdrop-blur-md border border-white/50 p-1 rounded-xl shadow-soft">
+        <button 
+          onClick={() => changeLang("ENG")} 
+          className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all duration-300 ${lang === "ENG" ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          ENG
+        </button>
+        <button 
+          onClick={() => changeLang("NEP")} 
+          className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all duration-300 ${lang === "NEP" ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          नेपाली
+        </button>
+      </div>
+
       {/* Custom Styles for beautiful organic animations */}
       <style>{`
         @keyframes float-slow {
@@ -190,10 +213,10 @@ const Auth = () => {
 
           <div className="space-y-4">
             <h2 className="font-display text-4xl font-bold leading-tight text-foreground">
-              Empowering your <span className="text-primary">Vegetable Shop</span> with zero effort.
+              {t.brandTitle}
             </h2>
-            <p className="text-muted-foreground text-base leading-relaxed">
-              Ditch the paper registers. Manage dynamic inventory, billing transactions, party ledgers, and comprehensive financial balance sheets with a sleek Nepalese-focused custom platform.
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              {t.brandDesc}
             </p>
           </div>
 
@@ -203,29 +226,29 @@ const Auth = () => {
               <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:bg-primary transition-all duration-300">
                 <ShoppingBag className="h-5 w-5 text-emerald-600 group-hover:text-primary-foreground" />
               </div>
-              <h3 className="font-bold text-sm text-foreground mb-1">Superfast POS</h3>
-              <p className="text-xs text-muted-foreground">Speed-billing with simple return calculation.</p>
+              <h3 className="font-bold text-sm text-foreground mb-1">{t.posTitle}</h3>
+              <p className="text-xs text-muted-foreground">{t.posDesc}</p>
             </div>
             <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
               <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center mb-3 group-hover:bg-accent transition-all duration-300">
                 <BarChart3 className="h-5 w-5 text-orange-600 group-hover:text-accent-foreground" />
               </div>
-              <h3 className="font-bold text-sm text-foreground mb-1">Live Profit Sheet</h3>
-              <p className="text-xs text-muted-foreground">Keep real-time records of cash in & out flows.</p>
+              <h3 className="font-bold text-sm text-foreground mb-1">{t.profitTitle}</h3>
+              <p className="text-xs text-muted-foreground">{t.profitDesc}</p>
             </div>
             <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
               <div className="h-10 w-10 rounded-lg bg-lime-500/10 flex items-center justify-center mb-3 group-hover:bg-lime-600 transition-all duration-300">
                 <Users className="h-5 w-5 text-lime-700 group-hover:text-white" />
               </div>
-              <h3 className="font-bold text-sm text-foreground mb-1">Party Ledger</h3>
-              <p className="text-xs text-muted-foreground">Track supplier payments and customer credit (Udhaar).</p>
+              <h3 className="font-bold text-sm text-foreground mb-1">{t.ledgerTitle}</h3>
+              <p className="text-xs text-muted-foreground">{t.ledgerDesc}</p>
             </div>
             <div className="p-4 rounded-2xl glass-panel shadow-soft hover:shadow-card transition-all duration-300 group hover:-translate-y-1">
               <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:bg-primary transition-all duration-300">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 group-hover:text-primary-foreground" />
               </div>
-              <h3 className="font-bold text-sm text-foreground mb-1">Recipe System</h3>
-              <p className="text-xs text-muted-foreground">Auto-deduct stock for items crafted directly in-house.</p>
+              <h3 className="font-bold text-sm text-foreground mb-1">{t.recipeTitle}</h3>
+              <p className="text-xs text-muted-foreground">{t.recipeDesc}</p>
             </div>
           </div>
         </div>
@@ -240,14 +263,14 @@ const Auth = () => {
                 <Sprout className="h-6 w-6 text-primary-foreground" />
               </div>
               <h1 className="font-display text-3xl font-bold text-foreground">Sabzi</h1>
-              <p className="text-muted-foreground text-xs mt-1">Vegetable shop POS & inventory — done simply</p>
+              <p className="text-muted-foreground text-xs mt-1">{t.subtitle}</p>
             </div>
 
             <Card className="p-6 md:p-8 shadow-elegant border-white/40 glass-panel rounded-3xl transition-all duration-500 hover:shadow-glow/20">
               
               <div className="mb-6">
-                <h3 className="font-display text-xl font-bold text-foreground mb-1">Welcome to Sabzi</h3>
-                <p className="text-muted-foreground text-xs">Access your store dashboard & inventory statistics.</p>
+                <h3 className="font-display text-xl font-bold text-foreground mb-1">{t.welcome}</h3>
+                <p className="text-muted-foreground text-xs">{t.access}</p>
               </div>
 
               <Tabs defaultValue="signin" className="w-full">
@@ -256,20 +279,20 @@ const Auth = () => {
                     value="signin" 
                     className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
                   >
-                    Sign in
+                    {t.signin}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="signup" 
                     className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
                   >
-                    Create account
+                    {t.createAccount}
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="signin" className="focus-visible:outline-none focus-visible:ring-0">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">Email</Label>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.email}</Label>
                       <Input 
                         type="email" 
                         value={email} 
@@ -283,12 +306,12 @@ const Auth = () => {
                       {PasswordField}
                       <div className="flex justify-end mt-1.5">
                         <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:text-emerald-700 hover:underline font-semibold transition-colors">
-                          Forgot password?
+                          {t.forgotPw}
                         </button>
                       </div>
                     </div>
                     <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
-                      {loading ? "Processing..." : "Sign in to Dashboard"}
+                      {loading ? t.processing : t.signInBtn}
                     </Button>
                   </form>
                 </TabsContent>
@@ -296,37 +319,37 @@ const Auth = () => {
                 <TabsContent value="signup" className="focus-visible:outline-none focus-visible:ring-0">
                   <form onSubmit={handleSignUp} className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
                     <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">Your name</Label>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.yourName}</Label>
                       <Input 
                         value={fullName} 
                         onChange={(e) => setFullName(e.target.value)} 
-                        placeholder="e.g. Ram Prasad" 
+                        placeholder={t.namePlaceholder} 
                         autoComplete="off"
                         className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
                       />
                     </div>
                     <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">Shop name</Label>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.shopName}</Label>
                       <Input 
                         value={shopName} 
                         onChange={(e) => setShopName(e.target.value)} 
-                        placeholder="e.g. Kumari Vegetable Shop" 
+                        placeholder={t.shopPlaceholder} 
                         autoComplete="off"
                         className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
                       />
                     </div>
                     <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">PAN Number <span className="text-[10px] text-muted-foreground font-normal">(optional)</span></Label>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.panNo} <span className="text-[10px] text-muted-foreground font-normal">{t.panOptional}</span></Label>
                       <Input 
                         value={panNo} 
                         onChange={(e) => setPanNo(e.target.value)} 
-                        placeholder="9 digit Nepalese PAN" 
+                        placeholder={t.panPlaceholder} 
                         autoComplete="off"
                         className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
                       />
                     </div>
                     <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">Email</Label>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.email}</Label>
                       <Input 
                         type="email" 
                         value={email} 
@@ -338,7 +361,7 @@ const Auth = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-foreground/90 font-medium mb-1.5 block">Password</Label>
+                      <Label className="text-foreground/90 font-medium mb-1.5 block">{t.password}</Label>
                       <div className="relative">
                         <Input
                           type={showPw ? "text" : "password"}
@@ -348,7 +371,7 @@ const Auth = () => {
                           minLength={6}
                           className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
                           autoComplete="new-password"
-                          placeholder="At least 6 characters"
+                          placeholder={t.pwPlaceholder}
                         />
                         <button
                           type="button"
@@ -360,7 +383,7 @@ const Auth = () => {
                       </div>
                     </div>
                     <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
-                      {loading ? "Creating..." : "Create Account"}
+                      {loading ? t.creating : t.createBtn}
                     </Button>
                   </form>
                 </TabsContent>

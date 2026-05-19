@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppShell } from "@/components/AppShell";
 import Auth from "./pages/Auth";
@@ -38,7 +39,7 @@ const App = () => {
       <SplashScreen />
       <TooltipProvider>
         {!loading && (
-          <>
+          <LanguageProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -62,7 +63,7 @@ const App = () => {
                 </Routes>
               </AuthProvider>
             </BrowserRouter>
-          </>
+          </LanguageProvider>
         )}
       </TooltipProvider>
     </QueryClientProvider>

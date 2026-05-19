@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck,
   BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
@@ -35,24 +36,39 @@ const nav = [
 ];
 
 export const AppShell = () => {
+  const { lang, setLang, t } = useLanguage();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin();
-    const [shopName, setShopName] = useState("My Shop");
-    const [newName, setNewName] = useState("");
-    const [panNo, setPanNo] = useState("");
-    const [fullName, setFullName] = useState("");
-    const [password, setPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [busy, setBusy] = useState(false);
-    const [settingsOpen, setSettingsOpen] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
+  const [shopName, setShopName] = useState("My Shop");
+  const [newName, setNewName] = useState("");
+  const [panNo, setPanNo] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    useEffect(() => {
-        if (!user) {
+  const navTranslationKeys: Record<string, string> = {
+    "Dashboard": t.dashboard,
+    "POS Billing": t.posBilling,
+    "Products": t.products,
+    "Customers": t.customers,
+    "Suppliers": t.suppliers,
+    "Purchases": t.purchases,
+    "Cashbook": t.cashbook,
+    "Reports": t.reports,
+    "Balance Sheet": t.balanceSheet,
+    "Admin": t.admin,
+  };
+
+  const navItems = isAdmin ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
+
+  useEffect(() => {
+      if (!user) {
             setShopName("My Shop");
             return;
         }
@@ -162,31 +178,56 @@ export const AppShell = () => {
                     </div>
                 </div>
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                    {navItems.map((n) => (
-                        <NavLink
-                            key={n.to}
-                            to={n.to}
-                            end={n.end}
-                            className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-smooth ${
-                                    isActive
-                                        ? "bg-sidebar-accent text-sidebar-primary"
-                                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                                }`
-                            }
-                        >
-                            <n.icon className="h-4 w-4" /> {n.label}
-                        </NavLink>
-                    ))}
+                    {navItems.map((n) => {
+                        const translatedLabel = navTranslationKeys[n.label] || n.label;
+                        return (
+                            <NavLink
+                                key={n.to}
+                                to={n.to}
+                                end={n.end}
+                                className={({ isActive }) =>
+                                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-smooth ${
+                                        isActive
+                                            ? "bg-sidebar-accent text-sidebar-primary"
+                                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                                    }`
+                                }
+                            >
+                                <n.icon className="h-4 w-4" /> {translatedLabel}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
+                
+                {/* Desktop Language Switcher Footer Option */}
+                <div className="px-6 py-3 border-t border-sidebar-border/60">
+                    <div className="flex items-center justify-between text-xs text-sidebar-foreground/60">
+                        <span>{t.language}</span>
+                        <div className="flex items-center gap-1 bg-sidebar-accent/50 p-0.5 rounded-lg border border-sidebar-border/40">
+                            <button 
+                                onClick={() => setLang("ENG")} 
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all duration-200 ${lang === "ENG" ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft" : "text-sidebar-foreground/60 hover:text-sidebar-foreground"}`}
+                            >
+                                ENG
+                            </button>
+                            <button 
+                                onClick={() => setLang("NEP")} 
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all duration-200 ${lang === "NEP" ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft" : "text-sidebar-foreground/60 hover:text-sidebar-foreground"}`}
+                            >
+                                नेपाली
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="p-3 border-t border-sidebar-border mt-auto">
-                    <div className="px-3 py-2 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">Version 1.2.0</div>
+                    <div className="px-3 py-1 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.0</div>
                     <Button
                         variant="ghost"
                         className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                         onClick={async () => { await signOut(); navigate("/auth"); }}
                     >
-                        <LogOut className="h-4 w-4 mr-2" /> Sign out
+                        <LogOut className="h-4 w-4 mr-2" /> {t.signOut}
                     </Button>
                 </div>
             </aside>
@@ -215,23 +256,48 @@ export const AppShell = () => {
                                 </div>
                             </div>
                             <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-                                {navItems.map((n) => (
-                                    <NavLink key={n.to} to={n.to} end={n.end} onClick={() => setMobileMenuOpen(false)}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all ${
-                                                isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
-                                            }`
-                                        }
-                                    >
-                                        <n.icon className="h-5 w-5" /> {n.label}
-                                    </NavLink>
-                                ))}
+                                {navItems.map((n) => {
+                                    const translatedLabel = navTranslationKeys[n.label] || n.label;
+                                    return (
+                                        <NavLink key={n.to} to={n.to} end={n.end} onClick={() => setMobileMenuOpen(false)}
+                                            className={({ isActive }) =>
+                                                `flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all ${
+                                                    isActive ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
+                                                }`
+                                            }
+                                        >
+                                            <n.icon className="h-5 w-5" /> {translatedLabel}
+                                        </NavLink>
+                                    );
+                                })}
                             </nav>
+
+                            {/* Mobile Language Switcher Row */}
+                            <div className="px-6 py-4 border-t border-sidebar-border/60">
+                                <div className="flex items-center justify-between text-xs text-sidebar-foreground/60">
+                                    <span>{t.language}</span>
+                                    <div className="flex items-center gap-1 bg-sidebar-accent/50 p-0.5 rounded-lg border border-sidebar-border/40">
+                                        <button 
+                                            onClick={() => setLang("ENG")} 
+                                            className={`px-3 py-1 rounded text-[10px] font-bold transition-all duration-200 ${lang === "ENG" ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft" : "text-sidebar-foreground/60 hover:text-sidebar-foreground"}`}
+                                        >
+                                            ENG
+                                        </button>
+                                        <button 
+                                            onClick={() => setLang("NEP")} 
+                                            className={`px-3 py-1 rounded text-[10px] font-bold transition-all duration-200 ${lang === "NEP" ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-soft" : "text-sidebar-foreground/60 hover:text-sidebar-foreground"}`}
+                                        >
+                                            नेपाली
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="p-6 border-t border-sidebar-border mt-auto">
-                                <div className="px-1 mb-4 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">Version 1.2.0</div>
+                                <div className="px-1 mb-4 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.0</div>
                                 <Button className="w-full justify-start gap-3 h-12 rounded-xl shadow-lg bg-[#FACC15] hover:bg-[#EAB308] text-black border-none font-bold"
                                     onClick={async () => { await signOut(); navigate("/auth"); }}>
-                                    <LogOut className="h-5 w-5" /> Sign out
+                                    <LogOut className="h-5 w-5" /> {t.signOut}
                                 </Button>
                             </div>
                         </SheetContent>
@@ -259,21 +325,25 @@ export const AppShell = () => {
 
             {/* Mobile bottom nav (Quick Access) */}
             <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar/95 backdrop-blur-md text-sidebar-foreground border-t border-sidebar-border grid grid-cols-5 h-16">
-              {[nav[0], nav[1], nav[2], nav[6], nav[7]].map((n) => (
-                <NavLink key={n.to} to={n.to} end={n.end}
-                  className={({ isActive }) =>
-                    `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}>
-                  <n.icon className="h-5 w-5" />
-                  <span className="text-[9px] font-medium">{n.label}</span>
-                </NavLink>
-              ))}
+              {[nav[0], nav[1], nav[2], nav[6], nav[7]].map((n) => {
+                const translatedLabel = navTranslationKeys[n.label] || n.label;
+                return (
+                    <NavLink key={n.to} to={n.to} end={n.end}
+                      className={({ isActive }) =>
+                        `flex flex-col items-center justify-center gap-1 transition-all ${isActive ? "text-sidebar-primary bg-sidebar-accent/30" : "text-sidebar-foreground/40"}`}
+                    >
+                      <n.icon className="h-5 w-5" />
+                      <span className="text-[9px] font-medium">{translatedLabel}</span>
+                    </NavLink>
+                );
+              })}
             </nav>
 
             <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
                 <DialogContent className="max-h-[90vh] flex flex-col p-6" onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}>
                     <DialogHeader className="shrink-0">
-                        <DialogTitle>Account Settings</DialogTitle>
-                        <DialogDescription>Update your profile details, view your login email, or change your password.</DialogDescription>
+                        <DialogTitle>{t.fullShopName}</DialogTitle>
+                        <DialogDescription>{t.confirmPasswordToSave}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-2 overflow-y-auto flex-1 px-1">
                         <div className="space-y-2">
@@ -281,22 +351,22 @@ export const AppShell = () => {
                             <Input value={user?.email || ""} readOnly className="bg-muted text-muted-foreground font-medium select-all" />
                         </div>
                         <div className="space-y-2">
-                            <Label>User Name (Full Name)</Label>
+                            <Label>{t.yourName}</Label>
                             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name..." />
                         </div>
                         <div className="space-y-2">
-                            <Label>Shop Name</Label>
+                            <Label>{t.shopName}</Label>
                             <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Enter shop name..." />
                         </div>
                         <div className="space-y-2">
-                            <Label>PAN Number</Label>
+                            <Label>{t.panNo}</Label>
                             <Input value={panNo} onChange={(e) => setPanNo(e.target.value)} placeholder="Enter PAN number..." />
                         </div>
 
                         <div className="pt-2 border-t space-y-4">
-                            <div className="font-medium text-sm text-muted-foreground">Verify Identity</div>
+                            <div className="font-medium text-sm text-muted-foreground">{t.currentPassword}</div>
                             <div className="space-y-2">
-                                <Label>Current Password</Label>
+                                <Label>{t.currentPassword}</Label>
                                 <div className="relative">
                                     <Input 
                                         type={showPassword ? "text" : "password"} 
@@ -318,9 +388,9 @@ export const AppShell = () => {
                         </div>
 
                         <div className="pt-2 border-t space-y-4">
-                            <div className="font-medium text-sm text-muted-foreground">Change Password (Optional)</div>
+                            <div className="font-medium text-sm text-muted-foreground">{t.newPassword} ({t.panOptional})</div>
                             <div className="space-y-2">
-                                <Label>New Password</Label>
+                                <Label>{t.newPassword}</Label>
                                 <div className="relative">
                                     <Input 
                                         type={showNewPassword ? "text" : "password"} 
@@ -341,9 +411,9 @@ export const AppShell = () => {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setSettingsOpen(false)}>Cancel</Button>
+                        <Button variant="outline" onClick={() => setSettingsOpen(false)}>{t.cancel}</Button>
                         <Button onClick={handleSave} disabled={busy} className="bg-primary text-primary-foreground">
-                            {busy ? "Saving..." : "Save Changes"}
+                            {busy ? t.saving : t.saveChanges}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
