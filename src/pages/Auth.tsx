@@ -185,7 +185,7 @@ const Auth = () => {
             <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow transition-all duration-500 hover:scale-105">
               <Sprout className="h-6 w-6 text-primary-foreground animate-pulse" />
             </div>
-            <span className="font-display text-4xl font-bold tracking-tight text-foreground bg-gradient-primary bg-clip-text text-transparent">Sabzi</span>
+            <span className="font-display text-4xl font-bold tracking-tight text-primary">Sabzi</span>
           </div>
 
           <div className="space-y-4">
