@@ -89,6 +89,7 @@
     --border: 142 22% 20%;
     --input: 142 22% 20%;
     --ring: 110 60% 55%;
+    --gradient-hero: radial-gradient(ellipse at top left, hsl(142 35% 10%) 0%, hsl(142 30% 6%) 50%, hsl(142 40% 4%) 100%);
   }
 }
 

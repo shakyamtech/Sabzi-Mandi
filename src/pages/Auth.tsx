@@ -42,7 +42,7 @@ const Auth = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+          className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300 dark:bg-emerald-950/30 dark:border-border/30 dark:focus:bg-emerald-950/50 dark:text-foreground"
           autoComplete="current-password"
           placeholder={t.pwPlaceholder}
         />
@@ -170,6 +170,10 @@ const Auth = () => {
           -webkit-backdrop-filter: blur(20px);
           border: 1px solid rgba(255, 255, 255, 0.4);
         }
+        .dark .glass-panel {
+          background: rgba(10, 20, 12, 0.7) !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
       `}</style>
 
       {/* Decorative Glow Orbs in the background */}
@@ -240,16 +244,16 @@ const Auth = () => {
             </div>
 
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid grid-cols-2 w-full mb-6 bg-emerald-100/50 p-1 rounded-xl">
+              <TabsList className="grid grid-cols-2 w-full mb-6 bg-emerald-100/50 p-1 rounded-xl dark:bg-emerald-950/50">
                 <TabsTrigger 
                   value="signin" 
-                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft dark:data-[state=active]:bg-emerald-800 dark:data-[state=active]:text-primary-foreground"
                 >
                   {t.signin}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup" 
-                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft dark:data-[state=active]:bg-emerald-800 dark:data-[state=active]:text-primary-foreground"
                 >
                   {t.createAccount}
                 </TabsTrigger>
@@ -264,7 +268,7 @@ const Auth = () => {
                       value={email} 
                       onChange={(e) => setEmail(e.target.value)} 
                       required 
-                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300 dark:bg-emerald-950/30 dark:border-border/30 dark:focus:bg-emerald-950/50 dark:text-foreground"
                       placeholder={t.emailPlaceholder}
                     />
                   </div>
@@ -291,7 +295,7 @@ const Auth = () => {
                       onChange={(e) => setFullName(e.target.value)} 
                       placeholder={t.namePlaceholder} 
                       autoComplete="off"
-                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300 dark:bg-emerald-950/30 dark:border-border/30 dark:focus:bg-emerald-950/50 dark:text-foreground"
                     />
                   </div>
                   <div>
@@ -301,7 +305,7 @@ const Auth = () => {
                       onChange={(e) => setShopName(e.target.value)} 
                       placeholder={t.shopPlaceholder} 
                       autoComplete="off"
-                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300 dark:bg-emerald-950/30 dark:border-border/30 dark:focus:bg-emerald-950/50 dark:text-foreground"
                     />
                   </div>
                   <div>
@@ -311,7 +315,7 @@ const Auth = () => {
                       onChange={(e) => setPanNo(e.target.value)} 
                       placeholder={t.panPlaceholder} 
                       autoComplete="off"
-                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300 dark:bg-emerald-950/30 dark:border-border/30 dark:focus:bg-emerald-950/50 dark:text-foreground"
                     />
                   </div>
                   <div>
@@ -323,7 +327,7 @@ const Auth = () => {
                       required 
                       autoComplete="off"
                       placeholder={t.emailPlaceholder}
-                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                      className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300 dark:bg-emerald-950/30 dark:border-border/30 dark:focus:bg-emerald-950/50 dark:text-foreground"
                     />
                   </div>
                   <div>
@@ -335,7 +339,7 @@ const Auth = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         minLength={6}
-                        className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
+                        className="pr-10 bg-white/70 border-border/60 focus:bg-white transition-all duration-300 dark:bg-emerald-950/30 dark:border-border/30 dark:focus:bg-emerald-950/50 dark:text-foreground"
                         autoComplete="new-password"
                         placeholder={t.pwPlaceholder}
                       />
