@@ -294,14 +294,7 @@ export const AppShell = () => {
                 </div>
 
                 <div className="p-3 border-t border-sidebar-border mt-auto">
-                    <div className="px-3 py-1 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.0</div>
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                        onClick={async () => { await signOut(); navigate("/auth"); }}
-                    >
-                        <LogOut className="h-4 w-4 mr-2" /> {t.signOut}
-                    </Button>
+                    <div className="px-3 py-1 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.1</div>
                 </div>
             </aside>
 
