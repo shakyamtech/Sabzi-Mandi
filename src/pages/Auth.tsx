@@ -299,7 +299,7 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)} 
                         required 
                         className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
-                        placeholder="yourname@domain.com"
+                        placeholder={t.emailPlaceholder}
                       />
                     </div>
                     <div>
@@ -356,7 +356,7 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)} 
                         required 
                         autoComplete="off"
-                        placeholder="yourname@domain.com"
+                        placeholder={t.emailPlaceholder}
                         className="bg-white/70 border-border/60 focus:bg-white transition-all duration-300"
                       />
                     </div>
