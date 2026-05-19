@@ -8,19 +8,12 @@ import { fmt } from "@/lib/format";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { format, startOfDay, subDays } from "date-fns";
-import { Trash2, Eye } from "lucide-react";
-import { toast } from "sonner";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Reports = () => {
   const { user } = useAuth();
   const [range, setRange] = useState<"7" | "30" | "90">("30");
   const [sales, setSales] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
-  const [recentSales, setRecentSales] = useState<any[]>([]);
-  const [selectedSale, setSelectedSale] = useState<any>(null);
-  const [saleItems, setSaleItems] = useState<any[]>([]);
 
   const loadData = () => {
     if (!user) return;
@@ -28,22 +21,10 @@ const Reports = () => {
     Promise.all([
       supabase.from("sales").select("created_at,total,cost_total").gte("created_at", since),
       supabase.from("cash_transactions").select("created_at,amount").eq("direction", "out").in("category", ["expense", "salary", "rent", "electricity", "maintenance"]).gte("created_at", since),
-      supabase.from("sales").select("id,total,payment_mode,created_at,customers(name)").order("created_at", { ascending: false }).limit(30),
-    ]).then(([s, e, r]) => { setSales(s.data ?? []); setExpenses(e.data ?? []); setRecentSales(r.data ?? []); });
+    ]).then(([s, e]) => { setSales(s.data ?? []); setExpenses(e.data ?? []); });
   };
+
   useEffect(loadData, [user, range]);
-
-  const viewSale = async (s: any) => {
-    setSelectedSale(s);
-    const { data } = await supabase.from("sale_items").select("qty, sell_price, line_total, products(name, unit)").eq("sale_id", s.id);
-    setSaleItems(data ?? []);
-  };
-
-  const deleteSale = async (id: string) => {
-    const { error } = await supabase.rpc("delete_sale", { p_sale_id: id });
-    if (error) return toast.error(error.message);
-    toast.success("Sale deleted"); loadData();
-  };
 
   const totals = useMemo(() => {
     const revenue = sales.reduce((s, r) => s + Number(r.total), 0);
@@ -104,44 +85,6 @@ const Reports = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-          </Card>
-
-          <Card className="mt-4 shadow-card border-0">
-            <div className="p-4 border-b font-display text-lg">Recent Sales</div>
-            <div className="divide-y">
-              {recentSales.map((s: any) => (
-                <div key={s.id} className="p-3 flex items-center justify-between gap-2 hover:bg-muted/50 cursor-pointer transition-smooth group" onClick={() => viewSale(s)}>
-                  <div className="min-w-0">
-                    <div className="font-medium truncate group-hover:text-primary transition-colors">{s.customers?.name ?? "Walk-in"}</div>
-                    <div className="text-xs text-muted-foreground">{format(new Date(s.created_at), "dd MMM yyyy, hh:mm a")} · {s.payment_mode}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="font-medium">{fmt(s.total)}</div>
-                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                      <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={() => viewSale(s)}><Eye className="h-4 w-4" /></Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete this sale?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Stock will be restored, the cash entry removed, and any customer credit reversed.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteSale(s.id)}>Delete</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {recentSales.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No sales yet</div>}
             </div>
           </Card>
         </TabsContent>
@@ -208,32 +151,6 @@ const Reports = () => {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <Dialog open={!!selectedSale} onOpenChange={(o) => !o && setSelectedSale(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sale Details</DialogTitle>
-          </DialogHeader>
-          <div className="divide-y">
-            {saleItems.map((item, idx) => (
-              <div key={idx} className="py-2 flex justify-between items-center">
-                <div>
-                  <div className="font-medium">{item.products?.name}</div>
-                  <div className="text-xs text-muted-foreground">{item.qty} {item.products?.unit} × {fmt(item.sell_price)}</div>
-                </div>
-                <div className="font-medium">{fmt(item.line_total)}</div>
-              </div>
-            ))}
-            <div className="pt-3 mt-1 flex justify-between items-center font-display text-lg">
-              <span>Total</span>
-              <span className="text-primary">{fmt(selectedSale?.total)}</span>
-            </div>
-          </div>
-          <div className="text-[10px] text-muted-foreground text-center mt-2">
-            ID: {selectedSale?.id} · Mode: {selectedSale?.payment_mode}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
