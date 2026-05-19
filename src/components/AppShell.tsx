@@ -4,13 +4,27 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck,
   BookOpen, Wallet, BarChart3, FileSpreadsheet, LogOut, Sprout, Shield, Settings,
-  Eye, EyeOff, Menu, RotateCcw, Trash2
+  Eye, EyeOff, Menu, RotateCcw, Trash2, User, Store, Palette, Sun, Moon, Laptop
 } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useTheme } from "next-themes";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +58,7 @@ export const AppShell = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin();
+  const { setTheme } = useTheme();
   const [shopName, setShopName] = useState("My Shop");
   const [newName, setNewName] = useState("");
   const [panNo, setPanNo] = useState("");
@@ -339,17 +354,63 @@ export const AppShell = () => {
                     <div className="text-sm font-bold bg-sidebar-accent px-3 py-1.5 rounded-lg text-sidebar-foreground truncate max-w-[220px] uppercase tracking-tight">{shopName}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-10 w-10 text-sidebar-foreground/40"
-                        onClick={() => {
-                            setNewName(shopName);
-                            setSettingsOpen(true);
-                        }}
-                    >
-                        <Settings className="h-5 w-5" />
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="relative h-9 w-9 rounded-full ring-2 ring-primary/20 hover:ring-primary/40 focus:ring-primary/50 transition-all select-none p-0 flex items-center justify-center">
+                                <Avatar className="h-9 w-9">
+                                    <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm uppercase">
+                                        {fullName ? fullName.slice(0, 2) : (user?.email ? user.email.slice(0, 2) : "US")}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="end" sideOffset={8}>
+                            <DropdownMenuLabel className="font-normal">
+                                <div className="flex flex-col space-y-1">
+                                    <p className="text-sm font-bold leading-none text-foreground">{fullName || "User Profile"}</p>
+                                    <p className="text-xs leading-none text-muted-foreground truncate">{user?.email}</p>
+                                </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => {
+                                setNewName(shopName);
+                                setSettingsOpen(true);
+                            }} className="cursor-pointer font-medium gap-2">
+                                <User className="h-4 w-4 text-primary" /> {lang === "NEP" ? "प्रोफाइल सेटिङ" : "Profile Settings"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                                setNewName(shopName);
+                                setSettingsOpen(true);
+                            }} className="cursor-pointer font-medium gap-2">
+                                <Store className="h-4 w-4 text-primary" /> {lang === "NEP" ? "पसल सेटिङ" : "Shop Settings"}
+                            </DropdownMenuItem>
+                            
+                            {/* Theme options Submenu */}
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="font-medium gap-2">
+                                    <Palette className="h-4 w-4 text-primary" /> {lang === "NEP" ? "रंग / थिम" : "Theme Options"}
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer gap-2">
+                                            <Sun className="h-4 w-4 text-amber-500" /> {lang === "NEP" ? "उज्यालो (Light)" : "Light Mode"}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer gap-2">
+                                            <Moon className="h-4 w-4 text-indigo-500" /> {lang === "NEP" ? "अध्यारो (Dark)" : "Dark Mode"}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer gap-2">
+                                            <Laptop className="h-4 w-4 text-muted-foreground" /> {lang === "NEP" ? "सिस्टम (System)" : "System Default"}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                            </DropdownMenuSub>
+                            
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={async () => { await signOut(); navigate("/auth"); }} className="cursor-pointer font-bold text-destructive hover:bg-destructive/10 hover:text-destructive gap-2">
+                                <LogOut className="h-4 w-4" /> {t.signOut}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
