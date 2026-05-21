@@ -711,9 +711,9 @@ export const AppShell = () => {
                             <div className="text-xs text-muted-foreground font-medium">
                                 {lang === "NEP" ? "द्वारा विकसित:" : "Developed By:"}
                             </div>
-                            <div className="text-base font-extrabold text-foreground tracking-tight">
+                            <a href="https://shakya-portal.pages.dev/" target="_blank" rel="noopener noreferrer" className="text-base font-extrabold text-foreground tracking-tight hover:text-primary hover:underline transition-colors block">
                                 Mahesh Shakya
-                            </div>
+                            </a>
                             <div className="text-xs text-primary font-medium">
                                 shakya.mahes@gmail.com
                             </div>
