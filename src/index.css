@@ -76,8 +76,8 @@
     --card-foreground: 80 20% 92%;
     --popover: 142 28% 11%;
     --popover-foreground: 80 20% 92%;
-    --primary: 110 60% 55%;
-    --primary-foreground: 142 50% 10%;
+    --primary: 142 55% 45%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 142 25% 16%;
     --secondary-foreground: 80 20% 92%;
     --muted: 142 22% 15%;
@@ -88,7 +88,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 142 22% 20%;
     --input: 142 22% 20%;
-    --ring: 110 60% 55%;
+    --ring: 142 55% 45%;
     --gradient-hero: radial-gradient(ellipse at top left, hsl(142 35% 10%) 0%, hsl(142 30% 6%) 50%, hsl(142 40% 4%) 100%);
   }
 }

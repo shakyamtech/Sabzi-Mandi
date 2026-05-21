@@ -47,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 i--; // Adjust index since we removed an item
               }
             }
+            localStorage.removeItem("sabzi_shop_name");
             setSession(null);
           }
         },

@@ -98,8 +98,10 @@ export const AppShell = () => {
             const { data, error } = await supabase.from("profiles").select("shop_name, pan_no, full_name").eq("id", user.id).maybeSingle();
             
             if (data) {
-                setShopName(data.shop_name || user.user_metadata?.shop_name || "My Shop");
-                setNewName(data.shop_name || user.user_metadata?.shop_name || "My Shop");
+                const sName = data.shop_name || user.user_metadata?.shop_name || "My Shop";
+                setShopName(sName);
+                setNewName(sName);
+                localStorage.setItem("sabzi_shop_name", sName);
                 setPanNo(data.pan_no || user.user_metadata?.pan_no || "");
                 setFullName(data.full_name || user.user_metadata?.full_name || "");
             } else {
@@ -108,6 +110,7 @@ export const AppShell = () => {
                 const metaName = user.user_metadata?.full_name || "";
                 setShopName(metaShop);
                 setNewName(metaShop);
+                localStorage.setItem("sabzi_shop_name", metaShop);
                 setPanNo(metaPan);
                 setFullName(metaName);
                 
@@ -192,6 +195,7 @@ export const AppShell = () => {
             
             if (profileError) throw profileError;
             setShopName(newName);
+            localStorage.setItem("sabzi_shop_name", newName);
 
             const updatePayload: any = { data: { shop_name: newName, pan_no: panNo } };
             const { error: authMetaErr } = await supabase.auth.updateUser(updatePayload);

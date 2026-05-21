@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Fraunces', 'Georgia', 'serif'],
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Fraunces', 'Karma', 'Georgia', 'serif'],
+        sans: ['Inter', 'Mukta', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         success: "hsl(var(--success))",

@@ -4,10 +4,16 @@ import { Sprout } from "lucide-react";
 export const SplashScreen = () => {
   const [stage, setStage] = useState<"loading" | "fading" | "hidden">("loading");
 
+  const [shopName, setShopName] = useState("Sabzi");
+
   useEffect(() => {
     // Prevent scrolling while splash screen is visible
     document.body.style.overflow = 'hidden';
     
+    // Load shop name from localStorage if available
+    const savedName = localStorage.getItem("sabzi_shop_name");
+    if (savedName) setShopName(savedName);
+
     // Start fading out at 2.2 seconds
     const fadeTimer = setTimeout(() => {
       setStage("fading");
@@ -51,12 +57,11 @@ export const SplashScreen = () => {
           <div className="absolute -bottom-1 -left-1 h-3 w-3 bg-green-300 rounded-full blur-[1px] animate-bounce" style={{ animationDelay: '0.8s' }} />
         </div>
 
-        {/* Text Animation */}
-        <div className="text-center space-y-3">
-          <h1 className="text-5xl font-serif font-bold tracking-tight text-foreground animate-text-reveal">
-            Sabzi
+        <div className="text-center space-y-2 px-4">
+          <h1 className={`font-serif font-bold tracking-tight text-foreground animate-text-reveal break-words leading-tight max-w-md [text-wrap:balance] ${shopName.length > 12 ? "text-3xl md:text-4xl" : "text-4xl md:text-5xl"}`}>
+            {shopName}
           </h1>
-          <p className="text-sm text-muted-foreground font-medium tracking-wide uppercase animate-text-reveal" style={{ animationDelay: '0.3s' }}>
+          <p className="text-xs md:text-sm text-muted-foreground font-medium tracking-wide uppercase animate-text-reveal" style={{ animationDelay: '0.3s' }}>
             Freshness Delivered
           </p>
         </div>
