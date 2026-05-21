@@ -221,11 +221,16 @@ const Products = () => {
           const isEmpty = displayStock <= 0;
 
           return (
-            <Card key={p.id} className={`p-4 shadow-card border-2 transition-smooth ${isEmpty ? "bg-red-50/50 border-red-200" : isLow ? "bg-orange-50/50 border-orange-200" : "border-transparent"
+            <Card key={p.id} className={`p-4 shadow-card border-2 transition-smooth ${
+              isEmpty 
+                ? "bg-red-50/50 dark:bg-red-950/30 border-red-200 dark:border-red-900/30" 
+                : isLow 
+                  ? "bg-orange-50/50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900/30" 
+                  : "bg-card border-transparent dark:border-white/5"
               }`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className={`font-display text-lg ${isEmpty ? "text-red-900" : isLow ? "text-orange-900" : ""}`}>{p.name}</div>
+                  <div className={`font-display text-lg ${isEmpty ? "text-red-900 dark:text-red-300" : isLow ? "text-orange-900 dark:text-orange-300" : ""}`}>{p.name}</div>
                   <div className="text-xs text-muted-foreground">per {p.unit}</div>
                 </div>
                 <div className="flex gap-1">
@@ -246,13 +251,14 @@ const Products = () => {
               </div>
               <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
                 <div><div className="text-muted-foreground text-xs">Cost</div><div>{fmt(p.cost_price)}</div></div>
-                <div><div className="text-muted-foreground text-xs">Sell</div><div className={`font-medium ${isEmpty ? "text-red-700" : isLow ? "text-orange-700" : "text-primary"}`}>{fmt(p.sell_price)}</div></div>
+                <div><div className="text-muted-foreground text-xs">Sell</div><div className={`font-medium ${isEmpty ? "text-red-700 dark:text-red-400" : isLow ? "text-orange-700 dark:text-orange-400" : "text-primary"}`}>{fmt(p.sell_price)}</div></div>
               </div>
-              <div className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 border ${isEmpty
-                ? "bg-red-100 border-red-200 text-red-900 font-bold"
-                : isLow
-                  ? "bg-orange-100 border-orange-200 text-orange-900 font-bold"
-                  : "bg-secondary border-transparent"
+              <div className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 border ${
+                isEmpty
+                  ? "bg-red-100 dark:bg-red-950/50 border-red-200 dark:border-red-900/30 text-red-900 dark:text-red-300 font-bold"
+                  : isLow
+                    ? "bg-orange-100 dark:bg-orange-950/50 border-orange-200 dark:border-orange-900/30 text-orange-900 dark:text-orange-300 font-bold"
+                    : "bg-secondary border-transparent"
                 }`}>
                 <span className="text-xs">{ingredients.length > 0 ? "Possible Stock" : "Stock"}</span>
                 <span className="font-medium flex items-center gap-1">
