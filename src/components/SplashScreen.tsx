@@ -2,19 +2,34 @@ import { useEffect, useState } from "react";
 import { Sprout } from "lucide-react";
 
 export const SplashScreen = () => {
-  const [isVisible, setIsVisible] = useState(true);
+  const [stage, setStage] = useState<"loading" | "fading" | "hidden">("loading");
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 2800);
-    return () => clearTimeout(timer);
+    // Prevent scrolling while splash screen is visible
+    document.body.style.overflow = 'hidden';
+    
+    // Start fading out at 2.2 seconds
+    const fadeTimer = setTimeout(() => {
+      setStage("fading");
+    }, 2200);
+
+    // Completely unmount at 3 seconds
+    const hideTimer = setTimeout(() => {
+      setStage("hidden");
+      document.body.style.overflow = 'unset';
+    }, 3000);
+    
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+      document.body.style.overflow = 'unset';
+    };
   }, []);
 
-  if (!isVisible) return null;
+  if (stage === "hidden") return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white overflow-hidden transition-opacity duration-1000 ease-in-out">
+    <div className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background overflow-hidden transition-all duration-700 ease-in-out ${stage === "fading" ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
       {/* Background Decorative Circles */}
       <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-green-500/5 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-orange-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -23,8 +38,8 @@ export const SplashScreen = () => {
         {/* Logo Container with Enhanced Animation */}
         <div className="relative mb-10 group">
           {/* Dynamic Layered Glows */}
-          <div className="absolute inset-0 bg-green-400/30 rounded-[2rem] blur-2xl scale-150 animate-logo-glow" />
-          <div className="absolute inset-0 bg-emerald-500/20 rounded-[2rem] blur-xl scale-110 animate-logo-glow-alt" />
+          <div className="absolute inset-0 bg-green-400/30 dark:bg-green-500/10 rounded-[2rem] blur-2xl scale-150 animate-logo-glow" />
+          <div className="absolute inset-0 bg-emerald-500/20 dark:bg-emerald-500/10 rounded-[2rem] blur-xl scale-110 animate-logo-glow-alt" />
           
           {/* Main Logo Card */}
           <div className="relative h-28 w-28 bg-gradient-to-br from-green-500 to-emerald-600 rounded-[2.2rem] flex items-center justify-center shadow-[0_20px_50px_rgba(34,197,94,0.3)] border border-white/20 animate-logo-entrance">
@@ -38,16 +53,16 @@ export const SplashScreen = () => {
 
         {/* Text Animation */}
         <div className="text-center space-y-3">
-          <h1 className="text-5xl font-serif font-bold tracking-tight text-[#1a1a1a] animate-text-reveal">
+          <h1 className="text-5xl font-serif font-bold tracking-tight text-foreground animate-text-reveal">
             Sabzi
           </h1>
-          <p className="text-sm text-gray-400 font-medium tracking-wide uppercase animate-text-reveal" style={{ animationDelay: '0.3s' }}>
+          <p className="text-sm text-muted-foreground font-medium tracking-wide uppercase animate-text-reveal" style={{ animationDelay: '0.3s' }}>
             Freshness Delivered
           </p>
         </div>
 
         {/* Loading Indicator */}
-        <div className="mt-16 w-56 h-1.5 bg-gray-50 rounded-full overflow-hidden border border-gray-100 shadow-inner">
+        <div className="mt-16 w-56 h-1.5 bg-secondary rounded-full overflow-hidden border border-border shadow-inner">
           <div className="h-full bg-gradient-to-r from-green-500 via-emerald-400 to-green-600 w-full animate-loading-progress" />
         </div>
       </div>

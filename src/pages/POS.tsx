@@ -231,19 +231,19 @@ const POS = () => {
                   onClick={() => addToCart(p)}
                   disabled={isOut}
                   className={`text-left p-3 rounded-xl shadow-card hover:shadow-elegant transition-smooth border ${isOut
-                      ? "bg-red-100 border-red-300 opacity-80 cursor-not-allowed"
+                      ? "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900/30 opacity-80 cursor-not-allowed"
                       : isLow
-                        ? "bg-orange-50 border-orange-200 active:scale-95"
-                        : "bg-card border-transparent active:scale-95"
+                        ? "bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-900/30 active:scale-95"
+                        : "bg-card border-transparent dark:border-white/5 active:scale-95"
                     }`}>
-                  <div className={`font-display text-base truncate ${isOut ? "text-red-900" : isLow ? "text-orange-900" : ""
+                  <div className={`font-display text-base truncate ${isOut ? "text-red-900 dark:text-red-300" : isLow ? "text-orange-900 dark:text-orange-300" : ""
                     }`}>{p.name}</div>
-                  <div className={`text-xs ${isOut ? "text-red-600 font-bold" : isLow ? "text-orange-600 font-medium" : "text-muted-foreground"
+                  <div className={`text-xs ${isOut ? "text-red-600 dark:text-red-400 font-bold" : isLow ? "text-orange-600 dark:text-orange-400 font-medium" : "text-muted-foreground"
                     }`}>
                     {isOut ? "OUT OF STOCK" : `${fmtQty(totalAvailable)} ${p.unit} total`}
                     {recipe.length > 0 && p.stock_qty > 0 && <span className="block opacity-60 text-[10px]">({fmtQty(p.stock_qty)} ready)</span>}
                   </div>
-                  <div className={`mt-2 font-semibold ${isOut ? "text-red-700" : isLow ? "text-orange-700" : "text-primary"
+                  <div className={`mt-2 font-semibold ${isOut ? "text-red-700 dark:text-red-400" : isLow ? "text-orange-700 dark:text-orange-400" : "text-primary dark:text-primary-glow"
                     }`}>{fmt(p.sell_price)}</div>
                 </button>
               );

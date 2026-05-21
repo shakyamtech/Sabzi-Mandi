@@ -24,6 +24,15 @@
     content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/81977ae1-be3e-48bd-b4f4-687a6f0ab59f">
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
+  <script>
+    try {
+      if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (_) {}
+  </script>
 </head>
 
 <body>

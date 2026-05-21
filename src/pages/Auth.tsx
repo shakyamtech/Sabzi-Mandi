@@ -244,16 +244,16 @@ const Auth = () => {
             </div>
 
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid grid-cols-2 w-full mb-6 bg-emerald-100/50 p-1 rounded-xl dark:bg-emerald-950/50">
+              <TabsList className="grid grid-cols-2 w-full h-auto mb-6 bg-emerald-100/50 p-1 rounded-xl dark:bg-emerald-950/50">
                 <TabsTrigger 
                   value="signin" 
-                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft dark:data-[state=active]:bg-emerald-800 dark:data-[state=active]:text-primary-foreground"
+                  className="rounded-lg py-2 font-medium text-sm text-muted-foreground hover:text-foreground dark:text-emerald-100/70 dark:hover:text-emerald-100 transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft dark:data-[state=active]:bg-emerald-800 dark:data-[state=active]:text-white"
                 >
                   {t.signin}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup" 
-                  className="rounded-lg py-2 font-medium text-sm transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft dark:data-[state=active]:bg-emerald-800 dark:data-[state=active]:text-primary-foreground"
+                  className="rounded-lg py-2 font-medium text-sm text-muted-foreground hover:text-foreground dark:text-emerald-100/70 dark:hover:text-emerald-100 transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-soft dark:data-[state=active]:bg-emerald-800 dark:data-[state=active]:text-white"
                 >
                   {t.createAccount}
                 </TabsTrigger>
