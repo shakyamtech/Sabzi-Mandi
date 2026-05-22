@@ -117,11 +117,7 @@ const Admin = () => {
 
 
 
-  const isOnline = (lastSignIn: string | null) => {
-    if (!lastSignIn) return false;
-    const diffMs = new Date().getTime() - new Date(lastSignIn).getTime();
-    return diffMs < 12 * 60 * 60 * 1000;
-  };
+
 
   const sortedUsers = [...users].sort((a, b) => {
     const timeA = a.last_sign_in_at ? new Date(a.last_sign_in_at).getTime() : 0;
@@ -176,7 +172,7 @@ const Admin = () => {
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
-                    {(onlineUsers.has(u.id) || isOnline(u.last_sign_in_at)) && (
+                    {onlineUsers.has(u.id) && (
                       <span className="relative flex h-2.5 w-2.5 shrink-0">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
