@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ type AdminUser = {
 
 const Admin = () => {
   const { isAdmin, loading } = useIsAdmin();
+  const { onlineUsers } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<AdminUser | null>(null);
@@ -113,11 +115,12 @@ const Admin = () => {
   };
 
 
+
+
   const isOnline = (lastSignIn: string | null) => {
     if (!lastSignIn) return false;
     const diffMs = new Date().getTime() - new Date(lastSignIn).getTime();
-    // 5 minutes active session window
-    return diffMs < 5 * 60 * 1000;
+    return diffMs < 12 * 60 * 60 * 1000;
   };
 
   const sortedUsers = [...users].sort((a, b) => {
@@ -173,7 +176,7 @@ const Admin = () => {
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
-                    {isOnline(u.last_sign_in_at) && (
+                    {(onlineUsers.has(u.id) || isOnline(u.last_sign_in_at)) && (
                       <span className="relative flex h-2.5 w-2.5 shrink-0">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
