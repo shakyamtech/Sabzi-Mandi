@@ -166,7 +166,17 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
 
   const remove = async (id: string) => {
     if (!confirm("Delete?")) return;
-    await supabase.from(table).delete().eq("id", id); load();
+    const { error } = await supabase.from(table).delete().eq("id", id); 
+    if (error) {
+      if (error.code === '23503') {
+        toast.error(`Cannot delete this ${type} because they have existing transactions.`);
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+    toast.success("Deleted successfully");
+    load();
   };
 
   const recordPayment = async () => {
