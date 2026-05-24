@@ -133,7 +133,7 @@ const Products = () => {
   const filtered = items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 md:pt-16 max-w-7xl mx-auto">
       <PageHeader
         title="Products & Stock"
         subtitle="Manage your vegetables and live stock"
