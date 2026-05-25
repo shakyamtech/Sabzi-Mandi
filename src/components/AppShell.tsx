@@ -212,8 +212,20 @@ export const AppShell = () => {
     };
 
     const handleSelfReset = async () => {
+        if (!password) return toast.error("Please enter your current password to confirm");
         if (!user?.id) return;
+        
         setBusy(true);
+        const { error: authError } = await supabase.auth.signInWithPassword({
+            email: user?.email || "",
+            password: password
+        });
+
+        if (authError) {
+            setBusy(false);
+            return toast.error("Invalid current password. Please try again.");
+        }
+
         try {
             // Delete all transaction tables for this user
             const tablesToWipe = ["sale_items", "sales", "purchase_items", "purchases", "cash_transactions", "ledger_entries", "expenses"];
@@ -229,14 +241,16 @@ export const AppShell = () => {
             const { error: suppErr } = await supabase.from("suppliers").update({ balance: 0 }).eq("user_id", user.id);
             if (suppErr) throw suppErr;
 
-            toast.success(lang === "NEP" ? "कारोबार र लेजर सफलतापूर्वक रिसेट गरियो!" : "All transactions and ledgers reset successfully!");
+            toast.success(lang === "NEP" ? "सबै कारोबार र लेजर सफलतापूर्वक रिसेट गरियो!" : "All transactions and ledgers reset successfully!");
             setShopOpen(false);
+            setPassword("");
             
-            // Reload window to refresh current page state
-            window.location.reload();
+            // Delay reload so toast is visible
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } catch (err: any) {
             toast.error(err.message || "Failed to reset data");
-        } finally {
             setBusy(false);
         }
     };
