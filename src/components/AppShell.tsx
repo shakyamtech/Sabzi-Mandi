@@ -230,7 +230,7 @@ export const AppShell = () => {
             if (suppErr) throw suppErr;
 
             toast.success(lang === "NEP" ? "कारोबार र लेजर सफलतापूर्वक रिसेट गरियो!" : "All transactions and ledgers reset successfully!");
-            setSettingsOpen(false);
+            setShopOpen(false);
             
             // Reload window to refresh current page state
             window.location.reload();
