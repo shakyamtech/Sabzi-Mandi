@@ -287,8 +287,9 @@ const Auth = () => {
               </TabsContent>
 
               <TabsContent value="signup" className="focus-visible:outline-none focus-visible:ring-0">
-                <form onSubmit={handleSignUp} className="space-y-4 max-h-[380px] overflow-y-auto px-1.5 py-1 text-left">
-                  <div>
+                <form onSubmit={handleSignUp} className="flex flex-col text-left">
+                  <div className="space-y-4 max-h-[300px] overflow-y-auto px-1.5 py-1 mb-3">
+                    <div>
                     <Label className="text-foreground/90 font-medium mb-1.5 block">{t.yourName}</Label>
                     <Input 
                       value={fullName} 
@@ -352,9 +353,12 @@ const Auth = () => {
                       </button>
                     </div>
                   </div>
-                  <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200 mt-2">
-                    {loading ? t.creating : t.createBtn}
-                  </Button>
+                  </div>
+                  <div className="px-1.5 shrink-0 pt-2 border-t border-border/30">
+                    <Button type="submit" disabled={loading} className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-soft h-11 font-medium rounded-xl text-sm transition-transform active:scale-95 duration-200">
+                      {loading ? t.creating : t.createBtn}
+                    </Button>
+                  </div>
                 </form>
               </TabsContent>
             </Tabs>
