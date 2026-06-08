@@ -10,9 +10,8 @@ export const SplashScreen = () => {
     // Prevent scrolling while splash screen is visible
     document.body.style.overflow = 'hidden';
     
-    // Load shop name from localStorage if available
-    const savedName = localStorage.getItem("sabzi_shop_name");
-    if (savedName) setShopName(savedName);
+    // Always use the default brand name for the splash screen
+    setShopName("Sabzi");
 
     // Start fading out at 2.2 seconds
     const fadeTimer = setTimeout(() => {
