@@ -313,7 +313,7 @@ export const AppShell = () => {
                 </div>
 
                 <div className="p-3 border-t border-sidebar-border mt-auto">
-                    <div className="px-3 py-1 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.1</div>
+                    <div className="px-3 py-1 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.2</div>
                 </div>
             </aside>
 
@@ -444,7 +444,7 @@ export const AppShell = () => {
                             </div>
 
                             <div className="p-6 border-t border-sidebar-border mt-auto">
-                                <div className="px-1 mb-4 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.1</div>
+                                <div className="px-1 mb-4 text-[10px] font-bold text-sidebar-foreground/30 uppercase tracking-widest">{t.version} 1.2.2</div>
                                 <Button className="w-full justify-start gap-3 h-12 rounded-xl shadow-lg bg-[#FACC15] hover:bg-[#EAB308] text-black border-none font-bold"
                                     onClick={async () => { await signOut(); navigate("/auth"); }}>
                                     <LogOut className="h-5 w-5" /> {t.signOut}
@@ -710,7 +710,7 @@ export const AppShell = () => {
                             Sabzi - Mandi POS
                         </DialogTitle>
                         <DialogDescription className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                            {lang === "NEP" ? "संस्करण १.२.१" : "Version 1.2.1"}
+                            {lang === "NEP" ? "संस्करण १.२.२" : "Version 1.2.2"}
                         </DialogDescription>
                     </DialogHeader>
                     
@@ -725,7 +725,7 @@ export const AppShell = () => {
                             <div className="text-xs text-muted-foreground font-medium">
                                 {lang === "NEP" ? "द्वारा विकसित:" : "Developed By:"}
                             </div>
-                            <a href="https://shakya-portal.pages.dev/" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center justify-center gap-1.5 text-base font-extrabold text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary/80 underline-offset-4 transition-all duration-300">
+                            <a href="https://shakyamahesh.com.np" target="_blank" rel="noopener noreferrer" className="group inline-flex items-center justify-center gap-1.5 text-base font-extrabold text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary/80 underline-offset-4 transition-all duration-300">
                                 <span>Mahesh Shakya</span>
                                 <ArrowRight className="h-4 w-4 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
                             </a>
