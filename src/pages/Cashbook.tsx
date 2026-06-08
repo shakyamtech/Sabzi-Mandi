@@ -152,12 +152,43 @@ const Cashbook = () => {
       if (error) return toast.error(error.message);
       toast.success("Entry updated");
     } else {
-      const { error } = await supabase.from("cash_transactions").insert({
-        ...payload, user_id: user!.id,
-      });
-      if (error) return toast.error(error.message);
-      
-      toast.success("Entry added");
+      if (category === "customer_payment" || category === "supplier_payment") {
+        const pType = category === "customer_payment" ? "customer" : "supplier";
+        const table = pType === "customer" ? "customers" : "suppliers";
+        
+        // 1. Insert Cash Transaction
+        const { error } = await supabase.from("cash_transactions").insert({
+          ...payload, user_id: user!.id,
+        });
+        if (error) return toast.error(error.message);
+
+        // 2. Fetch current balance & update
+        const { data: party } = await supabase.from(table).select("balance").eq("id", partyId).single();
+        if (party) {
+          const newBalance = Number(party.balance) - Number(amount);
+          await supabase.from(table).update({ balance: newBalance }).eq("id", partyId);
+        }
+
+        // 3. Insert Ledger Entry
+        await supabase.from("ledger_entries").insert({
+          user_id: user!.id,
+          party_type: pType,
+          party_id: partyId,
+          entry_type: pType === "customer" ? "payment_in" : "payment_out",
+          amount: Number(amount),
+          note: note || null,
+          created_at: payload.created_at
+        });
+
+        toast.success("Payment recorded & balance synced");
+      } else {
+        const { error } = await supabase.from("cash_transactions").insert({
+          ...payload, user_id: user!.id,
+        });
+        if (error) return toast.error(error.message);
+        
+        toast.success("Entry added");
+      }
     }
     setOpen(false); resetForm(); load();
   };
