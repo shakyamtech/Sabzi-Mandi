@@ -59,16 +59,29 @@ const Cashbook = () => {
   const [purchaseDetails, setPurchaseDetails] = useState<Record<string, { supplier: string; mode: string }>>({});
 
   const load = async () => {
-    const [{ data: tx }, { data: cust }, { data: supp }, { data: salesData }, { data: purchasesData }] = await Promise.all([
+    const [{ data: tx }, { data: cust }, { data: supp }, { data: salesData }, { data: purchasesData }, { data: ledger }] = await Promise.all([
       supabase.from("cash_transactions").select("*").order("created_at", { ascending: false }).limit(200),
       supabase.from("customers").select("id, name").order("name"),
       supabase.from("suppliers").select("id, name").order("name"),
       supabase.from("sales").select("id, payment_mode, customers(name), sale_items(qty, products(name))").order("created_at", { ascending: false }).limit(200),
-      supabase.from("purchases").select("id, payment_mode, suppliers(name)").order("created_at", { ascending: false }).limit(200)
+      supabase.from("purchases").select("id, payment_mode, suppliers(name)").order("created_at", { ascending: false }).limit(200),
+      supabase.from("ledger_entries").select("party_id, entry_type, amount, party_type")
     ]);
     setRows(tx ?? []);
-    setCustomers(cust ?? []);
-    setSuppliers(supp ?? []);
+
+    const calcBalance = (partyId: string) => {
+      const partyEntries = (ledger || []).filter((e: any) => e.party_id === partyId);
+      return partyEntries.reduce((acc: number, e: any) => {
+        const isDebt = ["sale", "purchase", "debit", "credit"].includes(e.entry_type);
+        const isPayment = ["payment_in", "payment_out", "payment"].includes(e.entry_type);
+        if (isDebt) return acc + Number(e.amount);
+        if (isPayment) return acc - Number(e.amount);
+        return acc;
+      }, 0);
+    };
+
+    setCustomers((cust ?? []).map((c: any) => ({ ...c, balance: calcBalance(c.id) })));
+    setSuppliers((supp ?? []).map((s: any) => ({ ...s, balance: calcBalance(s.id) })));
 
     const salesMap: Record<string, { customer: string; products: string; mode: string }> = {};
     if (salesData) {
@@ -279,8 +292,12 @@ const Cashbook = () => {
                     <SelectTrigger><SelectValue placeholder={`Select ${direction === "in" ? "Customer" : "Supplier"}...`} /></SelectTrigger>
                     <SelectContent>
                       {direction === "in" 
-                        ? customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
-                        : suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+                        ? customers.map((c) => <SelectItem key={c.id} value={c.id}>
+                            {c.name} {Number(c.balance) !== 0 ? `(Due: ${Number(c.balance) < 0 ? "-" : ""}${fmt(Math.abs(Number(c.balance)))})` : ""}
+                          </SelectItem>)
+                        : suppliers.map((s) => <SelectItem key={s.id} value={s.id}>
+                            {s.name} {Number(s.balance) !== 0 ? `(Due: ${Number(s.balance) < 0 ? "-" : ""}${fmt(Math.abs(Number(s.balance)))})` : ""}
+                          </SelectItem>)
                       }
                     </SelectContent>
                   </Select>

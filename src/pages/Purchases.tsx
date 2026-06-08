@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmt, fmtQty } from "@/lib/format";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -214,7 +214,8 @@ const Purchases = () => {
           setShowForm(!showForm);
           if (showForm) { setEditingId(null); setItems([]); setSupplierId("none"); }
         }} className="bg-gradient-primary text-primary-foreground">
-          <Plus className="h-4 w-4 mr-1" />{showForm ? "Cancel" : "New Purchase"}
+          {showForm ? <X className="h-4 w-4 mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+          {showForm ? "Cancel" : "New Purchase"}
         </Button>
       } />
 
