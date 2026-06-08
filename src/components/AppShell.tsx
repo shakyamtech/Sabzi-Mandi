@@ -729,9 +729,6 @@ export const AppShell = () => {
                                 <span>Mahesh Shakya</span>
                                 <ArrowRight className="h-4 w-4 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
                             </a>
-                            <div className="text-xs text-primary font-medium">
-                                shakya.mahes@gmail.com
-                            </div>
                         </div>
                         
                         <p className="text-[10px] text-muted-foreground/60 italic">
