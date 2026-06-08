@@ -161,7 +161,7 @@ const Admin = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search users by email, full name, or shop name..."
-          className="pl-10 h-11 w-full bg-white/80 backdrop-blur-md focus:bg-white shadow-soft transition-all duration-300 rounded-xl border-sidebar-border/40 focus:ring-primary/20"
+          className="pl-10 h-11 w-full bg-white/80 dark:bg-emerald-950/30 backdrop-blur-md focus:bg-white dark:focus:bg-emerald-950/50 dark:text-foreground shadow-soft transition-all duration-300 rounded-xl border-sidebar-border/40 focus:ring-primary/20"
         />
       </div>
 
