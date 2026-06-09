@@ -60,7 +60,7 @@ export const PartiesPage = ({ type }: { type: "customer" | "supplier" }) => {
         if (isPayment) return acc - Number(e.amount);
         return acc;
       }, 0);
-      return { ...party, balance };
+      return { ...party, balance: Math.round(balance * 100) / 100 };
     });
 
     setItems(parties);

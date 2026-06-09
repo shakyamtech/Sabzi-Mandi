@@ -78,6 +78,7 @@ const Cashbook = () => {
         if (isPayment) return acc - Number(e.amount);
         return acc;
       }, 0);
+      return Math.round(bal * 100) / 100;
     };
 
     setCustomers((cust ?? []).map((c: any) => ({ ...c, balance: calcBalance(c.id) })));
@@ -120,9 +121,9 @@ const Cashbook = () => {
     return true;
   });
 
-  const balance = dateFilteredRows.reduce((s, r) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0);
-  const totalIn = dateFilteredRows.filter((r) => r.direction === "in").reduce((s, r) => s + Number(r.amount), 0);
-  const totalOut = dateFilteredRows.filter((r) => r.direction === "out").reduce((s, r) => s + Number(r.amount), 0);
+  const balance = Math.round(dateFilteredRows.reduce((s, r) => s + (r.direction === "in" ? Number(r.amount) : -Number(r.amount)), 0) * 100) / 100;
+  const totalIn = Math.round(dateFilteredRows.filter((r) => r.direction === "in").reduce((s, r) => s + Number(r.amount), 0) * 100) / 100;
+  const totalOut = Math.round(dateFilteredRows.filter((r) => r.direction === "out").reduce((s, r) => s + Number(r.amount), 0) * 100) / 100;
   const filtered = dateFilteredRows.filter((r) => filter === "all" || r.direction === filter);
 
   const resetForm = () => { 
